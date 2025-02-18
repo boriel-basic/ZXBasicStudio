@@ -1,17 +1,20 @@
 # ZX Basic Studio
-ZX Basic Studio is a project created and led by **El Dr. Gusman**, and is available at https://github.com/gusmanb/ZXBasicStudio.
+ZX Basic Studio es un proyecto creado inicialmente por **El Dr. Gusman** cuyo código original y versiones anteriores se encuentran en https://github.com/gusmanb/ZXBasicStudio.
+ZX Basic Studio is a cross-platform IDE for the Boriel Basic compiler https://github.com/boriel-basic
 
-# Beta 1.0 released!
-We are ahppy to announce the [first beta release of ZX Basic Studio](https://github.com/gusmanb/ZXBasicStudio/releases/tag/v1.0-beta.1). This is a work in progress but the development has reached a state in which we feel comfortable to release it to be tested by users.
+This is a work in progress but the development has reached a state in which we feel comfortable to release it to be tested by users.
 Expect bugs as this is a development build.
 
-Documentation will come in the near future, but for now you can refer to the [series of videos about ZX Basic](https://www.youtube.com/watch?v=Z0pqYjZBOb0&list=PL4n2c1PEER_qiuLUrLLpftGiW8IPB4IZd) by [Briefer666](https://www.youtube.com/@briefer666)
+Download latest verion from [releases section](https://github.com/boriel-basic/ZXBasicStudio/releases)
+
+Documentation will come in the near future, take a look at the book [Boriel Basic for ZX Spectrum: A guide for beginners…and those who are not so much](https://www.amazon.co.uk/dp/B0DBF4BHXY) or the spanish version [Boriel Basic para ZX Spectrum: Manual para torpes...y para los que no lo son tanto (Boriel Basic for ZX Spectrum)](https://www.amazon.es/Boriel-Basic-para-ZX-Spectrum/dp/B0CQD65FXZ)
 
 Have fun!
 
 ## Credits
 - Development team:
   - El Dr. Gusman
+  - Boriel
   - Duefectu
   - AdolFITO 
   - HashIron
