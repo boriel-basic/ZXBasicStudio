@@ -1,5 +1,5 @@
 # ZX Basic Studio
-ZX Basic Studio es un proyecto creado inicialmente por **El Dr. Gusman** cuyo código original y versiones anteriores se encuentran en https://github.com/gusmanb/ZXBasicStudio.
+ZX Basic Studio is a project initially created by **Dr. Gusman** whose original code and earlier versions can be found at https://github.com/gusmanb/ZXBasicStudio.
 ZX Basic Studio is a cross-platform IDE for the Boriel Basic compiler https://github.com/boriel-basic
 
 This is a work in progress but the development has reached a state in which we feel comfortable to release it to be tested by users.
