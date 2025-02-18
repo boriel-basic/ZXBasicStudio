@@ -5,7 +5,7 @@ ZX Basic Studio is a cross-platform IDE for the Boriel Basic compiler https://gi
 This is a work in progress but the development has reached a state in which we feel comfortable to release it to be tested by users.
 Expect bugs as this is a development build.
 
-Download latest verion from [releases section](https://github.com/boriel-basic/ZXBasicStudio/releases)
+Download latest version from [releases section](https://github.com/boriel-basic/ZXBasicStudio/releases)
 
 Documentation will come in the near future, take a look at the book [Boriel Basic for ZX Spectrum: A guide for beginners…and those who are not so much](https://www.amazon.co.uk/dp/B0DBF4BHXY) or the spanish version [Boriel Basic para ZX Spectrum: Manual para torpes...y para los que no lo son tanto (Boriel Basic for ZX Spectrum)](https://www.amazon.es/Boriel-Basic-para-ZX-Spectrum/dp/B0CQD65FXZ)
 
