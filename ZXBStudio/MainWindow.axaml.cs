@@ -45,6 +45,7 @@ using ZXBasicStudio.Controls;
 using ZXBasicStudio.Controls.DockSystem;
 using ZXBasicStudio.Dialogs;
 using ZXBasicStudio.DocumentEditors;
+using ZXBasicStudio.DocumentEditors.ZXGraphics;
 using ZXBasicStudio.DocumentEditors.ZXTextEditor.Controls;
 using ZXBasicStudio.DocumentModel.Classes;
 using ZXBasicStudio.DocumentModel.Interfaces;
@@ -156,6 +157,7 @@ namespace ZXBasicStudio
             mnuGlobalOptions.Click += ConfigureGlobalSettings;
             mnuDumpMem.Click += DumpMemory;
             mnuDumpRegs.Click += DumpRegisters;
+            mnuNext_PaletteBuilder.Click += Next_PaletteBuilder;
             mnuTurbo.Click += TurboModeEmulator;
             mnuRestoreLayout.Click += RestoreLayout;
             mnuCodeView.Click += FullLayout;
@@ -2342,6 +2344,17 @@ namespace ZXBasicStudio
         private async void ExitApplication(object? sender, Avalonia.Interactivity.RoutedEventArgs? e)
         {
             Close();
+        }
+
+        #endregion
+
+
+        #region Next Tools
+
+        private async void Next_PaletteBuilder(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            var dlg = new PaletteBuilderDialog();
+            dlg.ShowDialog(this.VisualRoot as Window);
         }
 
         #endregion
