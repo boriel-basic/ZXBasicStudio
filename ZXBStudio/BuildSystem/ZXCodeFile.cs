@@ -1,13 +1,9 @@
-﻿using Avalonia.Svg.Skia;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using ZXBasicStudio.Classes;
 using ZXBasicStudio.DocumentModel.Classes;
 using ZXBasicStudio.IntegratedDocumentTypes.CodeDocuments.Basic;
 
@@ -99,6 +95,11 @@ namespace ZXBasicStudio.BuildSystem
             Content = regRemoveEmpty.Replace(Content, "");
         }
 
+        private string GetSourceLine(int lineNum, string line)
+        {
+            return $"file__{FileGuid}__{lineNum}:\n{line}";
+        }
+
         public void CreateBuildFile(IEnumerable<ZXCodeFile> AllFiles)
         {
             string content = Content;
@@ -155,7 +156,7 @@ namespace ZXBasicStudio.BuildSystem
                     else
                     {
                         sbSource.AppendLine(line);
-                        line = $"file__{FileGuid}__{lineIndex}: {line}";
+                        line = GetSourceLine(lineIndex, line);
                         sb.AppendLine(line);
                     }
 
@@ -244,11 +245,11 @@ namespace ZXBasicStudio.BuildSystem
                         }
                         else if (inAsm && !regAsmExclude.IsMatch(line))
                         {
-                            line = $"file__{FileGuid}__{buc}: {line}";
+                            line = GetSourceLine(buc, line);
                         }
                         else if (!inAsm && !string.IsNullOrWhiteSpace(line) && !regBasicExclude.IsMatch(line))
                         {
-                            line = $"file__{FileGuid}__{buc}: {line}";
+                            line = GetSourceLine(buc, line);
                         }
 
                     }
