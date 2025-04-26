@@ -1,0 +1,102 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="using:ZXBasicStudio.DocumentEditors.ZXGraphics"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="501"
+        Width="950" Height="520"
+        Icon="/Assets/zxbs.ico"
+        x:Class="ZXBasicStudio.DocumentEditors.ZXGraphics.PaletteBuilderDialog"
+        Title="Next Palette builder" CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        DataContext="{Binding PaletteViewModel}">
+
+  <Grid Name="grdMain" ColumnDefinitions="330,5,256,5,330" RowDefinitions="Auto,260,Auto,Auto,Auto" Margin="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+
+    <TextBlock FontSize="18" FontWeight="Bold">Source image</TextBlock>
+    <TextBlock Grid.Column="2" FontSize="18" FontWeight="Bold">Palette</TextBlock>
+    <TextBlock Grid.Column="4" FontSize="18" FontWeight="Bold">Converted image</TextBlock>
+
+    <Border Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" BorderThickness="1" BorderBrush="Red">
+      <Grid Width="320" Height="256" Grid.Row="1" Name="grdSource" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <local:NextImageViewControl Name="imgSource"/>
+      </Grid>
+    </Border>
+
+    <Grid Grid.Row="1" Grid.Column="2" Grid.RowDefinitions="Auto,Auto,Auto">
+      <Canvas Grid.ColumnSpan="2" Name="cnvPalette" />
+    </Grid>
+
+    <Border Grid.Row="1" Grid.Column="4" HorizontalAlignment="Center" VerticalAlignment="Center" BorderThickness="1" BorderBrush="Red">
+      <Grid Width="320" Height="256" Grid.Row="1" Grid.Column="2" Name="grdConverted" HorizontalAlignment="Center" VerticalAlignment="Center">
+        <local:NextImageViewControl Name="imgConverted"/>
+      </Grid>
+    </Border>
+
+
+    <Grid Grid.Row="2" Grid.ColumnDefinitions="Auto,*,Auto" Grid.RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+      <Button Grid.ColumnSpan="2" Name="btnFileSource" Classes="dialog" Width="150" HorizontalAlignment="Left">Load source image</Button>
+
+      <TextBlock Grid.Row="3" Classes="dialog" VerticalAlignment="Center">OutFormat</TextBlock>
+      <ComboBox Grid.Row="3" Grid.Column="1" Name="cmbMode" Classes="dialog" HorizontalAlignment="Left" MaxWidth="Infinity" Margin="4,0,0,2" SelectedIndex="0" Focusable="False">
+        <ComboBoxItem>256x192 256 colors with palette</ComboBoxItem>
+        <ComboBoxItem>256x192 256 colors without palette</ComboBoxItem>
+      </ComboBox>
+    </Grid>
+
+    <Grid Grid.Row="3" Grid.ColumnDefinitions="Auto,*" Grid.RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+      <CheckBox Grid.Row="0" Name="chkUseCurrent" IsChecked="True" HorizontalAlignment="Right"/>
+      <TextBlock Grid.Row="0" Grid.Column="1" Classes="dialog" VerticalAlignment="Center">Convert to current palette</TextBlock>
+      
+      <CheckBox Grid.Row="1" Name="chkAppend" IsChecked="False" HorizontalAlignment="Right"/>
+      <TextBlock Grid.Row="1" Grid.Column="1" Classes="dialog" VerticalAlignment="Center">Append new colors to current palette</TextBlock>
+
+      <CheckBox Grid.Row="2" Name="chkULA" IsChecked="False" IsEnabled="false" HorizontalAlignment="Right"/>
+      <TextBlock Grid.Row="2" Grid.Column="1" Classes="dialog" VerticalAlignment="Center">Add ULA colors at start</TextBlock>
+
+      <CheckBox Grid.Row="3" Name="chkGrayscale" IsChecked="False" HorizontalAlignment="Right" IsEnabled="false"/>
+      <TextBlock Grid.Row="3" Grid.Column="1" Classes="dialog" VerticalAlignment="Center">Add Grayscale at start</TextBlock>
+    </Grid>
+
+    <Grid Grid.Row="2" Grid.Column="2" Grid.RowSpan="2" RowDefinitions="Auto,Auto,Auto,Auto,5,Auto" ColumnDefinitions="Auto,100,Auto,*">
+      <TextBlock Grid.ColumnSpan="3" Name="txtSelectedColor"/>
+      <TextBlock Grid.Row="1" VerticalAlignment="Center">Red</TextBlock>
+      <Slider Grid.Row="1" Grid.Column="1" Name="sldRed" Width="100" SmallChange="36" Minimum="0" Maximum="255" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+      <Border Grid.Row="1" Grid.Column="2" Classes="numericborder">
+        <NumericUpDown Classes="dialog" Name="txtRed" Minimum="0" Increment="36" Maximum="255" Width="60" VerticalAlignment="Center" Value="0"/>
+      </Border>
+
+      <TextBlock Grid.Row="2" VerticalAlignment="Center">Green</TextBlock>
+      <Slider Grid.Row="2" Grid.Column="1" Name="sldGreen" Width="100" SmallChange="36" Minimum="0" Maximum="255" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+      <Border Grid.Row="2" Grid.Column="2" Classes="numericborder">
+        <NumericUpDown Classes="dialog" Name="txtGreen" Minimum="0" Increment="36" Maximum="255" Width="60" VerticalAlignment="Center" Value="0"/>
+      </Border>
+
+      <TextBlock Grid.Row="3" VerticalAlignment="Center">Blue</TextBlock>
+      <Slider Grid.Row="3" Grid.Column="1" Name="sldBlue" Width="100" SmallChange="36" Minimum="0" Maximum="255" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+      <Border Grid.Row="3" Grid.Column="2" Classes="numericborder">
+        <NumericUpDown Classes="dialog" Name="txtBlue" Minimum="0" Increment="36" Maximum="255" Width="60" VerticalAlignment="Center" Value="0"/>
+      </Border>
+
+      <Border Grid.Row="1" Grid.Column="3" Grid.RowSpan="3" HorizontalAlignment="Center" VerticalAlignment="Center" BorderThickness="1" BorderBrush="Red">
+        <Grid Name="grdSelectedColor" Width="50" Height="50"></Grid>
+      </Border>
+
+      <StackPanel Grid.Row="5" Grid.ColumnSpan="4" Orientation="Horizontal">
+        <Button Name="btnResetPalette" Classes="dialog">Reset to default</Button>
+        <Button Name="btnLoadPalette" Classes="dialog">Load palette</Button>
+        <Button Name="btnSavePalette" Classes="dialog">Save palette</Button>
+      </StackPanel>
+    </Grid>
+
+    <Grid Grid.Row="2" Grid.Column="4" Grid.RowDefinitions="Auto,5,Auto">
+      <Button Name="btnRefresh" Classes="dialog" HorizontalAlignment="Right">Refresh</Button>
+      <Button Grid.Row="2" Name="btnSaveImage" Classes="dialog" HorizontalAlignment="Right">Save image</Button>
+    </Grid>
+    
+    <StackPanel Grid.Row="4" Grid.ColumnSpan="5" Orientation="Horizontal" HorizontalAlignment="Right">
+      <Button Name="btnClose" Classes="dialog">Close</Button>
+    </StackPanel>
+
+  </Grid>
+</Window>

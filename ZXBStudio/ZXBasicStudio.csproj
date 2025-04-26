@@ -255,6 +255,8 @@
     <None Remove="Svg\White\maximize-solid.svg" />
     <None Remove="Svg\White\minimize-solid.svg" />
     <None Remove="Svg\White\minus-solid.svg" />
+    <None Remove="Svg\White\Next.svg" />
+    <None Remove="Svg\White\palette.svg" />
     <None Remove="Svg\White\paste-solid.svg" />
     <None Remove="Svg\White\pause-solid.svg" />
     <None Remove="Svg\White\play-solid.svg" />
@@ -349,6 +351,7 @@
     <AvaloniaResource Include="Svg\circle-question-solid.svg" />
     <AvaloniaResource Include="Svg\Documents\file-zxramdisk.svg" />
     <AvaloniaResource Include="Svg\github.svg" />
+    <AvaloniaResource Include="Svg\White\ImageImport.svg" />
     <AvaloniaResource Include="Svg\ImageImport.svg" />
     <AvaloniaResource Include="Svg\invert-color-svgrepo-com.svg" />
     <AvaloniaResource Include="Svg\invert-mode-svgrepo-com.svg" />
@@ -476,6 +479,7 @@
     <AvaloniaResource Include="Svg\White\diagram-project-cross-solid.svg" />
     <AvaloniaResource Include="Svg\White\diagram-project-plus-solid.svg" />
     <AvaloniaResource Include="Svg\White\diagram-project-solid.svg" />
+    <AvaloniaResource Include="Svg\White\Next.svg" />
     <AvaloniaResource Include="Svg\White\open-last-project-solid.svg" />
     <AvaloniaResource Include="Svg\White\display-lines-solid.svg" />
     <AvaloniaResource Include="Svg\White\dumpster-solid.svg" />
@@ -506,6 +510,7 @@
     <AvaloniaResource Include="Svg\White\maximize-solid.svg" />
     <AvaloniaResource Include="Svg\White\minimize-solid.svg" />
     <AvaloniaResource Include="Svg\White\minus-solid.svg" />
+    <AvaloniaResource Include="Svg\White\palette.svg" />
     <AvaloniaResource Include="Svg\White\paste-solid.svg" />
     <AvaloniaResource Include="Svg\White\pause-solid.svg" />
     <AvaloniaResource Include="Svg\White\play-solid.svg" />
@@ -575,6 +580,9 @@
     </Compile>
     <Compile Update="DocumentEditors\ZXGraphics\SpriteExportDialog.axaml.cs">
       <DependentUpon>SpriteExportDialog.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="DocumentEditors\ZXGraphics\PaletteBuilderDialog.axaml.cs">
+      <DependentUpon>PaletteBuilderDialog.axaml</DependentUpon>
     </Compile>
     <Compile Update="DocumentEditors\ZXGraphics\SpritePatternEditor.axaml.cs">
       <DependentUpon>SpritePatternEditor.axaml</DependentUpon>

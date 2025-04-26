@@ -72,6 +72,9 @@
       <MenuItem Header="Tools">
         <MenuItem Header="Dump memory" Name="mnuDumpMem" IsEnabled="{Binding EmulatorInfo.CanStep}" Icon="{SvgImage /Svg/White/dumpster-solid.svg}"></MenuItem>
         <MenuItem Header="Dump registers" Name="mnuDumpRegs" IsEnabled="{Binding EmulatorInfo.CanStep}" Icon="{SvgImage /Svg/White/dumpster-solid.svg}"></MenuItem>
+        <MenuItem Header="Next tools" Icon="{SvgImage /Svg/White/Next.svg}">
+          <MenuItem Header="Palette builder" Name="mnuNext_PaletteBuilder" Icon="{SvgImage /Svg/White/palette.svg}"></MenuItem>
+        </MenuItem>
         <Separator></Separator>
         <MenuItem Header="Options..." Name="mnuGlobalOptions" Icon="{SvgImage /Svg/White/gears-solid.svg}"></MenuItem>
       </MenuItem>

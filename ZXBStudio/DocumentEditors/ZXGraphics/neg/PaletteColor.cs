@@ -23,5 +23,9 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.neg
         /// Blue level
         /// </summary>
         public byte Blue { get; set; }
+        /// <summary>
+        /// When true, the color has Top Most
+        /// </summary>
+        public bool HasPriority { get; set; }
     }
 }

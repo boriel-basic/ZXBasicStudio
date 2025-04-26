@@ -16,6 +16,7 @@ using System.Drawing.Imaging;
 using Avalonia.Metadata;
 using Avalonia.Controls.Shapes;
 using AvaloniaEdit;
+using System.Diagnostics;
 
 namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
 {
@@ -555,6 +556,9 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         };
 
 
+        private static byte[] paletteDefRG = { 0x00, 0x24, 0x49, 0x6d, 0x92, 0xb6, 0xdb, 0xff };
+        private static byte[] paletteDefB = { 0x00, 0x6d, 0xb6, 0xff };
+
         public static PaletteColor[] GetPalette(GraphicsModes mode)
         {
             switch (mode)
@@ -575,30 +579,15 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
                         int r = 0;
                         int g = 0;
                         int b = 0;
+                        
                         for (int i = 0; i < 256; i++)
                         {
                             r = (i >> 5);
-                            r = r * 37;
-                            if (r > 255)
-                            {
-                                r = 255;
-                            }
+                            r = paletteDefRG[r];
                             g = ((i >> 2) & 0x07);
-                            g = g * 37;
-                            if (g > 255)
-                            {
-                                g = 255;
-                            }
-                            b = (i & 0x07);
-                            if (b != 0)
-                            {
-                                b++;
-                            }
-                            b = b * 37;
-                            if (b > 255)
-                            {
-                                b = 255;
-                            }
+                            g = paletteDefRG[g];
+                            b = (i & 0x03);
+                            b = paletteDefB[b];
                             pal[i] = new PaletteColor()
                             {
                                 Blue = (byte)b,
@@ -612,7 +601,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         }
 
 
-        
+
 
         #endregion
 
@@ -694,6 +683,85 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         {
             // TODO: Do it!!!
             return true;
+        }
+
+        #endregion
+
+
+
+        #region Tools
+
+        public static int GetColor(byte r, byte g, byte b, PaletteColor[] palette, byte cutOff = 5)
+        {
+            if (r > 0)
+            {
+
+            }
+            byte cr = GetColor_CutOff(r, cutOff);
+            byte cg = GetColor_CutOff(g, cutOff);
+            byte cb = GetColor_CutOff(b, cutOff);
+            PaletteColor targetColor = new PaletteColor()
+            {
+                Blue = cb,
+                Green = cg,
+                Red = cr
+            };
+
+            var palColor = palette.OrderBy(c => GetColorDistance(c, targetColor)).First();
+            for (int n = 0; n < palette.Count(); n++)
+            {
+                var p = palette[n];
+                if (palColor.Red == p.Red &&
+                    palColor.Green == p.Green &&
+                    palColor.Blue == p.Blue)
+                {
+                    return n;
+                }
+            }
+            return 0;
+        }
+
+
+        private static byte GetColor_CutOff(byte c, byte cutOff)
+        {
+            if (cutOff == 5)
+            {
+                return c;
+            }
+
+            if (cutOff < 5)
+            {
+                int ic = c - (25 * (5 - cutOff));
+                if (ic < 0)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return ic.ToByte();
+                }
+            }
+            else
+            {
+                int ic = c + (25 * (cutOff - 5));
+                if (ic > 255)
+                {
+                    return 255;
+                }
+                else
+                {
+                    return ic.ToByte();
+                }
+            }
+        }
+
+
+        private static double GetColorDistance(PaletteColor c1, PaletteColor c2)
+        {
+            int rDiff = c1.Red - c2.Red;
+            int gDiff = c1.Green - c2.Green;
+            int bDiff = c1.Blue - c2.Blue;
+            return Math.Sqrt(rDiff * rDiff + gDiff * gDiff + bDiff * bDiff);
         }
 
         #endregion
