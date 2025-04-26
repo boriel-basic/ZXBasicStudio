@@ -12,21 +12,22 @@ public partial class ZXAboutDialog : Window
     {
         InitializeComponent();
 
+        txtBuild.Text = "1.6.0-beta1";
+        txtDate.Text = "2025-04-26";
+
         btnClose.Click += BtnClose_Click;
 
-        var name = System.Reflection.Assembly.GetExecutingAssembly().GetName();
+        //var name = System.Reflection.Assembly.GetExecutingAssembly().GetName();
 
-        if(name == null || name.Version == null)
-        {
-            txtBuild.Text = "Unknown build";
-            txtDate.Text = "Unknown date";
-            return;
-        }
+        //if(name == null || name.Version == null)
+        //{
+        //    txtBuild.Text = "Unknown build";
+        //    txtDate.Text = "Unknown date";
+        //    return;
+        //}
 
-        DateTime buildDate = new DateTime(2000, 1, 1).AddDays(name.Version.Build);
-
-        txtBuild.Text = $"Build {name.Version.ToString()}";
-        txtDate.Text = buildDate.ToString("yyyy-MM-dd");
+        //DateTime buildDate = new DateTime(2000, 1, 1).AddDays(name.Version.Revision);
+        //txtBuild.Text = $"Build {name.Version.ToString()}";
     }
 
     private void BtnClose_Click(object? sender, RoutedEventArgs e)

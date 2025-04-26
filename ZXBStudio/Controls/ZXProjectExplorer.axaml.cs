@@ -183,6 +183,7 @@ namespace ZXBasicStudio.Controls
             {
                 fWatcher.Created -= FWatcher_Created;
                 fWatcher.Deleted -= FWatcher_Deleted;
+                fWatcher.Renamed -= FWatcher_Renamed;
                 fWatcher.EnableRaisingEvents = false;
                 fWatcher.Dispose();
             }
@@ -238,8 +239,15 @@ namespace ZXBasicStudio.Controls
                     else
                     {
                         var parent = FindNode(pathWithoutNode, _nodes);
-                        if (parent != null)
+                        if (parent == null)
+                        {
+                            UpdateProjectFolder();
+                            return;
+                        }
+                        else
+                        {
                             container = parent.ChildNodes;
+                        }
                     }
 
                     if (container != null)
@@ -364,8 +372,15 @@ namespace ZXBasicStudio.Controls
                     else
                     {
                         var parent = FindNode(pathWithoutNode, _nodes);
-                        if (parent != null)
+                        if (parent == null)
+                        {
+                            UpdateProjectFolder();
+                            return;
+                        }
+                        else
+                        {
                             container = parent.ChildNodes;
+                        }
                     }
 
                     //Not found? ingnore...
@@ -404,8 +419,15 @@ namespace ZXBasicStudio.Controls
                 else
                 {
                     var node = FindNode(pathWithoutNode, _nodes);
-                    if (node != null)
+                    if (node == null)
+                    {
+                        UpdateProjectFolder();
+                        return;
+                    }
+                    else
+                    {
                         container = node.ChildNodes;
+                    }
                 }
 
                 //We didn't found where to add it... :(
