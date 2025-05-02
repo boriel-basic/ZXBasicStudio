@@ -278,6 +278,8 @@ namespace ZXBasicStudio.BuildSystem
 
         public static ZXProgram? BuildDebug(TextWriter OutputLogWritter)
         {
+            string cmd = "";
+
             try
             {
                 if (ZXProjectManager.Current == null)
@@ -332,7 +334,7 @@ namespace ZXBasicStudio.BuildSystem
 
                 foreach (var file in files)
                 {
-                    file.CreateBuildFile(files);
+                    file.CreateBuildFile(files, OutputLogWritter);
                 }
 
                 OutputLogWritter.WriteLine("Building program map...");
@@ -346,10 +348,12 @@ namespace ZXBasicStudio.BuildSystem
                     return null;
                 }
 
+                cmd = $"\"{Path.Combine(codeFile.Directory, codeFile.TempFileName)}\" -M MEMORY_MAP " + args;
+                OutputLogWritter.WriteLine("zxbc "+cmd);
                 var proc = Process.Start(
                     new ProcessStartInfo(
-                        Path.GetFullPath(ZXOptions.Current.ZxbcPath), 
-                        $"\"{Path.Combine(codeFile.Directory, codeFile.TempFileName)}\" -M MEMORY_MAP " + args) { WorkingDirectory = project.ProjectPath, RedirectStandardError = true, CreateNoWindow = true });
+                        Path.GetFullPath(ZXOptions.Current.ZxbcPath),cmd)
+                    { WorkingDirectory = project.ProjectPath, RedirectStandardError = true, CreateNoWindow = true });
 
                 OutputProcessLog(OutputLogWritter, proc, out logOutput);
 
@@ -412,8 +416,17 @@ namespace ZXBasicStudio.BuildSystem
                 var varMap = new ZXVariableMap(varFile, mapFile, bMap);
 
                 OutputLogWritter.WriteLine("Building disassembly...");
+                cmd = $"\"{Path.Combine(codeFile.Directory, codeFile.TempFileName)}\" -A " + args;
+                OutputLogWritter.WriteLine(cmd);
 
-                proc = Process.Start(new ProcessStartInfo(Path.GetFullPath(ZXOptions.Current.ZxbcPath), $"\"{Path.Combine(codeFile.Directory, codeFile.TempFileName)}\" -A " + args) { WorkingDirectory = project.ProjectPath, RedirectStandardError = true, CreateNoWindow = true });
+                proc = Process.Start(
+                    new ProcessStartInfo(
+                        Path.GetFullPath(ZXOptions.Current.ZxbcPath), cmd)
+                    {
+                        WorkingDirectory = project.ProjectPath,
+                        RedirectStandardError = true,
+                        CreateNoWindow = true
+                    });
 
                 OutputProcessLog(OutputLogWritter, proc, out logOutput);
 
@@ -431,9 +444,17 @@ namespace ZXBasicStudio.BuildSystem
                 string disFile = Path.Combine(project.ProjectPath, Path.GetFileNameWithoutExtension(Path.Combine(codeFile.Directory, codeFile.TempFileName)) + ".asm");
                 var disasFile = new ZXCodeFile(disFile, true);
 
-                disasFile.CreateBuildFile(files);
+                disasFile.CreateBuildFile(files, OutputLogWritter);
 
-                proc = Process.Start(new ProcessStartInfo(Path.GetFullPath(ZXOptions.Current.ZxbasmPath), $"\"{Path.Combine(disasFile.Directory, disasFile.TempFileName)}\" -M MEMORY_MAP") { WorkingDirectory = project.ProjectPath, RedirectStandardError = true, CreateNoWindow = true });
+                cmd = $"\"{Path.Combine(disasFile.Directory, disasFile.TempFileName)}\" -M MEMORY_MAP";
+                proc = Process.Start(
+                    new ProcessStartInfo(
+                        Path.GetFullPath(ZXOptions.Current.ZxbasmPath), cmd)
+                    {
+                        WorkingDirectory = project.ProjectPath,
+                        RedirectStandardError = true,
+                        CreateNoWindow = true
+                    });
 
                 OutputProcessLog(OutputLogWritter, proc, out logOutput);
 
