@@ -363,7 +363,6 @@ namespace CoreSpectrum.Hardware
         protected virtual void z80_BeforeInstructionFetch(object? sender, Konamiman.Z80dotNet.BeforeInstructionFetchEventArgs e)
         {
             var bp = _breakpoints[_z80.Registers.PC];
-
             if (bp == null)
                 return;
 

@@ -100,7 +100,7 @@ namespace ZXBasicStudio.BuildSystem
             return $"file__{FileGuid}__{lineNum}:\n{line}";
         }
 
-        public void CreateBuildFile(IEnumerable<ZXCodeFile> AllFiles)
+        public void CreateBuildFile(IEnumerable<ZXCodeFile> AllFiles, TextWriter textWriter)
         {
             string content = Content;
             string[] lines = content.Replace("\r", "").Split("\n");
@@ -238,7 +238,7 @@ namespace ZXBasicStudio.BuildSystem
                             var file = regInclude.Match(line).Groups[1].Value;
                             var absoluteFile = Path.GetFullPath(Path.Combine(Directory, file));
 
-                            var codeFile = AllFiles.FirstOrDefault(f => f.AbsolutePath == absoluteFile);
+                            var codeFile = AllFiles.FirstOrDefault(f => f.AbsolutePath.ToLower() == absoluteFile.ToLower());
 
                             if (codeFile != null)
                                 line = line.Replace(file, Path.Combine(codeFile.Directory, codeFile.TempFileName));
@@ -279,8 +279,8 @@ namespace ZXBasicStudio.BuildSystem
                     }
                     else
                         dotrim = false;
-                }
-
+                }                
+                textWriter.WriteLine($"Crating temp file: {TempFileName}");
                 File.WriteAllText(Path.Combine(Directory, TempFileName), sb.ToString());
             }
         }
