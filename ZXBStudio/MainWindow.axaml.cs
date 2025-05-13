@@ -165,8 +165,20 @@ namespace ZXBasicStudio
             mnuAllToolsView.Click += ToolsLayout;
             mnuDebugView.Click += DebugLayout;
             mnuPlayView.Click += PlayLayout;
-            mnuRepo.Click += OpenRepository;
-            mnuZXHelp.Click += OpenZXHelp;
+
+            mnuDocumentation_Book.Click += MnuDocumentation_Book_Click;
+            mnuDocumentation_Boriel.Click += MnuDocumentation_Boriel_Click;
+            mnuDocumentation_Libro.Click += MnuDocumentation_Libro_Click;
+            mnuDownload_Boriel.Click += MnuDownload_Boriel_Click;
+            mnuDownload_ZXBS.Click += MnuDownload_ZXBS_Click;
+            mnuGitHub_Boriel.Click += MnuGitHub_Boriel_Click;
+            mnuGitHub_ZXBS.Click += MnuGitHub_ZXBS_Click;
+            mnuSocial_Forum.Click += MnuSocial_Forum_Click;
+            mnuSocial_TelegramEN.Click += MnuSocial_TelegramEN_Click;
+            mnuSocial_TelegramES.Click += MnuSocial_TelegramES_Click;
+            mnuSocial_Discord.Click += MnuSocial_Discord_Click;
+            mnuReportBug.Click += MnuReportBug_Click;
+
             mnuAbout.Click += OpenAbout;
             #endregion
 
@@ -290,6 +302,7 @@ namespace ZXBasicStudio
             ZXLayoutPersister.RestoreLayout(grdMain, dockLeft, dockRight, dockBottom, new[] { _playerDock });
         }
 
+        
         private void OpenAbout(object? sender, RoutedEventArgs e)
         {
             ZXAboutDialog zXAboutDialog = new ZXAboutDialog();
@@ -660,7 +673,7 @@ namespace ZXBasicStudio
 
             if (!FileInfo.ProjectLoaded && string.IsNullOrEmpty(ZXOptions.Current.LastProjectPath) == false)
             {
-                
+
                 ZXProjectManager.OpenProject(ZXOptions.Current.LastProjectPath);
 
                 Cleanup();
@@ -673,7 +686,7 @@ namespace ZXBasicStudio
                 FileInfo.FileSystemObjectSelected = false;
                 EmulatorInfo.CanRun = true;
                 EmulatorInfo.CanDebug = true;
-                
+
             }
         }
 
@@ -1481,7 +1494,7 @@ namespace ZXBasicStudio
                                         process.StartInfo.WorkingDirectory = project.ProjectPath;
                                         process.StartInfo.UseShellExecute = true;
                                         process.StartInfo.CreateNoWindow = false;
-                                        outLog.Writer.WriteLine(process.StartInfo.FileName+" "+process.StartInfo.Arguments);
+                                        outLog.Writer.WriteLine(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
                                         process.Start();
                                         process.WaitForExit();
                                     }
@@ -1507,10 +1520,11 @@ namespace ZXBasicStudio
                                     errorMsg = "There is no valid emulator configured for Next. Please configure an emulator (CSpect or ZEsarUX) from the Tools -> Options menu.";
                                     break;
                             }
-                        } catch(Exception ex)
+                        }
+                        catch (Exception ex)
                         {
                             errorMsg = "Error executing emulator";
-                        }                        
+                        }
                     }
 
                     Dispatcher.UIThread.InvokeAsync(async () =>
@@ -2361,6 +2375,85 @@ namespace ZXBasicStudio
         }
 
         #endregion
+
+
+
+        #region Help menu
+
+
+        private void MnuSocial_Discord_Click(object? sender, RoutedEventArgs e)
+        {
+            OpenUrl("https://discord.com/channels/556228195767156758/745427274123444224");
+        }
+
+
+        private void MnuSocial_TelegramES_Click(object? sender, RoutedEventArgs e)
+        {
+
+            OpenUrl("https://t.me/+dSbWL8z8ol1lMjA0");
+        }
+
+
+        private void MnuSocial_TelegramEN_Click(object? sender, RoutedEventArgs e)
+        {
+            OpenUrl("https://t.me/+ag4E7W05dvRkZmZk");
+        }
+
+
+        private void MnuSocial_Forum_Click(object? sender, RoutedEventArgs e)
+        {
+            OpenUrl("https://www.boriel.com/forum/index.php");
+        }
+
+
+        private void MnuGitHub_ZXBS_Click(object? sender, RoutedEventArgs e)
+        {
+            OpenUrl("https://github.com/boriel-basic/ZXBasicStudio");
+        }
+
+
+        private void MnuGitHub_Boriel_Click(object? sender, RoutedEventArgs e)
+        {
+            OpenUrl("https://github.com/boriel-basic/zxbasic");
+        }
+
+
+        private void MnuDownload_ZXBS_Click(object? sender, RoutedEventArgs e)
+        {
+            OpenUrl("https://github.com/boriel-basic/ZXBasicStudio/releases");
+        }
+
+
+        private void MnuDownload_Boriel_Click(object? sender, RoutedEventArgs e)
+        {
+            OpenUrl("https://zxbasic.readthedocs.io/en/latest/archive/");
+        }
+
+
+        private void MnuDocumentation_Libro_Click(object? sender, RoutedEventArgs e)
+        {
+            OpenUrl("https://www.amazon.es/Boriel-Basic-para-ZX-Spectrum/dp/B0CQD65FXZ");
+        }
+
+        private void MnuDocumentation_Boriel_Click(object? sender, RoutedEventArgs e)
+        {
+            OpenUrl("https://zxbasic.readthedocs.io/en/latest/");
+        }
+
+        private void MnuDocumentation_Book_Click(object? sender, RoutedEventArgs e)
+        {
+            OpenUrl("https://www.amazon.co.uk/dp/B0DBF4BHXY");
+        }
+
+
+        private void MnuReportBug_Click(object? sender, RoutedEventArgs e)
+        {
+            OpenUrl("https://github.com/boriel-basic/ZXBasicStudio/issues");
+        }
+
+
+        #endregion
+
     }
 
     public enum PreferredSourceType
