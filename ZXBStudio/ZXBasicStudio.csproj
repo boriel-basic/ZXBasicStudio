@@ -209,6 +209,7 @@
     <None Remove="Svg\undo.svg" />
     <None Remove="Svg\White\backward-solid.svg" />
     <None Remove="Svg\White\backward-step-solid.svg" />
+    <None Remove="Svg\White\book.svg" />
     <None Remove="Svg\White\box-open-solid.svg" />
     <None Remove="Svg\White\box-solid.svg" />
     <None Remove="Svg\White\boxes-stacked-solid.svg" />
@@ -216,6 +217,7 @@
     <None Remove="Svg\White\caret-down-solid.svg" />
     <None Remove="Svg\White\caret-up-solid.svg" />
     <None Remove="Svg\White\cassette-solid.svg" />
+    <None Remove="Svg\White\chat.svg" />
     <None Remove="Svg\White\circle-info-solid.svg" />
     <None Remove="Svg\White\circle-minus-solid.svg" />
     <None Remove="Svg\White\circle-question-solid.svg" />
@@ -227,9 +229,12 @@
     <None Remove="Svg\White\diagram-project-cross-solid.svg" />
     <None Remove="Svg\White\diagram-project-plus-solid.svg" />
     <None Remove="Svg\White\diagram-project-solid.svg" />
+    <None Remove="Svg\White\discord.svg" />
     <None Remove="Svg\White\display-lines-solid.svg" />
+    <None Remove="Svg\White\download.svg" />
     <None Remove="Svg\White\dumpster-solid.svg" />
     <None Remove="Svg\White\eject-solid.svg" />
+    <None Remove="Svg\White\error.svg" />
     <None Remove="Svg\White\file-arrow-down-solid.svg" />
     <None Remove="Svg\White\file-circle-minus-solid.svg" />
     <None Remove="Svg\White\file-circle-plus-solid.svg" />
@@ -268,11 +273,14 @@
     <None Remove="Svg\White\square-plus-solid.svg" />
     <None Remove="Svg\White\stop-solid.svg" />
     <None Remove="Svg\White\tag-solid.svg" />
+    <None Remove="Svg\White\telegram.svg" />
     <None Remove="Svg\White\thumbtack-solid.svg" />
     <None Remove="Svg\White\thumbtack-vertical-solid.svg" />
     <None Remove="Svg\White\trash-can-regular.svg" />
     <None Remove="Svg\White\trash-solid.svg" />
     <None Remove="Svg\White\truck-fast-solid.svg" />
+    <None Remove="Svg\White\ZX.svg" />
+    <None Remove="Svg\White\ZXBS.svg" />
     <None Remove="Svg\x-svgrepo-com.svg" />
   </ItemGroup>
   <ItemGroup>
@@ -351,6 +359,11 @@
     <AvaloniaResource Include="Svg\circle-question-solid.svg" />
     <AvaloniaResource Include="Svg\Documents\file-zxramdisk.svg" />
     <AvaloniaResource Include="Svg\github.svg" />
+    <AvaloniaResource Include="Svg\White\book.svg" />
+    <AvaloniaResource Include="Svg\White\chat.svg" />
+    <AvaloniaResource Include="Svg\White\discord.svg" />
+    <AvaloniaResource Include="Svg\White\download.svg" />
+    <AvaloniaResource Include="Svg\White\error.svg" />
     <AvaloniaResource Include="Svg\White\ImageImport.svg" />
     <AvaloniaResource Include="Svg\ImageImport.svg" />
     <AvaloniaResource Include="Svg\invert-color-svgrepo-com.svg" />
@@ -522,11 +535,14 @@
     <AvaloniaResource Include="Svg\White\square-plus-solid.svg" />
     <AvaloniaResource Include="Svg\White\stop-solid.svg" />
     <AvaloniaResource Include="Svg\White\tag-solid.svg" />
+    <AvaloniaResource Include="Svg\White\telegram.svg" />
     <AvaloniaResource Include="Svg\White\thumbtack-vertical-solid.svg" />
     <AvaloniaResource Include="Svg\White\thumbtack-solid.svg" />
     <AvaloniaResource Include="Svg\White\trash-can-regular.svg" />
     <AvaloniaResource Include="Svg\White\trash-solid.svg" />
     <AvaloniaResource Include="Svg\White\truck-fast-solid.svg" />
+    <AvaloniaResource Include="Svg\White\ZX.svg" />
+    <AvaloniaResource Include="Svg\White\ZXBS.svg" />
     <AvaloniaResource Include="Svg\x-svgrepo-com.svg" />
   </ItemGroup>
   <ItemGroup>

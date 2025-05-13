@@ -88,9 +88,28 @@
         <MenuItem Header="Restore layout" Name="mnuRestoreLayout" Icon="{SvgImage /Svg/White/clock-rotate-left-solid.svg}"></MenuItem>
       </MenuItem>
       <MenuItem Header="Help">
-        <MenuItem Header="ZX Basic Studio repository" Name="mnuRepo" Icon="{SvgImage /Svg/White/github.svg}"></MenuItem>
+        <MenuItem Header="Documentation" Icon="{SvgImage /Svg/White/book.svg}">
+          <MenuItem Header="Boriel Basic Compiler" Name="mnuDocumentation_Boriel" Icon="{SvgImage /Svg/White/ZX.svg}"></MenuItem>
+          <MenuItem Header="Boriel Basic for ZX Spectrum Book (English)" Name="mnuDocumentation_Book" Icon="{SvgImage /Svg/White/book.svg}"></MenuItem>
+          <MenuItem Header="Libro Boriel Basic para ZX Spectrum (Spanish)" Name="mnuDocumentation_Libro" Icon="{SvgImage /Svg/White/book.svg}"></MenuItem>
+        </MenuItem>
+
+        <MenuItem Header="Downloads" Icon="{SvgImage /Svg/White/download.svg}">
+          <MenuItem Header="ZX Basic Studio" Name="mnuDownload_ZXBS" Icon="{SvgImage /Svg/White/ZXBS.svg}"></MenuItem>
+          <MenuItem Header="Boriel Basic Compiler" Name="mnuDownload_Boriel" Icon="{SvgImage /Svg/White/ZX.svg}"></MenuItem>
+        </MenuItem>
+        <MenuItem Header="Repositories" Icon="{SvgImage /Svg/White/github.svg}">
+          <MenuItem Header="ZX Basic Studio" Name="mnuGitHub_ZXBS" Icon="{SvgImage /Svg/White/ZXBS.svg}"></MenuItem>
+          <MenuItem Header="Boriel Basic Compiler" Name="mnuGitHub_Boriel" Icon="{SvgImage /Svg/White/ZX.svg}"></MenuItem>
+        </MenuItem>
+        <MenuItem Header="Social" Icon="{SvgImage /Svg/White/chat.svg}">
+          <MenuItem Header="Telegram Spanish" Name="mnuSocial_TelegramES" Icon="{SvgImage /Svg/White/telegram.svg}"></MenuItem>
+          <MenuItem Header="Telegram English" Name="mnuSocial_TelegramEN" Icon="{SvgImage /Svg/White/telegram.svg}"></MenuItem>
+          <MenuItem Header="Boriel Basic Forum" Name="mnuSocial_Forum" Icon="{SvgImage /Svg/White/chat.svg}"></MenuItem>
+          <MenuItem Header="Boriel on Next Discord Server" Name="mnuSocial_Discord" Icon="{SvgImage /Svg/White/discord.svg}"></MenuItem>
+        </MenuItem>
         <Separator></Separator>
-        <MenuItem Header="ZX Basic help" Name="mnuZXHelp" Icon="{SvgImage /Svg/White/circle-question-solid.svg}"></MenuItem>
+        <MenuItem Header="Report a bug or suggestion" Name="mnuReportBug" Icon="{SvgImage /Svg/White/error.svg}"></MenuItem>
         <Separator></Separator>
         <MenuItem Header="About..." Name="mnuAbout" Icon="{SvgImage /Svg/White/circle-info-solid.svg}"></MenuItem>
       </MenuItem>
