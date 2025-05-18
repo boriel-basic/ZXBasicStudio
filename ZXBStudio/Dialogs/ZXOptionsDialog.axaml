@@ -12,10 +12,10 @@
         Title="General options" WindowStartupLocation="CenterOwner">
   <Grid ColumnDefinitions="*,7*,8*,2*,*" RowDefinitions="*,*,*,*,*,*,*,*,*,1.5*,1.5*,1.5*">
     <TextBlock Classes="dialog" Grid.Row="0" Grid.Column="1" VerticalAlignment="Center" >ZXBC path:</TextBlock>
-    <TextBox Classes="dialog" Grid.Row="0" Grid.Column="2" Name="txtZxbc" IsReadOnly="True"></TextBox>
+    <TextBox Classes="dialog" Grid.Row="0" Grid.Column="2" Name="txtZxbc" IsReadOnly="False"></TextBox>
     <Button Classes="dialog" Grid.Row="0" Grid.Column="3" VerticalAlignment="Center" Name="btnSelectZxbc">...</Button>
     <TextBlock Classes="dialog" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" >ZXBASM path:</TextBlock>
-    <TextBox Classes="dialog" Grid.Row="1" Grid.Column="2" Name="txtZxbasm" IsReadOnly="True"></TextBox>
+    <TextBox Classes="dialog" Grid.Row="1" Grid.Column="2" Name="txtZxbasm" IsReadOnly="False"></TextBox>
     <Button Classes="dialog" Grid.Row="1" Grid.Column="3" VerticalAlignment="Center" Name="btnSelectZxbasm">...</Button>
     <TextBlock Classes="dialog" Grid.Row="2" Grid.Column="1" VerticalAlignment="Center">Editor font size:</TextBlock>
     <Border Height="32" Grid.Row="2" Grid.Column="2" BorderBrush="#ff909090" BorderThickness="2" CornerRadius="5" Padding="-1" Margin="5,0,5,0">
@@ -35,7 +35,7 @@
     <CheckBox Classes="dialog" Name="ckAntiAlias" Grid.Column="2" Grid.Row="7"></CheckBox>
 
     <TextBlock Classes="dialog" Grid.Row="8" Grid.Column="1" VerticalAlignment="Center">Next emulator path:</TextBlock>
-    <TextBox Classes="dialog" Grid.Row="8" Grid.Column="2" Name="txtNextEmulator" IsReadOnly="True"></TextBox>
+    <TextBox Classes="dialog" Grid.Row="8" Grid.Column="2" Name="txtNextEmulator" IsReadOnly="False"></TextBox>
     <Button Classes="dialog" Grid.Row="8" Grid.Column="3" VerticalAlignment="Center" Name="btnSelectNextEmulator">...</Button>
 
     <TextBlock Classes="dialog" Grid.Row="9" Grid.Column="1" VerticalAlignment="Center">Disable autocomplete:</TextBlock>

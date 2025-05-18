@@ -180,12 +180,21 @@
       <Setter Property="Height" Value="32"></Setter>
       <Setter Property="MaxWidth" Value="140"></Setter>
     </Style>
+    <Style Selector="TextBox.dialogfw">
+      <Setter Property="Margin" Value="5"></Setter>
+      <Setter Property="CornerRadius" Value="5"></Setter>
+      <Setter Property="Height" Value="32"></Setter>
+    </Style>
+    <Style Selector="TextBox.dialogfwh">
+      <Setter Property="Margin" Value="5"></Setter>
+      <Setter Property="CornerRadius" Value="5"></Setter>
+    </Style>
     <Style Selector="Button.dialog">
       <Setter Property="Margin" Value="5"></Setter>
       <Setter Property="CornerRadius" Value="5"></Setter>
     </Style>
     <Style Selector="ComboBox.dialog">
-      <Setter Property="Margin" Value="0"></Setter>
+      <Setter Property="Margin" Value="5"></Setter>
       <Setter Property="CornerRadius" Value="5"></Setter>
       <Setter Property="Height" Value="32"></Setter>
       <Setter Property="Padding" Value="5"></Setter>

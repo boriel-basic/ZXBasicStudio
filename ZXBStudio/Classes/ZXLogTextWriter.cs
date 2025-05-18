@@ -14,10 +14,12 @@ namespace ZXBasicStudio.Classes
 {
     public class ZXLogTextWriter : TextWriter
     {
-        TextBlock target;
+        //TextBlock target;
+        TextBox target;
         ScrollViewer scroll;
 
-        public ZXLogTextWriter(TextBlock Target, ScrollViewer Scroller) 
+        //public ZXLogTextWriter(TextBlock Target, ScrollViewer Scroller) 
+        public ZXLogTextWriter(TextBox Target, ScrollViewer Scroller)
         {
             this.target = Target;
             this.scroll = Scroller;
