@@ -93,12 +93,14 @@
           <Button Classes="dialog" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Name="btnPostbuild">...</Button>
         </Grid>
 
-        <CheckBox Name="chkEmulator" Grid.Row="5" Grid.Column="6"  Margin="0,8,0,0">Launch external emulator</CheckBox>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+          <CheckBox Name="chkEmulator" Grid.Row="5" Grid.Column="6"  Margin="0,8,4,0">Launch external emulator (program or bash to launch)</CheckBox>
+          <svg:Svg Path="/Svg/White/circle-info-solid.svg" Width="16" ToolTip.Tip="Parameters: %1=project path, %2=compiled file without extension"></svg:Svg>
+        </StackPanel>
         <Grid Name="grdEmulator" ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto" IsEnabled="False" Margin="20,4,8,8">
           <TextBox  Name="txtEmulator" Grid.Row="1" Classes="dialogfw"/>
           <Button Classes="dialog" Grid.Row="1" Grid.Column="1" VerticalAlignment="Center" Name="btnEmulator">...</Button>
         </Grid>
-
       </StackPanel>
     </Grid>
 

@@ -120,20 +120,20 @@ namespace ZXBasicStudio.Dialogs
         private async void BtnEmulator_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)
         {
             var fileTypes = new FilePickerFileType[3];
-            fileTypes[0] = new FilePickerFileType("Executable files (*.exe)") { Patterns = new[] { "*.exe" } };
-            fileTypes[1] = new FilePickerFileType("Batch/Shell files (*.bat, *.sh)") { Patterns = new[] { "*.bat", "*.sh" } };
+            fileTypes[0] = new FilePickerFileType("Batch/Shell files (*.bat, *.sh)") { Patterns = new[] { "*.bat", "*.sh" } };
+            fileTypes[1] = new FilePickerFileType("Executable files (*.exe)") { Patterns = new[] { "*.exe" } };
             fileTypes[2] = new FilePickerFileType("All files (*.*)") { Patterns = new[] { "*", "*.*" } };
 
-            var select = await StorageProvider.SaveFilePickerAsync(new Avalonia.Platform.Storage.FilePickerSaveOptions
+            var select = await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions
             {
-                ShowOverwritePrompt = true,
-                FileTypeChoices = fileTypes,
-                Title = "Select prebuild file...",
+                FileTypeFilter = fileTypes.ToArray(),
+                Title = "Select emulator launcher file...",
             });
 
-            if (select != null)
+            if (select != null && select.Count() != 0)
             {
-                txtEmulator.Text = Path.GetFullPath(select.Path.LocalPath);
+                var fileName = Path.GetFullPath(select[0].Path.LocalPath);
+                txtEmulator.Text = fileName;
             }
         }
 
@@ -219,14 +219,7 @@ namespace ZXBasicStudio.Dialogs
                 chkPostbuild.IsChecked = _settings.PostBuild;
                 txtPostbuild.Text = _settings.PostBuildValue.ToStringNoNull();
                 chkEmulator.IsChecked = _settings.ExternalEmulator;
-                if (_settings.ExternalEmulator)
-                {
-                    txtEmulator.Text = _settings.ExternalEmuladorValue.ToStringNoNull();
-                }
-                else
-                {
-                    txtEmulator.Text = "Use the emulator with integrated debugger";
-                }
+                txtEmulator.Text = _settings.ExternalEmuladorValue.ToStringNoNull();
             }
             else
             {
@@ -252,7 +245,7 @@ namespace ZXBasicStudio.Dialogs
                 chkPostbuild.IsChecked = false;
                 txtPostbuild.Text = "";
                 chkEmulator.IsChecked = false;
-                txtEmulator.Text = "Use the emulator with integrated debugger";
+                txtEmulator.Text = "";
             }
             UpdateCustomBuilder();
         }

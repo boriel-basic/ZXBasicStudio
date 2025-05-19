@@ -302,7 +302,7 @@ namespace ZXBasicStudio
             ZXLayoutPersister.RestoreLayout(grdMain, dockLeft, dockRight, dockBottom, new[] { _playerDock });
         }
 
-        
+
         private void OpenAbout(object? sender, RoutedEventArgs e)
         {
             ZXAboutDialog zXAboutDialog = new ZXAboutDialog();
@@ -1400,10 +1400,13 @@ namespace ZXBasicStudio
             EmulatorInfo.CanDebug = false;
             EmulatorInfo.CanRun = false;
             BlockEditors();
+
             _ = Task.Run(() =>
             {
                 if (peExplorer.RootPath != null)
+                {
                     ZXProjectBuilder.Build(outLog.Writer);
+                }
 
                 Dispatcher.UIThread.InvokeAsync(() =>
                 {
@@ -1413,6 +1416,8 @@ namespace ZXBasicStudio
                 });
             });
         }
+
+
         private async void BuildAndRun(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(ZXOptions.Current.ZxbcPath) || string.IsNullOrWhiteSpace(ZXOptions.Current.ZxbasmPath))
@@ -1480,45 +1485,56 @@ namespace ZXBasicStudio
                         {
                             var emulatorName = Path.GetFileNameWithoutExtension(emulatorPath);
                             var nextDrive = Path.Combine(project.ProjectPath, "nextdrive");
-                            switch (emulatorName.ToLower())
+
+                            if (settings.ExternalEmulator)
                             {
-                                case "cspect":
+                                outLog.Writer.WriteLine($"Custom emulator launcher: {settings.ExternalEmuladorValue}");
+                                if (!ZXProjectBuilder.ExecuteFile(settings.ExternalEmuladorValue, new string[]
                                     {
-                                        outLog.Writer.WriteLine("Launching CSpect...");
-                                        Process process = new Process();
-                                        process.StartInfo.FileName = emulatorPath;
-                                        process.StartInfo.Arguments = string.Format(
-                                            "-zxnext -tv -w3 -brk -r -mmc=\"{0}\" \"{1}\"",
-                                                nextDrive,
-                                                Path.Combine(nextDrive, Path.GetFileNameWithoutExtension(settings.MainFile) + ".nex"));
-                                        process.StartInfo.WorkingDirectory = project.ProjectPath;
-                                        process.StartInfo.UseShellExecute = true;
-                                        process.StartInfo.CreateNoWindow = false;
-                                        outLog.Writer.WriteLine(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
-                                        process.Start();
-                                        process.WaitForExit();
-                                    }
-                                    break;
-                                case "zesarux":
-                                    {
-                                        outLog.Writer.WriteLine("Launching ZEsarUX...");
-                                        Process process = new Process();
-                                        process.StartInfo.FileName = emulatorPath;
-                                        process.StartInfo.Arguments = string.Format(
-                                            "--noconfigfile --zoom 1  --machine TBBlue --realvideo --enabletimexvideo --tbblue-fast-boot-mode --enable-esxdos-handler --esxdos-root-dir \"{0}\" \"{1}\" --snap-no-change-machine",
-                                                nextDrive,
-                                                Path.Combine(nextDrive, Path.GetFileNameWithoutExtension(settings.MainFile) + ".nex"));
-                                        process.StartInfo.WorkingDirectory = Path.GetDirectoryName(emulatorPath);
-                                        process.StartInfo.UseShellExecute = true;
-                                        process.StartInfo.CreateNoWindow = false;
-                                        outLog.Writer.WriteLine(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
-                                        process.Start();
-                                        process.WaitForExit();
-                                    }
-                                    break;
-                                default:
-                                    errorMsg = "There is no valid emulator configured for Next. Please configure an emulator (CSpect or ZEsarUX) from the Tools -> Options menu.";
-                                    break;
+                                        nextDrive,
+                                        Path.GetFileNameWithoutExtension(settings.MainFile)
+                                    },
+                                    project.ProjectPath,
+                                    outLog.Writer))
+                                {
+                                    errorMsg = "Error executing custom emulator launcher.";
+                                }
+                            }
+                            else if (emulatorName.ToLower() == "cspect")
+                            {
+                                outLog.Writer.WriteLine("Launching CSpect...");
+                                Process process = new Process();
+                                process.StartInfo.FileName = emulatorPath;
+                                process.StartInfo.Arguments = string.Format(
+                                    "-zxnext -tv -w3 -brk -r -mmc=\"{0}\" \"{1}\"",
+                                        nextDrive,
+                                        Path.Combine(nextDrive, Path.GetFileNameWithoutExtension(settings.MainFile) + ".nex"));
+                                process.StartInfo.WorkingDirectory = project.ProjectPath;
+                                process.StartInfo.UseShellExecute = true;
+                                process.StartInfo.CreateNoWindow = false;
+                                outLog.Writer.WriteLine(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
+                                process.Start();
+                                process.WaitForExit();
+                            }
+                            else if (emulatorName.ToLower() == "zesarux")
+                            {
+                                outLog.Writer.WriteLine("Launching ZEsarUX...");
+                                Process process = new Process();
+                                process.StartInfo.FileName = emulatorPath;
+                                process.StartInfo.Arguments = string.Format(
+                                    "--noconfigfile --zoom 1  --machine TBBlue --realvideo --enabletimexvideo --tbblue-fast-boot-mode --enable-esxdos-handler --esxdos-root-dir \"{0}\" \"{1}\" --snap-no-change-machine",
+                                        nextDrive,
+                                        Path.Combine(nextDrive, Path.GetFileNameWithoutExtension(settings.MainFile) + ".nex"));
+                                process.StartInfo.WorkingDirectory = Path.GetDirectoryName(emulatorPath);
+                                process.StartInfo.UseShellExecute = true;
+                                process.StartInfo.CreateNoWindow = false;
+                                outLog.Writer.WriteLine(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
+                                process.Start();
+                                process.WaitForExit();
+                            }
+                            else
+                            {
+                                errorMsg = "There is no valid emulator configured for Next. Please configure an emulator (CSpect or ZEsarUX) from the Tools -> Options menu.";
                             }
                         }
                         catch (Exception ex)
@@ -1541,38 +1557,61 @@ namespace ZXBasicStudio
                 else if (program != null)
                 {
                     // No Next mode :)
-                    loadedProgram = program;
-                    var disas = openDocuments.FirstOrDefault(e => e.DocumentPath == ZXConstants.DISASSEMBLY_DOC) as ZXTextEditor;
-
-                    Dispatcher.UIThread.InvokeAsync(async () =>
+                    if (settings.ExternalEmulator)
                     {
-                        if (disas != null)
-                        {
-                            if (loadedProgram.Disassembly == null)
+                        outLog.Writer.WriteLine($"Custom emulator launcher: {settings.ExternalEmuladorValue}");
+                        if (!ZXProjectBuilder.ExecuteFile(settings.ExternalEmuladorValue, new string[]
                             {
-                                var parent = disas.Parent as TabItem;
-                                if (parent != null)
+                                project.ProjectPath,
+                                Path.GetFileNameWithoutExtension(settings.MainFile)
+                            },
+                            project.ProjectPath,
+                            outLog.Writer))
+                        {
+                            outLog.Writer.WriteLine("Error executing custom emulator launcher.");
+                        }
+                        Dispatcher.UIThread.InvokeAsync(() =>
+                        {
+                            UnblockEditors();
+                            EmulatorInfo.CanDebug = FileInfo.ProjectLoaded;
+                            EmulatorInfo.CanRun = FileInfo.ProjectLoaded;
+                        });
+                    }
+                    else
+                    {
+                        loadedProgram = program;
+                        var disas = openDocuments.FirstOrDefault(e => e.DocumentPath == ZXConstants.DISASSEMBLY_DOC) as ZXTextEditor;
+
+                        Dispatcher.UIThread.InvokeAsync(async () =>
+                        {
+                            if (disas != null)
+                            {
+                                if (loadedProgram.Disassembly == null)
                                 {
-                                    parent.IsSelected = true;
-                                    CloseFile(null, e);
+                                    var parent = disas.Parent as TabItem;
+                                    if (parent != null)
+                                    {
+                                        parent.IsSelected = true;
+                                        CloseFile(null, e);
+                                    }
                                 }
+                                else
+                                    disas.Text = loadedProgram.Disassembly.Content;
+                            }
+
+                            if (!emu.InjectProgram(program.Org, program.Binary, program.Banks?.ToArray(), true))
+                            {
+                                await this.ShowError("Error", "Cannot inject program! Check program size and address.");
                             }
                             else
-                                disas.Text = loadedProgram.Disassembly.Content;
-                        }
-
-                        if (!emu.InjectProgram(program.Org, program.Binary, program.Banks?.ToArray(), true))
-                        {
-                            await this.ShowError("Error", "Cannot inject program! Check program size and address.");
-                        }
-                        else
-                        {
-                            emuDock.Select();
-                            emu.Focus();
-                        }
-                        EmulatorInfo.CanDebug = FileInfo.ProjectLoaded;
-                        EmulatorInfo.CanRun = FileInfo.ProjectLoaded;
-                    });
+                            {
+                                emuDock.Select();
+                                emu.Focus();
+                            }
+                            EmulatorInfo.CanDebug = FileInfo.ProjectLoaded;
+                            EmulatorInfo.CanRun = FileInfo.ProjectLoaded;
+                        });
+                    }
                 }
                 else
                 {

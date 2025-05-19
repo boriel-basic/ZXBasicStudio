@@ -753,7 +753,7 @@ namespace ZXBasicStudio.BuildSystem
         }
 
 
-        private static bool ExecuteFile(string preBuildValue, string[] parameters, string workingPath, TextWriter outLog)
+        public static bool ExecuteFile(string preBuildValue, string[] parameters, string workingPath, TextWriter outLog)
         {
             try
             {
