@@ -24,6 +24,17 @@ namespace ZXBasicStudio.Classes
         public bool Strict { get; set; }
         public bool Headerless { get; set; }
         public bool NextMode { get; set; }
+
+        public bool PreBuild { get; set; }
+        public string PreBuildValue { get; set; }
+        public bool CustomCompiler { get; set; }
+        public string CustomCompilerValue { get; set; }
+        public bool PostBuild { get; set; }
+        public string PostBuildValue { get; set; }
+        public bool ExternalEmulator { get; set; }
+        public string ExternalEmuladorValue { get; set; }
+
+
         public string GetSettings()
         {
             List<string> settings = new List<string>();
@@ -68,6 +79,11 @@ namespace ZXBasicStudio.Classes
 
             if (Strict)
                 settings.Add("--strict");
+
+            if (Headerless)
+            {
+                settings.Add("--headerless");
+            }
 
             if (NextMode)
             {

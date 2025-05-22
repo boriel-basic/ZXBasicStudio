@@ -8,8 +8,10 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using ZXBasicStudio.Classes;
+using ZXBasicStudio.Controls;
 using ZXBasicStudio.Dialogs;
 using ZXBasicStudio.DocumentModel.Classes;
 using ZXBasicStudio.IntegratedDocumentTypes.CodeDocuments.Basic;
@@ -51,6 +53,22 @@ namespace ZXBasicStudio.BuildSystem
                 settings = project.GetProjectSettings();
                 mainFile = project.GetMainFile();
 
+                // Prebuild
+                if (settings.PreBuild)
+                {
+                    OutputLogWritter.WriteLine($"PreBuild: {settings.PreBuildValue}");
+                    if (!ExecuteFile(settings.PreBuildValue, new string[]
+                        {
+                            project.ProjectPath,
+                            Path.GetFileName(mainFile)
+                        },
+                        project.ProjectPath,
+                        OutputLogWritter))
+                    {
+                        return null;
+                    }
+                }
+
                 if (mainFile == null)
                 {
                     OutputLogWritter.WriteLine("Cannot find main file, check that it exists and if there are more than one that is specified in the build settings.");
@@ -60,14 +78,19 @@ namespace ZXBasicStudio.BuildSystem
                 if (!PreBuild(false, project.ProjectPath, OutputLogWritter))
                     return null;
 
-                var args = settings.GetSettings();
-
+                Process? proc = null;
                 var startTime = DateTime.Now;
                 OutputLogWritter.WriteLine("Project path: " + project.ProjectPath);
                 OutputLogWritter.WriteLine("Building program " + mainFile);
                 OutputLogWritter.WriteLine("Building starts at " + startTime);
-
-                var proc = Process.Start(new ProcessStartInfo(Path.GetFullPath(ZXOptions.Current.ZxbcPath), $"\"{mainFile}\" " + args) { WorkingDirectory = project.ProjectPath, RedirectStandardError = true, CreateNoWindow = true });
+                var args = settings.GetSettings();
+                if (settings.CustomCompiler)
+                {
+                    OutputLogWritter.WriteLine("Custom compiler settings");
+                    args = settings.CustomCompilerValue;
+                }
+                OutputLogWritter.WriteLine($"zxbc \"{mainFile}\" {args}");
+                proc = Process.Start(new ProcessStartInfo(Path.GetFullPath(ZXOptions.Current.ZxbcPath), $"\"{mainFile}\" " + args) { WorkingDirectory = project.ProjectPath, RedirectStandardError = true, CreateNoWindow = true });
 
                 string logOutput;
 
@@ -83,6 +106,22 @@ namespace ZXBasicStudio.BuildSystem
                 }
 
                 string binFile = Path.Combine(project.ProjectPath, Path.GetFileNameWithoutExtension(mainFile) + ".bin");
+
+                // Postbuild
+                if (settings.PostBuild)
+                {
+                    OutputLogWritter.WriteLine($"PostBuild: {settings.PostBuildValue}");
+                    if (!ExecuteFile(settings.PostBuildValue, new string[]
+                        {
+                            project.ProjectPath,
+                            Path.GetFileName(binFile)
+                        },
+                        project.ProjectPath,
+                        OutputLogWritter))
+                    {
+                        return null;
+                    }
+                }
 
                 byte[] binary = File.ReadAllBytes(binFile);
 
@@ -309,6 +348,22 @@ namespace ZXBasicStudio.BuildSystem
                 settings = project.GetProjectSettings();
                 mainFile = project.GetMainFile();
 
+                // Prebuild
+                if (settings.PreBuild)
+                {
+                    OutputLogWritter.WriteLine($"PreBuild: {settings.PreBuildValue}");
+                    if (!ExecuteFile(settings.PreBuildValue, new string[]
+                        {
+                            project.ProjectPath,
+                            Path.GetFileName(mainFile)
+                        },
+                        project.ProjectPath,
+                        OutputLogWritter))
+                    {
+                        return null;
+                    }
+                }
+
                 if (mainFile == null)
                 {
                     OutputLogWritter.WriteLine("Cannot find main file, check that it exists and if there are more than one that is specified in the build settings.");
@@ -329,6 +384,11 @@ namespace ZXBasicStudio.BuildSystem
                 string logOutput;
 
                 var args = settings.GetDebugSettings();
+                if (settings.CustomCompiler)
+                {
+                    OutputLogWritter.WriteLine("Custom compiler settings");
+                    args = settings.CustomCompilerValue;
+                }
 
                 OutputLogWritter.WriteLine("Building map files...");
 
@@ -339,7 +399,6 @@ namespace ZXBasicStudio.BuildSystem
 
                 OutputLogWritter.WriteLine("Building program map...");
 
-                // TODO: DUEFECTU 2023.05.17: Bug for long path
                 var codeFile = files.FirstOrDefault(f => f.AbsolutePath == Path.GetFullPath(mainFile));
                 if (codeFile == null)
                 {
@@ -349,10 +408,10 @@ namespace ZXBasicStudio.BuildSystem
                 }
 
                 cmd = $"\"{Path.Combine(codeFile.Directory, codeFile.TempFileName)}\" -M MEMORY_MAP " + args;
-                OutputLogWritter.WriteLine("zxbc "+cmd);
+                OutputLogWritter.WriteLine("zxbc " + cmd);
                 var proc = Process.Start(
                     new ProcessStartInfo(
-                        Path.GetFullPath(ZXOptions.Current.ZxbcPath),cmd)
+                        Path.GetFullPath(ZXOptions.Current.ZxbcPath), cmd)
                     { WorkingDirectory = project.ProjectPath, RedirectStandardError = true, CreateNoWindow = true });
 
                 OutputProcessLog(OutputLogWritter, proc, out logOutput);
@@ -691,6 +750,74 @@ namespace ZXBasicStudio.BuildSystem
             }
 
             return true;
+        }
+
+
+        public static bool ExecuteFile(string preBuildValue, string[] parameters, string workingPath, TextWriter outLog)
+        {
+            try
+            {
+                var proc = Process.Start(
+                    new ProcessStartInfo(
+                        preBuildValue,
+                        parameters)
+                    {
+                        WorkingDirectory = workingPath,
+                        RedirectStandardError = true,
+                        RedirectStandardOutput = true,
+                        CreateNoWindow = true
+                    });
+
+                string logOutput = "";
+                ProcessRedirect(proc, outLog);
+
+                var ecode = proc.ExitCode;
+
+                if (ecode != 0)
+                {
+                    Cleanup(workingPath);
+                    outLog.WriteLine("Error building program, aborting...");
+                    return false;
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                outLog.WriteLine("ERROR executing file: " + ex.Message);
+                return false;
+            }
+        }
+
+
+        private static void ProcessRedirect(Process proc, TextWriter outLog)
+        {
+            try
+            {
+                while (!proc.HasExited)
+                {
+                    if (!proc.StandardOutput.EndOfStream)
+                    {
+                        string? line = proc.StandardOutput.ReadLine();
+                        outLog.WriteLine(line);
+                    }
+                    if (!proc.StandardError.EndOfStream)
+                    {
+                        string? line = proc.StandardError.ReadLine();
+                        outLog.WriteLine(line);
+                    }
+                }
+                while (!proc.StandardOutput.EndOfStream)
+                {
+                    string? line = proc.StandardOutput.ReadLine();
+                    outLog.WriteLine(line);
+                }
+                while (!proc.StandardError.EndOfStream)
+                {
+                    string? line = proc.StandardError.ReadLine();
+                    outLog.WriteLine(line);
+                }
+            }
+            catch { }
         }
     }
 }
