@@ -14,6 +14,19 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 {
     public partial class ZXGridImageView : UserControl
     {
+        public bool ViewAttributes {
+            get
+            {
+                return _ViewAttributes;
+            }
+            set
+            {
+                _ViewAttributes = value;
+                InvalidateVisual();
+            }
+        }
+        private bool _ViewAttributes = false;
+
         private WriteableBitmap? gridImage;
         private IZXBitmap? backgroundImage;
         private SKColor gridColor = new SKColor(0x00, 0x00, 0x00, 0xFF);
@@ -75,7 +88,9 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         private void EnsureGrid()
         {
             if (backgroundImage == null)
+            {
                 return;
+            }
 
             int w = (int)(backgroundImage.PixelSize.Width * Zoom + backgroundImage.PixelSize.Width + 1);
             int h = (int)(backgroundImage.PixelSize.Height * Zoom + backgroundImage.PixelSize.Height + 1);
@@ -83,7 +98,9 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             if (gridImage != null)
             {
                 if (gridImage.PixelSize.Width == w && gridImage.PixelSize.Height == h)
+                {
                     return;
+                }
 
                 gridImage.Dispose();
 

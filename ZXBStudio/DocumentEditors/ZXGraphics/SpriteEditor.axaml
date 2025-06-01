@@ -103,14 +103,21 @@
           </Button>
           <Line StartPoint="0,0" EndPoint="0,32" Stroke="White" Margin="5,0,5,0"></Line>
 
-          <Button Classes="toolbar" Name="btnInvertPixelsCell" ToolTip.Tip="Invert pixels on cell" IsEnabled="False">
+          <ToggleButton Classes="toolbar" Name="btnViewAttributes" ToolTip.Tip="Hide or view attributes" IsChecked="True">
+            <svg:Svg Path="/Svg/hide.svg"></svg:Svg>
+          </ToggleButton>
+          <ToggleButton Classes="toolbar" Name="btnSelectPixelsCell" ToolTip.Tip="Select cell"  IsChecked="True" IsVisible="False">
+            <svg:Svg Path="/Svg/select.svg"></svg:Svg>
+          </ToggleButton>
+          <ToggleButton Classes="toolbar" Name="btnInvertPixelsCell" ToolTip.Tip="Invert pixels on selected cell" IsChecked="True">
             <svg:Svg Path="/Svg/invert-mode-svgrepo-com.svg"></svg:Svg>
-          </Button>
-          <Button Classes="toolbar" Name="btnInvertColorsCell" ToolTip.Tip="Invert colors on cell" IsEnabled="False">
+          </ToggleButton>
+          <ToggleButton Classes="toolbar" Name="btnInvertColorsCell" ToolTip.Tip="Invert attributes on selected cell" IsChecked="True">
             <svg:Svg Path="/Svg/invert-color-svgrepo-com.svg"></svg:Svg>
-          </Button>
+          </ToggleButton>
           <Line StartPoint="0,0" EndPoint="0,32" Stroke="White" Margin="5,0,5,0"></Line>
 
+          
           <Button Classes="toolbar" Name="btnImport" ToolTip.Tip="Import from image or data">
             <svg:Svg Path="/Svg/ImageImport.svg"></svg:Svg>
           </Button>

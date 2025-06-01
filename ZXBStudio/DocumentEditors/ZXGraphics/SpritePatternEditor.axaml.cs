@@ -83,6 +83,26 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         public bool Bright { get; set; }
         public bool Flash { get; set; }
 
+        public bool ViewAttributes
+        {
+            get
+            {
+                return _ViewAttributes;
+            }
+            set
+            {
+                _ViewAttributes = value;
+                aspect.ViewAttributes = value;
+                Refresh(false);
+            }
+        } 
+
+        private bool _ViewAttributes = true;
+
+        public bool InvertPixelsCell { get; set; } = false;
+
+        public bool InvertColorsCell { get; set; } = false;
+
         #endregion
 
 
@@ -126,6 +146,8 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             grdEditor.PointerPressed += GrdEditor_PointerPressed;
             grdEditor.PointerReleased += GrdEditor_PointerReleased;
             grdEditor.PointerExited += GrdEditor_PointerExited;
+
+            aspect.ViewAttributes = true;
         }
 
 
@@ -277,19 +299,31 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         private void GrdEditor_PointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
         {
             var p = e.GetCurrentPoint(grdEditor);
-            if (p.Properties.IsLeftButtonPressed)
+
+            if (InvertPixelsCell)
             {
-                SetPoint(p.Position.X, p.Position.Y, PrimaryColorIndex);
-                MouseLeftPressed = true;
-                MouseRightPressed = false;
+                GrdEditor_InvertPixelsCell(p.Position.X, p.Position.Y);
             }
-            else if (p.Properties.IsRightButtonPressed)
+            else if (InvertColorsCell)
             {
-                SetPoint(p.Position.X, p.Position.Y, SecondaryColorIndex);
-                MouseLeftPressed = false;
-                MouseRightPressed = true;
+                GrdEditor_InvertColorsCell(p.Position.X, p.Position.Y);
             }
-        }
+            else
+            {
+                if (p.Properties.IsLeftButtonPressed)
+                {
+                    SetPoint(p.Position.X, p.Position.Y, PrimaryColorIndex);
+                    MouseLeftPressed = true;
+                    MouseRightPressed = false;
+                }
+                else if (p.Properties.IsRightButtonPressed)
+                {
+                    SetPoint(p.Position.X, p.Position.Y, SecondaryColorIndex);
+                    MouseLeftPressed = false;
+                    MouseRightPressed = true;
+                }
+            }
+        }        
 
 
         /// <summary>
@@ -1052,6 +1086,75 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             pattern.RawData[(SpriteData.Width * y) + x] = colorIndex;
         }
 
+        #endregion
+
+
+        #region Invert pixels and colors
+
+        private void GrdEditor_InvertPixelsCell(double mx, double my)
+        {
+            if (SpriteData == null)
+            {
+                return;
+            }
+
+            int x = (int)mx;
+            int y = (int)my;
+
+            x = x / (_Zoom + 1);
+            y = y / (_Zoom + 1);
+
+            x = x / 8;
+            y = y / 8;
+
+            if (x < 0 || y < 0 || x >= SpriteData.Width || y >= SpriteData.Height)
+            {
+                return;
+            }
+
+            for(int py = 0; py < 8; py++)
+            {
+                for (int px = 0; px < 8; px++)
+                {
+                    int dir = ((y * 8 + py) * SpriteData.Width) + (x * 8 + px);
+                    if (dir < SpriteData.Patterns[SpriteData.CurrentFrame].RawData.Length)
+                    {
+                        var value = SpriteData.Patterns[SpriteData.CurrentFrame].RawData[dir];
+                        if (value == PrimaryColorIndex)
+                        {
+                            SpriteData.Patterns[SpriteData.CurrentFrame].RawData[dir] = SecondaryColorIndex;
+                        }
+                        else if (value == SecondaryColorIndex)
+                        {
+                            SpriteData.Patterns[SpriteData.CurrentFrame].RawData[dir] = PrimaryColorIndex;
+                        }
+                    }
+                }
+            }
+            Refresh();
+        }
+
+        private void GrdEditor_InvertColorsCell(double mx, double my)
+        {
+            if (SpriteData == null)
+            {
+                return;
+            }
+            int x = (int)mx;
+            int y = (int)my;
+            x = x / (_Zoom + 1);
+            y = y / (_Zoom + 1);
+
+            var inkBak = PrimaryColorIndex;
+            var paperBak = SecondaryColorIndex;
+            var attr=GetAttribute(SpriteData.Patterns[SpriteData.CurrentFrame], x, y);
+            PrimaryColorIndex = attr.Paper;
+            SecondaryColorIndex = attr.Ink;
+            SetAttribute(SpriteData.Patterns[SpriteData.CurrentFrame], x, y);
+            PrimaryColorIndex = inkBak;
+            SecondaryColorIndex=paperBak;
+            Refresh();
+        }
         #endregion
     }
 }

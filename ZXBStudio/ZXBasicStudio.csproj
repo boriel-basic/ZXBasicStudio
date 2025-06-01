@@ -170,6 +170,7 @@
     <None Remove="Svg\gears-solid.svg" />
     <None Remove="Svg\github.svg" />
     <None Remove="Svg\hashtag-solid.svg" />
+    <None Remove="Svg\hide.svg" />
     <None Remove="Svg\ImageImport.svg" />
     <None Remove="Svg\invert-color-svgrepo-com.svg" />
     <None Remove="Svg\invert-mode-svgrepo-com.svg" />
@@ -195,6 +196,7 @@
     <None Remove="Svg\redo.svg" />
     <None Remove="Svg\scissors-solid.svg" />
     <None Remove="Svg\Seal.svg" />
+    <None Remove="Svg\select.svg" />
     <None Remove="Svg\square-minus-solid.svg" />
     <None Remove="Svg\square-plus-solid.svg" />
     <None Remove="Svg\stop-solid.svg" />
@@ -359,6 +361,8 @@
     <AvaloniaResource Include="Svg\circle-question-solid.svg" />
     <AvaloniaResource Include="Svg\Documents\file-zxramdisk.svg" />
     <AvaloniaResource Include="Svg\github.svg" />
+    <AvaloniaResource Include="Svg\hide.svg" />
+    <AvaloniaResource Include="Svg\select.svg" />
     <AvaloniaResource Include="Svg\White\book.svg" />
     <AvaloniaResource Include="Svg\White\chat.svg" />
     <AvaloniaResource Include="Svg\White\discord.svg" />

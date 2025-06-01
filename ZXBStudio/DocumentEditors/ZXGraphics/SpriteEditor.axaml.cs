@@ -325,9 +325,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
             btnUndo.Tapped += BtnUndo_Tapped;
             btnRedo.Tapped += BtnRedo_Tapped;
+
+            btnViewAttributes.Tapped += BtnViewAttributes_Tapped;
             btnInvertColorsCell.Tapped += BtnInvertColorsCell_Tapped;
-            btnInvertPixelsCell.Tapped += BtnInvertPixelsCell_Tapped;
-            
+            btnInvertPixelsCell.Tapped += BtnInvertPixelsCell_Tapped;            
+
             Refresh();
 
             if (SpritePatternsList.Count > 1)
@@ -1018,15 +1020,32 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         }
 
 
+
+        private void BtnViewAttributes_Tapped(object? sender, TappedEventArgs e)
+        {
+            ctrlEditor.ViewAttributes = btnViewAttributes.IsChecked==true;
+        }
+
+
         private void BtnInvertPixelsCell_Tapped(object? sender, TappedEventArgs e)
         {
-            
+            ctrlEditor.InvertPixelsCell = btnInvertPixelsCell.IsChecked == false;
+            if (ctrlEditor.InvertPixelsCell)
+            {
+                btnInvertColorsCell.IsChecked = true;
+                ctrlEditor.InvertColorsCell = false;
+            }
         }
 
 
         private void BtnInvertColorsCell_Tapped(object? sender, TappedEventArgs e)
         {
-            
+            ctrlEditor.InvertColorsCell = btnInvertColorsCell.IsChecked == false;
+            if (ctrlEditor.InvertColorsCell)
+            {
+                btnInvertPixelsCell.IsChecked = true;
+                ctrlEditor.InvertPixelsCell = false;
+            }
         }
 
 
