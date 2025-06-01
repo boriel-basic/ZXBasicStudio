@@ -103,6 +103,8 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         public bool InvertColorsCell { get; set; } = false;
 
+        public bool ColorPicker { get; set; } = false;
+
         #endregion
 
 
@@ -300,7 +302,19 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         {
             var p = e.GetCurrentPoint(grdEditor);
 
-            if (InvertPixelsCell)
+            if (ColorPicker)
+            {
+                int x = (int)p.Position.X;
+                int y = (int)p.Position.Y;
+                x = x / (_Zoom + 1);
+                y = y / (_Zoom + 1);
+                var atr=GetAttribute(SpriteData.Patterns[SpriteData.CurrentFrame], x,y);
+                PrimaryColorIndex = atr.Ink;
+                SecondaryColorIndex = atr.Paper;
+                ColorPicker = false;
+                Refresh(true);
+            }
+            else if (InvertPixelsCell)
             {
                 GrdEditor_InvertPixelsCell(p.Position.X, p.Position.Y);
             }

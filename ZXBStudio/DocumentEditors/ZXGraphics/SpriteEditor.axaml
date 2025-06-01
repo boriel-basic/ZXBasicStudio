@@ -106,8 +106,8 @@
           <ToggleButton Classes="toolbar" Name="btnViewAttributes" ToolTip.Tip="Hide or view attributes" IsChecked="True">
             <svg:Svg Path="/Svg/hide.svg"></svg:Svg>
           </ToggleButton>
-          <ToggleButton Classes="toolbar" Name="btnSelectPixelsCell" ToolTip.Tip="Select cell"  IsChecked="True" IsVisible="False">
-            <svg:Svg Path="/Svg/select.svg"></svg:Svg>
+          <ToggleButton Classes="toolbar" Name="btnColorPicker" ToolTip.Tip="Select cell"  IsChecked="True">
+            <svg:Svg Path="/Svg/picker.svg"></svg:Svg>
           </ToggleButton>
           <ToggleButton Classes="toolbar" Name="btnInvertPixelsCell" ToolTip.Tip="Invert pixels on selected cell" IsChecked="True">
             <svg:Svg Path="/Svg/invert-mode-svgrepo-com.svg"></svg:Svg>

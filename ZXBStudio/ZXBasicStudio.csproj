@@ -189,6 +189,7 @@
     <None Remove="Svg\minus-solid.svg" />
     <None Remove="Svg\paste-solid.svg" />
     <None Remove="Svg\pause-solid.svg" />
+    <None Remove="Svg\picker.svg" />
     <None Remove="Svg\play-solid.svg" />
     <None Remove="Svg\power-off-solid.svg" />
     <None Remove="Svg\rectangle-list-solid.svg" />
@@ -362,6 +363,7 @@
     <AvaloniaResource Include="Svg\Documents\file-zxramdisk.svg" />
     <AvaloniaResource Include="Svg\github.svg" />
     <AvaloniaResource Include="Svg\hide.svg" />
+    <AvaloniaResource Include="Svg\picker.svg" />
     <AvaloniaResource Include="Svg\select.svg" />
     <AvaloniaResource Include="Svg\White\book.svg" />
     <AvaloniaResource Include="Svg\White\chat.svg" />

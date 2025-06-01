@@ -327,6 +327,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             btnRedo.Tapped += BtnRedo_Tapped;
 
             btnViewAttributes.Tapped += BtnViewAttributes_Tapped;
+            btnColorPicker.Tapped += BtnColorPicker_Tapped;
             btnInvertColorsCell.Tapped += BtnInvertColorsCell_Tapped;
             btnInvertPixelsCell.Tapped += BtnInvertPixelsCell_Tapped;            
 
@@ -711,6 +712,9 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                             ctrlProperties.PrimaryColor = sender.PrimaryColorIndex;
                             ctrlProperties.SecondaryColor = sender.SecondaryColorIndex;
                             ctrlPreview.SpriteData = sender.SpriteData;
+
+                            btnColorPicker.IsChecked = !ctrlEditor.ColorPicker;
+                            UpdateColorPanel();
                         }
                     }
                     break;
@@ -1024,6 +1028,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         private void BtnViewAttributes_Tapped(object? sender, TappedEventArgs e)
         {
             ctrlEditor.ViewAttributes = btnViewAttributes.IsChecked==true;
+        }
+
+        private void BtnColorPicker_Tapped(object? sender, TappedEventArgs e)
+        {
+            ctrlEditor.ColorPicker = btnColorPicker.IsChecked == false;
         }
 
 
