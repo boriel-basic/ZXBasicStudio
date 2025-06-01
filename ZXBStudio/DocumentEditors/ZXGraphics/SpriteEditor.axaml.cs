@@ -262,37 +262,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                     Sprite[] sprites = dataS.Deserializar<Sprite[]>();
 
                     foreach (var sprite in sprites)
-                    {
-                        /*
-                        // Check attributes for ZX Spectrum mode
-                        if (sprite != null && sprite.GraphicMode == GraphicsModes.ZXSpectrum)
-                        {
-                            // Force ZX Spectrum palette
-                            sprite.Palette = ServiceLayer.GetPalette(GraphicsModes.ZXSpectrum);
-                            foreach (var pattern in sprite.Patterns)
-                            {
-                                int cW = sprite.Width / 8;
-                                int cH = sprite.Height / 8;
-                                int l = cW * cH;
-                                if (pattern.Attributes == null)
-                                {
-                                    pattern.Attributes = new AttributeColor[cW * cH];
-                                    for (int n = 0; n < pattern.Attributes.Length; n++)
-                                    {
-                                        pattern.Attributes[n] = new AttributeColor()
-                                        {
-                                            Ink = 1,
-                                            Paper = 0
-                                        };
-                                    }
-                                }
-                                if (pattern.Attributes.Length != l)
-                                {
-                                    pattern.Attributes = pattern.Attributes.Take(l).ToArray();
-                                }
-                            }
-                        }
-                        */
+                    {                        
                         // Check attributes for ZX Spectrum mode
                         if (sprite != null && sprite.Patterns != null)
                         {
@@ -357,7 +327,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             btnRedo.Tapped += BtnRedo_Tapped;
             btnInvertColorsCell.Tapped += BtnInvertColorsCell_Tapped;
             btnInvertPixelsCell.Tapped += BtnInvertPixelsCell_Tapped;
-
+            
             Refresh();
 
             if (SpritePatternsList.Count > 1)
@@ -1062,13 +1032,13 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         private void BtnRedo_Tapped(object? sender, TappedEventArgs e)
         {
-            
+            ctrlEditor.Redo();
         }
 
 
         private void BtnUndo_Tapped(object? sender, TappedEventArgs e)
         {
-            
+            ctrlEditor.Undo();
         }
 
         #endregion

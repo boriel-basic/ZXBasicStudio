@@ -33,6 +33,7 @@ using System.Formats.Tar;
 using Avalonia.Controls.Shapes;
 using static CommunityToolkit.Mvvm.ComponentModel.__Internals.__TaskExtensions.TaskAwaitableWithoutEndValidation;
 using FFmpeg.AutoGen;
+using System.Diagnostics;
 
 namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 {
@@ -44,6 +45,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         private Rectangle[] rectangulos = new Rectangle[256];
         private PaletteColor[] palette = null;
+        private PaletteColor[] palette512 = null;
         private string sourceFile = null;
         private string convertedFile = null;
         private bool imgSourceLoaded = false;
@@ -68,8 +70,9 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
             // Set the palette
             palette = ServiceLayer.GetPalette(GraphicsModes.Next);
-            selectedColorIndex = 0;
+            selectedColorIndex = 0;           
             DrawPalette();
+            DrawColorPicker();
 
             btnFileSource.Tapped += BtnFileSource_Tapped;
             btnResetPalette.Click += BtnResetPalette_Click;
@@ -85,7 +88,10 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             btnRefresh.Click += BtnRefresh_Click;
             btnSaveImage.Click += BtnSaveImage_Click;
 
+            btnColorPicker.Click += BtnColorPicker_Click;
+
             btnClose.Click += BtnClose_Click;
+
         }
 
 
@@ -890,6 +896,171 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             }
 
             sw.Close();
+        }
+
+        #endregion
+
+
+        #region Color Picker
+
+        private int Circles = 8; //16;
+        private int Sectors = 32;
+        private double Radius = 200;
+
+        private void BtnColorPicker_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            grdColorPicker.IsVisible = true;
+        }
+
+
+        private void DrawColorPicker()
+        {
+            Create512Palette();
+
+            ColorWheelCanvas.Children.Clear();
+            double ringWidth = Radius / Circles;
+            double angleStep = 360.0 / Sectors;
+            double cx = Radius;
+            double cy = Radius;
+
+            for (int circle = 0; circle < Circles; circle++)
+            {
+                double r1 = ringWidth * circle;
+                double r2 = ringWidth * (circle + 1);
+                double value = (circle + 1) / (double)Circles;
+
+                for (int sector = 0; sector < Sectors; sector++)
+                {
+                    double hue = sector * angleStep;
+                    Color color = FromHSV(hue, 1.0, value);
+                    int idx=ServiceLayer.GetColor(color.R, color.G, color.B, palette512, 5);
+                    var p = palette512[idx];
+                    var color512=Color.FromRgb(p.Red, p.Green, p.Blue);
+                    DrawSegment(cx, cy, r1, r2, hue, angleStep, color512);
+                }
+            }
+        }
+
+        private void DrawSegment(double cx, double cy, double r1, double r2, double startAngle, double angleSize, Color color)
+        {
+            var startRad = Math.PI * startAngle / 180.0;
+            var endRad = Math.PI * (startAngle + angleSize) / 180.0;
+
+            var p1 = new Point(cx + r1 * Math.Cos(startRad), cy + r1 * Math.Sin(startRad));
+            var p2 = new Point(cx + r2 * Math.Cos(startRad), cy + r2 * Math.Sin(startRad));
+            var p3 = new Point(cx + r2 * Math.Cos(endRad), cy + r2 * Math.Sin(endRad));
+            var p4 = new Point(cx + r1 * Math.Cos(endRad), cy + r1 * Math.Sin(endRad));
+
+            var path = new Avalonia.Controls.Shapes.Path
+            {
+                Fill = new SolidColorBrush(color),
+                StrokeThickness = 0,
+                Data = new PathGeometry
+                {
+                    Figures = new PathFigures
+                {
+                    new PathFigure
+                    {
+                        StartPoint = p1,
+                        Segments = new PathSegments
+                        {
+                            new LineSegment { Point = p2 },
+                            new ArcSegment
+                            {
+                                Point = p3,
+                                Size = new Size(r2, r2),
+                                SweepDirection = SweepDirection.Clockwise,
+                                IsLargeArc = angleSize > 180
+                            },
+                            new LineSegment { Point = p4 },
+                            new ArcSegment
+                            {
+                                Point = p1,
+                                Size = new Size(r1, r1),
+                                SweepDirection = SweepDirection.CounterClockwise,
+                                IsLargeArc = angleSize > 180
+                            }
+                        }
+                    }
+                }
+                }
+            };
+
+            ColorWheelCanvas.Children.Add(path);
+        }
+
+        private void ColorWheelCanvas_PointerPressed(object? sender, PointerPressedEventArgs e)
+        {
+            var pos = e.GetPosition(ColorWheelCanvas);
+            double dx = pos.X - Radius;
+            double dy = pos.Y - Radius;
+            double distance = Math.Sqrt(dx * dx + dy * dy);
+            if (distance > Radius) return;
+
+            double angle = Math.Atan2(dy, dx) * 180 / Math.PI;
+            if (angle < 0) angle += 360;
+
+            int sector = (int)(angle / (360.0 / Sectors));
+            int circle = (int)(distance / (Radius / Circles));
+
+            double hue = sector * (360.0 / Sectors);
+            double value = (circle + 1) / (double)Circles;
+            Color color = FromHSV(hue, 1.0, value);
+
+            SelectedColorPreview.Fill = new SolidColorBrush(color);
+        }
+
+        private static Color FromHSV(double hue, double saturation, double value)
+        {
+            double c = value * saturation;
+            double x = c * (1 - Math.Abs((hue / 60.0 % 2) - 1));
+            double m = value - c;
+
+            double r = 0, g = 0, b = 0;
+
+            if (hue < 60) { r = c; g = x; }
+            else if (hue < 120) { r = x; g = c; }
+            else if (hue < 180) { g = c; b = x; }
+            else if (hue < 240) { g = x; b = c; }
+            else if (hue < 300) { r = x; b = c; }
+            else { r = c; b = x; }
+
+            byte R = (byte)((r + m) * 255);
+            byte G = (byte)((g + m) * 255);
+            byte B = (byte)((b + m) * 255);
+
+            return Color.FromRgb(R, G, B);
+        }
+
+        private void Create512Palette()
+        {
+            palette512 = new PaletteColor[512];
+            for (int i = 0; i < 512; i++)
+            {
+                int r = ((i & 0b111000000) >> 6)*36;
+                int g = ((i & 0b000111000) >> 3)*36;
+                int b = (i & 0b000000111)*36;
+                if (r > 250)
+                {
+                    r = 255;
+                }
+                if (g > 250)
+                {
+                    g = 255;
+                }
+                if (b > 250)
+                {
+                    b = 255;
+                }
+
+                palette512[i] = new PaletteColor()
+                {
+                    Red = (byte)r,
+                    Green = (byte)g,
+                    Blue = (byte)b,
+                    HasPriority = false
+                };
+            }
         }
 
         #endregion
