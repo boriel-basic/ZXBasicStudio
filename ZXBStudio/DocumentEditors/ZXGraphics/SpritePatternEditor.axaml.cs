@@ -561,6 +561,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 else
                 {
                     SpriteData.Patterns[SpriteData.CurrentFrame].RawData = cbPatterns[0].RawData;
+                    SpriteData.Patterns[SpriteData.CurrentFrame].Attributes = cbPatterns[0].Attributes;
                 }
             }
             else
