@@ -245,7 +245,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         private void _Initialize(string fileName)
         {
-            _Modified = false;
+            _Modified = true;
 
             ServiceLayer.Initialize();
 
