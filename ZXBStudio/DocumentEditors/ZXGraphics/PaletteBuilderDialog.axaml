@@ -82,6 +82,8 @@
         <Grid Name="grdSelectedColor" Width="50" Height="50"></Grid>
       </Border>
 
+      <Button Name="btnColorPicker" Grid.Row="3" Grid.Column="8" IsVisible="False">Pick</Button>
+
       <StackPanel Grid.Row="5" Grid.ColumnSpan="4" Orientation="Horizontal">
         <Button Name="btnResetPalette" Classes="dialog">Reset to default</Button>
         <Button Name="btnLoadPalette" Classes="dialog">Load palette</Button>
