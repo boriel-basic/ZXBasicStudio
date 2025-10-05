@@ -245,7 +245,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         private void _Initialize(string fileName)
         {
-            _Modified = false;
+            _Modified = true;
 
             ServiceLayer.Initialize();
 
@@ -262,37 +262,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                     Sprite[] sprites = dataS.Deserializar<Sprite[]>();
 
                     foreach (var sprite in sprites)
-                    {
-                        /*
-                        // Check attributes for ZX Spectrum mode
-                        if (sprite != null && sprite.GraphicMode == GraphicsModes.ZXSpectrum)
-                        {
-                            // Force ZX Spectrum palette
-                            sprite.Palette = ServiceLayer.GetPalette(GraphicsModes.ZXSpectrum);
-                            foreach (var pattern in sprite.Patterns)
-                            {
-                                int cW = sprite.Width / 8;
-                                int cH = sprite.Height / 8;
-                                int l = cW * cH;
-                                if (pattern.Attributes == null)
-                                {
-                                    pattern.Attributes = new AttributeColor[cW * cH];
-                                    for (int n = 0; n < pattern.Attributes.Length; n++)
-                                    {
-                                        pattern.Attributes[n] = new AttributeColor()
-                                        {
-                                            Ink = 1,
-                                            Paper = 0
-                                        };
-                                    }
-                                }
-                                if (pattern.Attributes.Length != l)
-                                {
-                                    pattern.Attributes = pattern.Attributes.Take(l).ToArray();
-                                }
-                            }
-                        }
-                        */
+                    {                        
                         // Check attributes for ZX Spectrum mode
                         if (sprite != null && sprite.Patterns != null)
                         {
@@ -355,8 +325,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
             btnUndo.Tapped += BtnUndo_Tapped;
             btnRedo.Tapped += BtnRedo_Tapped;
+
+            btnViewAttributes.Tapped += BtnViewAttributes_Tapped;
+            btnColorPicker.Tapped += BtnColorPicker_Tapped;
             btnInvertColorsCell.Tapped += BtnInvertColorsCell_Tapped;
-            btnInvertPixelsCell.Tapped += BtnInvertPixelsCell_Tapped;
+            btnInvertPixelsCell.Tapped += BtnInvertPixelsCell_Tapped;            
 
             Refresh();
 
@@ -739,6 +712,9 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                             ctrlProperties.PrimaryColor = sender.PrimaryColorIndex;
                             ctrlProperties.SecondaryColor = sender.SecondaryColorIndex;
                             ctrlPreview.SpriteData = sender.SpriteData;
+
+                            btnColorPicker.IsChecked = !ctrlEditor.ColorPicker;
+                            UpdateColorPanel();
                         }
                     }
                     break;
@@ -1048,27 +1024,49 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         }
 
 
+
+        private void BtnViewAttributes_Tapped(object? sender, TappedEventArgs e)
+        {
+            ctrlEditor.ViewAttributes = btnViewAttributes.IsChecked==true;
+        }
+
+        private void BtnColorPicker_Tapped(object? sender, TappedEventArgs e)
+        {
+            ctrlEditor.ColorPicker = btnColorPicker.IsChecked == false;
+        }
+
+
         private void BtnInvertPixelsCell_Tapped(object? sender, TappedEventArgs e)
         {
-            
+            ctrlEditor.InvertPixelsCell = btnInvertPixelsCell.IsChecked == false;
+            if (ctrlEditor.InvertPixelsCell)
+            {
+                btnInvertColorsCell.IsChecked = true;
+                ctrlEditor.InvertColorsCell = false;
+            }
         }
 
 
         private void BtnInvertColorsCell_Tapped(object? sender, TappedEventArgs e)
         {
-            
+            ctrlEditor.InvertColorsCell = btnInvertColorsCell.IsChecked == false;
+            if (ctrlEditor.InvertColorsCell)
+            {
+                btnInvertPixelsCell.IsChecked = true;
+                ctrlEditor.InvertPixelsCell = false;
+            }
         }
 
 
         private void BtnRedo_Tapped(object? sender, TappedEventArgs e)
         {
-            
+            ctrlEditor.Redo();
         }
 
 
         private void BtnUndo_Tapped(object? sender, TappedEventArgs e)
         {
-            
+            ctrlEditor.Undo();
         }
 
         #endregion

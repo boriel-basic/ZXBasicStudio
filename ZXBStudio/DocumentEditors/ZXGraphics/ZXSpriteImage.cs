@@ -17,7 +17,10 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         #endregion
 
         #region Public properties
+
         public bool IsEmpty { get; private set; }
+        public bool ViewAttributes { get; set; } = true;
+
         #endregion
 
         #region Constructors
@@ -90,9 +93,27 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                                 {
                                     var attr = GetAttribute(Sprite, frame, x, y);
                                     if (colorIndex == 0)
-                                        color = Sprite.Palette[attr.Paper];
+                                    {
+                                        if (ViewAttributes)
+                                        {
+                                            color = Sprite.Palette[attr.Paper];                                            
+                                        }
+                                        else
+                                        {
+                                            color = Sprite.Palette[7];
+                                        }
+                                    }
                                     else
-                                        color = Sprite.Palette[attr.Ink];
+                                    {
+                                        if(ViewAttributes)
+                                        {
+                                            color = Sprite.Palette[attr.Ink];
+                                        }
+                                        else
+                                        {
+                                            color = Sprite.Palette[0];
+                                        }
+                                    }
                                 }
                                 break;
                             case GraphicsModes.Monochrome:

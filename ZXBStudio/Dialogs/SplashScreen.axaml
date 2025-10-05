@@ -13,7 +13,7 @@
   <Border BorderBrush="Black" BorderThickness="2">
     <Grid RowDefinitions="*,Auto">
       <Image Grid.RowSpan="2" Source="/Assets/LogoBig.png"></Image>
-      <Label x:Name="lblVersion" VerticalAlignment="Bottom"></Label>
+      <Label x:Name="lblVersion" VerticalAlignment="Bottom"/>
     </Grid>
   </Border>
 </Window>

@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks.Sources;
 using System.Xml.Schema;
 using ZXBasicStudio.Common;
 using ZXBasicStudio.DocumentEditors.ZXGraphics.log;
@@ -46,6 +47,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                         lastId = _SpriteData.Id;
                     }
                 }
+                Undo_AddPoint();
                 Refresh(true);
             }
         }
@@ -80,6 +82,28 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         public bool Bright { get; set; }
         public bool Flash { get; set; }
+
+        public bool ViewAttributes
+        {
+            get
+            {
+                return _ViewAttributes;
+            }
+            set
+            {
+                _ViewAttributes = value;
+                aspect.ViewAttributes = value;
+                Refresh(false);
+            }
+        } 
+
+        private bool _ViewAttributes = true;
+
+        public bool InvertPixelsCell { get; set; } = false;
+
+        public bool InvertColorsCell { get; set; } = false;
+
+        public bool ColorPicker { get; set; } = false;
 
         #endregion
 
@@ -124,6 +148,8 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             grdEditor.PointerPressed += GrdEditor_PointerPressed;
             grdEditor.PointerReleased += GrdEditor_PointerReleased;
             grdEditor.PointerExited += GrdEditor_PointerExited;
+
+            aspect.ViewAttributes = true;
         }
 
 
@@ -168,44 +194,100 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         #region Undo and Redo
 
-        private List<Operation> operations = new List<Operation>();
-        private List<Operation> operationsDeleted = new List<Operation>();
+        private List<Pattern> operations = new List<Pattern>();
+        private int operationIndex = -1;
 
         public void Undo()
         {
-            // Get last operation
-            var op = operations.LastOrDefault();
+            if (operationIndex > operations.Count - 1)
+            {
+                operationIndex = operations.Count - 1;
+            }
+            if (operationIndex < 0)
+            {
+                return;
+            }
+            var op = operations[operationIndex];
+            if (Pattern_Equals(SpriteData.Patterns[SpriteData.CurrentFrame], op))
+            {
+                operationIndex--;
+                Undo();
+                return;
+            }
             if (op != null)
             {
-                // Move from operations to operationsDeleted
-                operations.Remove(op);
-                // Restore point value (Undo)
-                SetPoint(op.X, op.Y, op.ColorIndex);
-                // Remove new operation (Undo don't add operation)
-                var op2 = operations.LastOrDefault();
-                if (op2 != null)
-                {
-                    operations.Remove(op2);
-                    operationsDeleted.Add(op2);
-                }
+                SpriteData.Patterns[SpriteData.CurrentFrame] = op;
+                Refresh();
             }
         }
 
 
         public void Redo()
         {
-            // Get last undo operation
-            var op = operationsDeleted.LastOrDefault();
+            if (operationIndex > operations.Count - 1)
+            {
+                return;
+            }
+            if (operationIndex < 0)
+            {
+                return;
+            }
+            var op = operations[operationIndex];
+            if (Pattern_Equals(SpriteData.Patterns[SpriteData.CurrentFrame], op))
+            {
+                operationIndex++;
+                Redo();
+                return;
+            }
             if (op != null)
             {
-                // Delete from operationsDeleted
-                operationsDeleted.Remove(op);
-                // Set point value (Undo)
-                SetPoint(op.X, op.Y, op.ColorIndex);
+                SpriteData.Patterns[SpriteData.CurrentFrame] = op;
+                Refresh();
             }
         }
 
 
+        private void Undo_AddPoint()
+        {
+            try
+            {
+                if (SpriteData == null || SpriteData.Patterns == null)
+                {
+                    operations.Clear();
+                    return;
+                }
+
+                if (operationIndex >= 0 &&
+                    operationIndex < operations.Count)
+                {
+                    var lastOp = operations[operationIndex];
+                    if (Pattern_Equals(SpriteData.Patterns[SpriteData.CurrentFrame], lastOp))
+                    {
+                        return; // No changes
+                    }
+                }
+                operations = operations.Take(operationIndex+1).ToList();
+
+                var op = SpriteData.Patterns[SpriteData.CurrentFrame].Clonar<Pattern>();
+                operations.Add(op);
+                operationIndex = operations.Count - 1;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Error in Undo_AddPoint: {ex.Message}");
+            }
+        }
+
+        private bool Pattern_Equals(Pattern p1, Pattern p2)
+        {
+            if (p1 == null || p2 == null)
+            {
+                return false;
+            }
+            var pc1 = p1.Serializar();
+            var pc2 = p2.Serializar();
+            return pc1 == pc2;
+        }
         #endregion
 
 
@@ -219,19 +301,43 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         private void GrdEditor_PointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
         {
             var p = e.GetCurrentPoint(grdEditor);
-            if (p.Properties.IsLeftButtonPressed)
+
+            if (ColorPicker)
             {
-                SetPoint(p.Position.X, p.Position.Y, PrimaryColorIndex);
-                MouseLeftPressed = true;
-                MouseRightPressed = false;
+                int x = (int)p.Position.X;
+                int y = (int)p.Position.Y;
+                x = x / (_Zoom + 1);
+                y = y / (_Zoom + 1);
+                var atr=GetAttribute(SpriteData.Patterns[SpriteData.CurrentFrame], x,y);
+                PrimaryColorIndex = atr.Ink;
+                SecondaryColorIndex = atr.Paper;
+                ColorPicker = false;
+                Refresh(true);
             }
-            else if (p.Properties.IsRightButtonPressed)
+            else if (InvertPixelsCell)
             {
-                SetPoint(p.Position.X, p.Position.Y, SecondaryColorIndex);
-                MouseLeftPressed = false;
-                MouseRightPressed = true;
+                GrdEditor_InvertPixelsCell(p.Position.X, p.Position.Y);
             }
-        }
+            else if (InvertColorsCell)
+            {
+                GrdEditor_InvertColorsCell(p.Position.X, p.Position.Y);
+            }
+            else
+            {
+                if (p.Properties.IsLeftButtonPressed)
+                {
+                    SetPoint(p.Position.X, p.Position.Y, PrimaryColorIndex);
+                    MouseLeftPressed = true;
+                    MouseRightPressed = false;
+                }
+                else if (p.Properties.IsRightButtonPressed)
+                {
+                    SetPoint(p.Position.X, p.Position.Y, SecondaryColorIndex);
+                    MouseLeftPressed = false;
+                    MouseRightPressed = true;
+                }
+            }
+        }        
 
 
         /// <summary>
@@ -302,13 +408,6 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             }
 
             int dir = (SpriteData.Width * y) + x;
-            operations.Add(new Operation()
-            {
-                ColorIndex = SpriteData.Patterns[SpriteData.CurrentFrame].RawData[dir],
-                X = (int)mx,
-                Y = (int)my
-            });
-
             var sprite = SpriteData.Patterns[SpriteData.CurrentFrame];
 
             switch (SpriteData.GraphicMode)
@@ -331,6 +430,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                     break;
             }
 
+            Undo_AddPoint();
             Refresh(false);
 
             if (tmr == null)
@@ -409,6 +509,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             {
                 SpriteData.Patterns[SpriteData.CurrentFrame].RawData[n] = SecondaryColorIndex;
             }
+            Undo_AddPoint();
             Refresh(true);
         }
 
@@ -418,6 +519,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// </summary>
         public void Cut()
         {
+            Undo_AddPoint();
             Copy();
             Clear();
         }
@@ -459,6 +561,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 else
                 {
                     SpriteData.Patterns[SpriteData.CurrentFrame].RawData = cbPatterns[0].RawData;
+                    SpriteData.Patterns[SpriteData.CurrentFrame].Attributes = cbPatterns[0].Attributes;
                 }
             }
             else
@@ -514,6 +617,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                     }
                 }
             }
+            Undo_AddPoint();
             Refresh(true);
         }
 
@@ -536,6 +640,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 }
             }
             SpriteData.Patterns[SpriteData.CurrentFrame] = pat2;
+            Undo_AddPoint();
             Refresh(true);
         }
 
@@ -558,6 +663,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 }
             }
             SpriteData.Patterns[SpriteData.CurrentFrame] = pat2;
+            Undo_AddPoint();
             Refresh(true);
         }
 
@@ -587,6 +693,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 }
             }
             SpriteData.Patterns[SpriteData.CurrentFrame] = pattern2;
+            Undo_AddPoint();
             Refresh(true);
         }
 
@@ -616,6 +723,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 }
             }
             SpriteData.Patterns[SpriteData.CurrentFrame] = pattern2;
+            Undo_AddPoint();
             Refresh(true);
         }
 
@@ -644,6 +752,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 }
             }
             SpriteData.Patterns[SpriteData.CurrentFrame] = pattern2;
+            Undo_AddPoint();
             Refresh(true);
         }
 
@@ -672,6 +781,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 }
             }
             SpriteData.Patterns[SpriteData.CurrentFrame] = pattern2;
+            Undo_AddPoint();
             Refresh(true);
         }
 
@@ -700,6 +810,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 }
             }
             SpriteData.Patterns[SpriteData.CurrentFrame] = pattern2;
+            Undo_AddPoint();
             Refresh(true);
         }
 
@@ -728,6 +839,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 }
             }
             SpriteData.Patterns[SpriteData.CurrentFrame] = pattern2;
+            Undo_AddPoint();
             Refresh(true);
         }
 
@@ -757,6 +869,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 }
             }
             SpriteData.Patterns[SpriteData.CurrentFrame] = pattern2;
+            Undo_AddPoint();
             Refresh(true);
         }
 
@@ -786,6 +899,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 }
             }
             SpriteData.Patterns[SpriteData.CurrentFrame] = pattern2;
+            Undo_AddPoint();
             Refresh(true);
         }
 
@@ -815,6 +929,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 }
             }
             SpriteData.Patterns[SpriteData.CurrentFrame] = pattern2;
+            Undo_AddPoint();
             Refresh(true);
         }
 
@@ -844,6 +959,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 }
             }
             SpriteData.Patterns[SpriteData.CurrentFrame] = pattern2;
+            Undo_AddPoint();
             Refresh(true);
         }
 
@@ -879,6 +995,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 }
             }
             SpriteData.Patterns[SpriteData.CurrentFrame] = pattern2;
+            Undo_AddPoint();
             Refresh(true);
         }
 
@@ -905,6 +1022,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             _Mask(0, maxY, ref pattern, ref pattern2);
             _Mask(maxX, maxY, ref pattern, ref pattern2);
             SpriteData.Patterns[SpriteData.CurrentFrame] = pattern2;
+            Undo_AddPoint();
             Refresh(true);
         }
 
@@ -983,6 +1101,75 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             pattern.RawData[(SpriteData.Width * y) + x] = colorIndex;
         }
 
+        #endregion
+
+
+        #region Invert pixels and colors
+
+        private void GrdEditor_InvertPixelsCell(double mx, double my)
+        {
+            if (SpriteData == null)
+            {
+                return;
+            }
+
+            int x = (int)mx;
+            int y = (int)my;
+
+            x = x / (_Zoom + 1);
+            y = y / (_Zoom + 1);
+
+            x = x / 8;
+            y = y / 8;
+
+            if (x < 0 || y < 0 || x >= SpriteData.Width || y >= SpriteData.Height)
+            {
+                return;
+            }
+
+            for(int py = 0; py < 8; py++)
+            {
+                for (int px = 0; px < 8; px++)
+                {
+                    int dir = ((y * 8 + py) * SpriteData.Width) + (x * 8 + px);
+                    if (dir < SpriteData.Patterns[SpriteData.CurrentFrame].RawData.Length)
+                    {
+                        var value = SpriteData.Patterns[SpriteData.CurrentFrame].RawData[dir];
+                        if (value == PrimaryColorIndex)
+                        {
+                            SpriteData.Patterns[SpriteData.CurrentFrame].RawData[dir] = SecondaryColorIndex;
+                        }
+                        else if (value == SecondaryColorIndex)
+                        {
+                            SpriteData.Patterns[SpriteData.CurrentFrame].RawData[dir] = PrimaryColorIndex;
+                        }
+                    }
+                }
+            }
+            Refresh();
+        }
+
+        private void GrdEditor_InvertColorsCell(double mx, double my)
+        {
+            if (SpriteData == null)
+            {
+                return;
+            }
+            int x = (int)mx;
+            int y = (int)my;
+            x = x / (_Zoom + 1);
+            y = y / (_Zoom + 1);
+
+            var inkBak = PrimaryColorIndex;
+            var paperBak = SecondaryColorIndex;
+            var attr=GetAttribute(SpriteData.Patterns[SpriteData.CurrentFrame], x, y);
+            PrimaryColorIndex = attr.Paper;
+            SecondaryColorIndex = attr.Ink;
+            SetAttribute(SpriteData.Patterns[SpriteData.CurrentFrame], x, y);
+            PrimaryColorIndex = inkBak;
+            SecondaryColorIndex=paperBak;
+            Refresh();
+        }
         #endregion
     }
 }

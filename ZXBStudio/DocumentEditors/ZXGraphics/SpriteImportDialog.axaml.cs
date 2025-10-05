@@ -330,7 +330,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                                             var dirAttr = (cy * sw) + cx;
                                             var attr = pattern.Attributes[dirAttr];
                                             attr.Bright = attr.Bright | (idxAttr > 7);
-                                            byte cCol = (byte)(idxAttr & 0b111);
+                                            byte cCol = (byte)(idxAttr /*& 0b111*/);
                                             if (paper == -1)
                                             {
                                                 attr.Paper = cCol;
@@ -406,9 +406,10 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         private int GetColor(byte r, byte g, byte b, PaletteColor[] palette)
         {
-            if (r > 0)
+            bool brigth = false;
+            if (r > 250 || g > 250 || b > 250)
             {
-
+                brigth = true;
             }
             byte cr = GetColor_CutOff(r);
             byte cg = GetColor_CutOff(g);
@@ -428,6 +429,10 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                     palColor.Green == p.Green &&
                     palColor.Blue == p.Blue)
                 {
+                    if (brigth && n<8)
+                    {
+                        return n + 8;
+                    }
                     return n;
                 }
             }
@@ -471,9 +476,9 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         private static double GetColorDistance(PaletteColor c1, PaletteColor c2)
         {
-            int rDiff = c1.Red - c2.Red;
-            int gDiff = c1.Green - c2.Green;
-            int bDiff = c1.Blue - c2.Blue;
+            int rDiff = Math.Abs(c1.Red - c2.Red);
+            int gDiff = Math.Abs(c1.Green - c2.Green);
+            int bDiff = Math.Abs(c1.Blue - c2.Blue);
             return Math.Sqrt(rDiff * rDiff + gDiff * gDiff + bDiff * bDiff);
         }
 

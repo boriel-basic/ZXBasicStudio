@@ -47,7 +47,7 @@
     <Grid Grid.Row="3" Grid.ColumnDefinitions="Auto,*" Grid.RowDefinitions="Auto,Auto,Auto,Auto,Auto">
       <CheckBox Grid.Row="0" Name="chkUseCurrent" IsChecked="True" HorizontalAlignment="Right"/>
       <TextBlock Grid.Row="0" Grid.Column="1" Classes="dialog" VerticalAlignment="Center">Convert to current palette</TextBlock>
-      
+
       <CheckBox Grid.Row="1" Name="chkAppend" IsChecked="False" HorizontalAlignment="Right"/>
       <TextBlock Grid.Row="1" Grid.Column="1" Classes="dialog" VerticalAlignment="Center">Append new colors to current palette</TextBlock>
 
@@ -78,7 +78,7 @@
         <NumericUpDown Classes="dialog" Name="txtBlue" Minimum="0" Increment="36" Maximum="255" Width="60" VerticalAlignment="Center" Value="0"/>
       </Border>
 
-      <Border Grid.Row="1" Grid.Column="3" Grid.RowSpan="3" HorizontalAlignment="Center" VerticalAlignment="Center" BorderThickness="1" BorderBrush="Red">
+      <Border Grid.Row="1" Grid.Column="3" Grid.RowSpan="2" HorizontalAlignment="Center" VerticalAlignment="Center" BorderThickness="1" BorderBrush="Red">
         <Grid Name="grdSelectedColor" Width="50" Height="50"></Grid>
       </Border>
 
@@ -95,10 +95,21 @@
       <Button Name="btnRefresh" Classes="dialog" HorizontalAlignment="Right">Refresh</Button>
       <Button Grid.Row="2" Name="btnSaveImage" Classes="dialog" HorizontalAlignment="Right">Save image</Button>
     </Grid>
-    
+
     <StackPanel Grid.Row="4" Grid.ColumnSpan="5" Orientation="Horizontal" HorizontalAlignment="Right">
       <Button Name="btnClose" Classes="dialog">Close</Button>
     </StackPanel>
+    
+    <Grid Name="grdColorPicker" Grid.ColumnSpan="5" Grid.RowSpan="5" IsVisible="False"
+          Margin="10" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" >
+      <Canvas x:Name="ColorWheelCanvas" Width="500" Height="500" Background="Black"
+             HorizontalAlignment="Center" VerticalAlignment="Center"
+             PointerPressed="ColorWheelCanvas_PointerPressed"/>
+      <Border Width="100" Height="30" Background="White"
+              HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10">
+        <Rectangle x:Name="SelectedColorPreview" Fill="Transparent"/>
+      </Border>
+    </Grid>
 
   </Grid>
 </Window>
