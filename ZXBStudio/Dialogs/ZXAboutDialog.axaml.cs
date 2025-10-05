@@ -12,8 +12,8 @@ public partial class ZXAboutDialog : Window
     {
         InitializeComponent();
 
-        txtBuild.Text = "1.6.0-beta4";
-        txtDate.Text = "2025-05-21";
+        txtBuild.Text = "1.6.0-beta5";
+        txtDate.Text = "2025-10-05";
 
         btnClose.Click += BtnClose_Click;
 
