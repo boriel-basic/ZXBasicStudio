@@ -123,7 +123,11 @@ namespace ZXBasicStudio.BuildSystem
                     }
                 }
 
-                byte[] binary = File.ReadAllBytes(binFile);
+                byte[] binary = new byte[0];
+                if (File.Exists(binFile))
+                {
+                    binary = File.ReadAllBytes(binFile);
+                }
 
                 Cleanup(project.ProjectPath, binFile);
 
