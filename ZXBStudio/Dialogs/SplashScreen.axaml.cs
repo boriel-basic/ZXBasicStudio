@@ -8,6 +8,7 @@ namespace ZXBasicStudio.Dialogs
         public SplashScreen()
         {
             InitializeComponent();
+            lblVersion.Content=$"{Program.Version} | {Program.VersionDate}";
         }
     }
 }

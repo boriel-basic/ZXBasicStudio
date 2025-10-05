@@ -8,6 +8,9 @@ namespace ZXBasicStudio
 {
     internal class Program
     {
+        public static string Version = "1.6.0 - beta 5";
+        public static string VersionDate = "2025.10.05";
+
         // Initialization code. Don't use any Avalonia, third-party APIs or any
         // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
         // yet and stuff might break.
