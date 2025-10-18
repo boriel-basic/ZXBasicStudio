@@ -8,8 +8,8 @@ namespace ZXBasicStudio
 {
     internal class Program
     {
-        public static string Version = "1.6.0 - beta 5";
-        public static string VersionDate = "2025.10.05";
+        public static string Version = "1.6.0 - beta 6";
+        public static string VersionDate = "2025.10.09";
       
       
         // Initialization code. Don't use any Avalonia, third-party APIs or any
