@@ -1502,19 +1502,26 @@ namespace ZXBasicStudio
                             }
                             else if (emulatorName.ToLower() == "cspect")
                             {
-                                outLog.Writer.WriteLine("Launching CSpect...");
-                                Process process = new Process();
-                                process.StartInfo.FileName = emulatorPath;
-                                process.StartInfo.Arguments = string.Format(
-                                    "-zxnext -tv -w3 -brk -r -mmc=\"{0}\" \"{1}\"",
-                                        nextDrive,
-                                        Path.Combine(nextDrive, Path.GetFileNameWithoutExtension(settings.MainFile) + ".nex"));
-                                process.StartInfo.WorkingDirectory = project.ProjectPath;
-                                process.StartInfo.UseShellExecute = true;
-                                process.StartInfo.CreateNoWindow = false;
-                                outLog.Writer.WriteLine(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
-                                process.Start();
-                                process.WaitForExit();
+                                if (!File.Exists(emulatorPath))
+                                {
+                                    errorMsg = "Emulator not found on: " + emulatorPath;
+                                }
+                                else
+                                {
+                                    outLog.Writer.WriteLine("Launching CSpect...");
+                                    Process process = new Process();
+                                    process.StartInfo.FileName = emulatorPath;
+                                    process.StartInfo.Arguments = string.Format(
+                                        "-zxnext -tv -w3 -brk -r -mmc=\"{0}\" \"{1}\"",
+                                            nextDrive,
+                                            Path.Combine(nextDrive, Path.GetFileNameWithoutExtension(settings.MainFile) + ".nex"));
+                                    process.StartInfo.WorkingDirectory = project.ProjectPath;
+                                    process.StartInfo.UseShellExecute = false;
+                                    process.StartInfo.CreateNoWindow = false;
+                                    outLog.Writer.WriteLine(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
+                                    process.Start();
+                                    process.WaitForExit();
+                                }
                             }
                             else if (emulatorName.ToLower() == "zesarux")
                             {
@@ -1526,7 +1533,7 @@ namespace ZXBasicStudio
                                         nextDrive,
                                         Path.Combine(nextDrive, Path.GetFileNameWithoutExtension(settings.MainFile) + ".nex"));
                                 process.StartInfo.WorkingDirectory = Path.GetDirectoryName(emulatorPath);
-                                process.StartInfo.UseShellExecute = true;
+                                process.StartInfo.UseShellExecute = false;
                                 process.StartInfo.CreateNoWindow = false;
                                 outLog.Writer.WriteLine(process.StartInfo.FileName + " " + process.StartInfo.Arguments);
                                 process.Start();
@@ -1539,7 +1546,12 @@ namespace ZXBasicStudio
                         }
                         catch (Exception ex)
                         {
-                            errorMsg = "Error executing emulator";
+                            errorMsg = "Error executing emulator: " + ex.Message + ex.StackTrace;
+                            if (ex.InnerException != null)
+                            {
+                                var ex2= ex.InnerException;
+                                errorMsg += "\r\nInner Exception: " + ex.Message + ex.StackTrace;
+                            }
                         }
                     }
 
@@ -1625,6 +1637,8 @@ namespace ZXBasicStudio
                 }
             });
         }
+
+
         private async void BuildAndDebug(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
             if (string.IsNullOrWhiteSpace(ZXOptions.Current.ZxbcPath) || string.IsNullOrWhiteSpace(ZXOptions.Current.ZxbasmPath))
