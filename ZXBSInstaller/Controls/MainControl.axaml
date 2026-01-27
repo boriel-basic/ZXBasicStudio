@@ -1,0 +1,40 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:controls="clr-namespace:ZXBSInstaller.Controls"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 x:Class="ZXBSInstaller.Controls.MainControl">
+	<Grid Grid.RowDefinitions="Auto,*">
+		<TextBlock Text="Select external tool to check" Margin="0,0,0,4"/>
+		<Grid Grid.ColumnDefinitions="240,4,*" Grid.Row="1">
+			<Grid Grid.RowDefinitions="*,4,Auto">
+				<!-- Tools list-->
+				<ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Visible">
+					<ListBox x:Name="lstTools" />
+				</ScrollViewer>
+				<StackPanel Orientation="Horizontal" Grid.Row="2" >
+					<Button x:Name="btnConfig" Content="Options" Click="btnConfig_Click"/>
+				</StackPanel>
+			</Grid>
+
+			<!-- Working Area -->
+			<Grid x:Name="pnlWorking" Grid.Column="2" Margin="0"></Grid>
+
+			<!-- Progress Status -->
+			<Grid x:Name="pnlStatus" Grid.ColumnSpan="3" Margin="0" IsVisible="False">
+				<Grid  Background="Black" Opacity="0.8"></Grid>
+				<StackPanel Orientation="Vertical" VerticalAlignment="Center">
+					<TextBlock x:Name="txtStatus" FontSize="14" HorizontalAlignment="Center" Margin="8" Foreground="Yellow" Text="Working..."/>
+					<ProgressBar x:Name="progressBar" Height="24" Width="300" VerticalAlignment="Center" Minimum="0" Maximum="100" Value="0" />
+				</StackPanel>
+			</Grid>
+
+			<!-- Modals -->
+			<Grid x:Name="pnlModalOverlay" Grid.ColumnSpan="3" Margin="0" IsVisible="False">
+				<Grid  Background="Black" Opacity="0.8"></Grid>
+				<Grid x:Name="pnlModalContainer" />
+			</Grid>
+		</Grid>
+	</Grid>
+</UserControl>

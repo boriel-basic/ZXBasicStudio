@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <ApplicationIcon>zxbs.ico</ApplicationIcon>
+    <Version>0.0.1.1</Version>
+  </PropertyGroup>
+  <ItemGroup>
+    <AvaloniaResource Include="zxbs.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="zxbs.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.11" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.11" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.11" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.11" />
+    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+    <PackageReference Include="Avalonia.Diagnostics" Version="11.3.11">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MsBox.Avalonia\MsBox.Avalonia.csproj" />
+    <ProjectReference Include="..\ZXBSInstaller.Log\ZXBSInstaller.Log.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Controls\ScreenShotControl.axaml.cs">
+      <DependentUpon>ScreenShotControl.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Controls\ToolsListItemControl.axaml.cs">
+      <DependentUpon>ToolsListItemControl.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Controls\VersionControl.axaml.cs">
+      <DependentUpon>VersionControl.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+</Project>

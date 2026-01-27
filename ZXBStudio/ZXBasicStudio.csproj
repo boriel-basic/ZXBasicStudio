@@ -11,9 +11,9 @@
     <Platforms>AnyCPU;x64</Platforms>
     <ApplicationIcon>zxbs.ico</ApplicationIcon>
     <Title>ZX Basic Studio</Title>
-    <AssemblyVersion>1.6.0.*</AssemblyVersion>
+    <AssemblyVersion></AssemblyVersion>
     <Deterministic>False</Deterministic>
-    <Version></Version>
+    <Version>1.6.0.5</Version>
   </PropertyGroup>
   <ItemGroup>
     <AvaloniaXaml Remove="LanguageDefinitions\**" />
@@ -563,17 +563,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="11.3.7" />
+    <PackageReference Include="Avalonia" Version="11.3.11" />
     <PackageReference Include="Avalonia.AvaloniaEdit" Version="11.3.0" />
-    <PackageReference Include="Avalonia.Desktop" Version="11.3.7" />
-    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.7" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.11" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.11" />
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
-    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.3.7" />
-    <PackageReference Include="Avalonia.Themes.Simple" Version="11.3.7" />
+    <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.3.11" />
+    <PackageReference Include="Avalonia.Themes.Simple" Version="11.3.11" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.11" />
-    <PackageReference Include="Svg.Controls.Skia.Avalonia" Version="11.3.6.2" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
+    <PackageReference Include="Svg.Controls.Skia.Avalonia" Version="11.3.9.2" />
     <PackageReference Include="System.Resources.ResourceManager" Version="4.3.0" />
     <PackageReference Include="TextCopy" Version="6.2.1" />
   </ItemGroup>
