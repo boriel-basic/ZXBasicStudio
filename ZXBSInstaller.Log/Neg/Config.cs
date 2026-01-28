@@ -24,6 +24,10 @@ namespace ZXBSInstaller.Log.Neg
         /// </summary>
         public bool OnlyStableVersions { get; set; }
         /// <summary>
+        /// Setup ZXBS config when install/update apps
+        /// </summary>
+        public bool SetZXBSConfig { get; set; }
+        /// <summary>
         /// Local paths for external tools
         /// </summary>
         public List<ExternalTools_Path> ExternalTools_Paths { get; set; }

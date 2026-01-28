@@ -5,6 +5,7 @@ using System.IO;
 using System.Reflection;
 using System.Reflection.Metadata.Ecma335;
 using System.Runtime;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using ZXBSInstaller.Log.Neg;
@@ -19,7 +20,7 @@ namespace ZXBSInstaller.Log
     public static class ServiceLayer
     {
         public static Config GeneralConfig = null;
-        public static ExternalTool[] externalTools = null;
+        public static ExternalTool[] ExternalTools = null;
         public static OperatingSystems CurrentOperatingSystem = OperatingSystems.All;
 
         private static Action<string> ShowStatusPanel = null;
@@ -35,31 +36,31 @@ namespace ZXBSInstaller.Log
         /// </summary>
         /// <returns>True if correct or false if error</returns>
         public static bool Initialize(
-            Action<string> callBackShowStatusPanel, 
+            Action<string> callBackShowStatusPanel,
             Action<string, int> callBackUpdateStatus,
             Action callBackHideStatusPanel,
             Action callBackGetExternalTools,
             Action<string> callBackShowMessage)
         {
-            ShowStatusPanel= callBackShowStatusPanel;
+            ShowStatusPanel = callBackShowStatusPanel;
             UpdateStatus = callBackUpdateStatus;
             HideStatusPanel = callBackHideStatusPanel;
             RefreshTools = callBackGetExternalTools;
-            ShowMessage= callBackShowMessage;
+            ShowMessage = callBackShowMessage;
 
             GetConfig();
 
             if (OperatingSystem.IsWindows())
             {
-                CurrentOperatingSystem= OperatingSystems.Windows;
+                CurrentOperatingSystem = OperatingSystems.Windows;
             }
             else if (OperatingSystem.IsLinux())
             {
-                CurrentOperatingSystem= OperatingSystems.Linux;
+                CurrentOperatingSystem = OperatingSystems.Linux;
             }
             else if (OperatingSystem.IsMacOS())
             {
-                CurrentOperatingSystem= OperatingSystems.MacOS;
+                CurrentOperatingSystem = OperatingSystems.MacOS;
             }
 
             return true;
@@ -71,18 +72,22 @@ namespace ZXBSInstaller.Log
             try
             {
                 var filePath = Path.Combine(Environment.GetFolderPath(SpecialFolder.ApplicationData), "ZXBasicStudio", "ZXBSInstallerOptions.json");
-                if (!File.Exists(filePath))
+                if (File.Exists(filePath))
                 {
-                    return null;
+                    var jsonString = File.ReadAllText(filePath);
+                    var cfg = JsonSerializer.Deserialize<Config>(jsonString);
+
+                    cfg.ToolsListURL = "https://zx.duefectucorp.com/zxbsinstaller.json";
+
+                    GeneralConfig = cfg;
                 }
+                else
+                {
+                    GeneralConfig = CreateConfig();
+                    SaveConfig(GeneralConfig);
+                }
+                return GeneralConfig;
 
-                var jsonString = File.ReadAllText(filePath);
-                var cfg = JsonSerializer.Deserialize<Config>(jsonString);
-
-                cfg.ToolsListURL = "https://zx.duefectucorp.com/zxbsinstaller.json";
-
-                GeneralConfig = cfg;
-                return cfg;
             }
             catch (Exception ex)
             {
@@ -99,8 +104,9 @@ namespace ZXBSInstaller.Log
             {
                 cfg = new Config()
                 {
-                    BasePath = "c:\\ZXSpectrum",
+                    BasePath = Directory.GetParent(Directory.GetCurrentDirectory()).FullName,
                     OnlyStableVersions = true,
+                    SetZXBSConfig = true,
                     ToolsListURL = "https://zx.duefectucorp.com/zxbsinstaller.json"
                 };
             }
@@ -172,7 +178,7 @@ namespace ZXBSInstaller.Log
         {
             try
             {
-                switch(CurrentOperatingSystem)
+                switch (CurrentOperatingSystem)
                 {
                     case OperatingSystems.Windows:
                         Process.Start(new ProcessStartInfo(url)
@@ -186,7 +192,7 @@ namespace ZXBSInstaller.Log
                     case OperatingSystems.MacOS:
                         Process.Start("open", url);
                         break;
-                }                
+                }
             }
             catch (Exception ex)
             {
@@ -225,12 +231,55 @@ namespace ZXBSInstaller.Log
                 {
                     tool.Versions = new ExternalTools_Version[0];
                 }
+                tool.InstalledVersion = GetToolVersion(tool.Id);
+
+                // Set latest version
+                if (GeneralConfig.OnlyStableVersions)
+                {
+                    tool.LatestVersion = tool.Versions.
+                        Where(d => d.OperatingSystem == CurrentOperatingSystem &&
+                            d.BetaNumber == 0).
+                        OrderByDescending(d => d.VersionNumber).
+                        FirstOrDefault();
+                }
+                if (tool.LatestVersion == null || !GeneralConfig.OnlyStableVersions)
+                {
+                    tool.LatestVersion = tool.Versions.
+                        Where(d => d.OperatingSystem == CurrentOperatingSystem).
+                        OrderByDescending(d => d.VersionNumber).
+                        FirstOrDefault();
+                }
+
+                // Path for first versions of ZXBSInstalller
+                if (tool.Id == "zxbsinstaller" && tool.LatestVersion == null)
+                {
+                    tool.LatestVersion = tool.InstalledVersion;
+                }
+
+                // Determine whether you need to update
+                if (tool.InstalledVersion == null)
+                {
+                    tool.UpdateNeeded = true;
+                }
+                else
+                {
+                    if (tool.LatestVersion != null)
+                    {
+                        if (tool.LatestVersion.VersionNumber > tool.InstalledVersion.VersionNumber)
+                        {
+                            tool.UpdateNeeded = true;
+                        }
+                    }
+                }
+
+                tool.LocalPath = Path.Combine(GeneralConfig.BasePath, tool.Id);
             }
-            GetPaths(ref tools);
 
-            externalTools = tools.OrderBy(d => d.Order).ToArray();
+            //GetPaths(ref tools);
 
-            return externalTools;
+            ExternalTools = tools.OrderBy(d => d.Order).ToArray();
+
+            return ExternalTools;
 
 #if GENERATE_JSON
             var lst = new List<ExternalTool>();
@@ -716,20 +765,16 @@ namespace ZXBSInstaller.Log
         {
             try
             {
-                var tool = GeneralConfig.ExternalTools_Paths.FirstOrDefault(d => d.Id == id);
-                if (tool == null)
-                {
-                    return null;
-                }
+                var dir = Path.Combine(GeneralConfig.BasePath, id);
 
                 switch (id)
                 {
                     case "zxbasic":
-                        return GetBorielBasicVersion(tool.LocalPath);
+                        return GetBorielBasicVersion(dir);
                     case "zxbs":
-                        return GetZXBSVersion(tool.LocalPath);
+                        return GetZXBSVersion(dir);
                     case "zxbsinstaller":
-                        return GetZXBSInstallerVersion(tool.LocalPath);
+                        return GetZXBSInstallerVersion(dir);
                 }
                 return null;
             }
@@ -773,17 +818,11 @@ namespace ZXBSInstaller.Log
                 {
                     return null;
                 }
-                var version = output.Replace("zxbc.py ", "").Replace("\n", "").Replace("\r", "").Replace("v","");
+                var version = output.Replace("zxbc.py ", "").Replace("\n", "").Replace("\r", "").Replace("v", "");
                 var v = GetVersionNumber(version);
                 int number = v.Item1;
                 int beta = v.Item2;
-
-                var tool = externalTools.FirstOrDefault(d => d.Id == "zxbasic");
-                if (tool == null)
-                {
-                    return null;
-                }
-
+                
                 return new ExternalTools_Version()
                 {
                     DownloadUrl = "",
@@ -886,45 +925,56 @@ namespace ZXBSInstaller.Log
 
         #region Install external tool
 
+        public static void DownloadAndInstallTools()
+        {
+            ShowStatusPanel($"Working...");
+            foreach (var tool in ExternalTools)
+            {
+                if (tool.IsSelected)
+                {
+                    DownloadAndInstallTool(tool, tool.LatestVersion);
+                }
+            }
+            HideStatusPanel();
+            RefreshTools();
+        }
+
+
         public static void DownloadAndInstallTool(ExternalTool tool, ExternalTools_Version version)
         {
+            string step = "";
             try
             {
                 ShowStatusPanel($"Downloading {tool.Name} version {version.Version}...");
 
-                // Get installation path
-                string installationPath = "";
+                // Download path
+                step = "Creating download path";
+                var tempFile = Path.Combine(GeneralConfig.BasePath, "downloads");
+                if (!Directory.Exists(tempFile))
                 {
-                    var toolConfig = GeneralConfig.ExternalTools_Paths.FirstOrDefault(d => d.Id == tool.Id);
-                    if (toolConfig != null)
-                    {
-                        installationPath = toolConfig.LocalPath;
-                    }
-                    if(string.IsNullOrEmpty(installationPath))
-                    {
-                        installationPath = Path.Combine(GeneralConfig.BasePath, tool.Id);
-                        GeneralConfig.ExternalTools_Paths.Add(new ExternalTools_Path()
-                        {
-                            Id = tool.Id,
-                            LocalPath = installationPath
-                        });
-                        SaveConfig(GeneralConfig);
-                    }
+                    step = $"Creating download path [{tempFile}]";
+                    Directory.CreateDirectory(tempFile);
                 }
-                // Create installation path if it not exists
+                var uri = new Uri(version.DownloadUrl);
+                tempFile = Path.Combine(tempFile, Path.GetFileName(uri.LocalPath));
+
+                // Get installation path
+                step = "Creating installation path";
+                var installationPath = Path.Combine(GeneralConfig.BasePath, tool.Id);
+                // Patch for Boriel Basic
+                if (tool.Id == "zxbasic")
+                {
+                    installationPath = Directory.GetParent(installationPath).FullName;
+                }
                 if (!Directory.Exists(installationPath))
                 {
+                    step = $"Creating application path [{installationPath}]";
                     Directory.CreateDirectory(installationPath);
                 }
 
-                // Create a temp file name for download
-                string tempFile = "";
-                {
-                    var uri=new Uri(version.DownloadUrl);
-                    tempFile=Path.GetFileName(uri.LocalPath);
-                    tempFile=Path.Combine(installationPath, tempFile);
-                }
                 // Download file
+                step = $"Downloading file {version.DownloadUrl}";
+                UpdateStatus($"Downloading {version.DownloadUrl}", 50);
                 using (var httpClient = new HttpClient())
                 {
                     using (var response = httpClient.GetAsync(version.DownloadUrl).GetAwaiter().GetResult())
@@ -936,67 +986,94 @@ namespace ZXBSInstaller.Log
                         }
                     }
                 }
-                UpdateStatus($"Installing {tool.Name} version {version.Version}...", 50);
+
                 // Extract file
-                if (!Directory.Exists(installationPath))
-                {
-                    Directory.CreateDirectory(installationPath);
-                }
+                step = $"Installing {tool.Name}";
+                UpdateStatus($"Installing {tool.Name} version {version.Version}...", 50);
                 System.IO.Compression.ZipFile.ExtractToDirectory(tempFile, installationPath, true);
+
+                // Set ZXBS Options
+                step = "Set ZX Basic Studio options";
                 UpdateStatus(null, 75);
-                // ZxBasic decompress in a folder, must move to correct folder
-                if (tool.Id == "zxbasic")
-                {
-                    MoveFiles(Path.Combine(installationPath, tool.Id), installationPath);
-                }
+                SetZXBSConfig();
+
                 // Delete temp file
-                UpdateStatus(null, 90);
+                step = "Deleting temp files";
+                UpdateStatus("Deleting temp files...", 90);
                 File.Delete(tempFile);
+
                 UpdateStatus($"{tool.Name} version {version.Version} installed successfully.", 100);
-                RefreshTools();
             }
             catch (Exception ex)
             {
                 HideStatusPanel();
-                ShowMessage($"Error installing {tool.Name}: {ex.Message}");
+                ShowMessage($"Error installing {tool.Name}\r\n{step}\r\n{ex.Message}\r\n{ex.StackTrace}");
             }
         }
 
 
-        private static void MoveFiles(string source, string dest)
+        private static void SetZXBSConfig()
         {
-            Directory.CreateDirectory(dest);
-
-            // Archivos
-            foreach (var file in Directory.GetFiles(source))
+            try
             {
-                var destFile = Path.Combine(dest, Path.GetFileName(file));
-                File.Copy(file, destFile, true);
+                var filePath = Path.Combine(Environment.GetFolderPath(SpecialFolder.ApplicationData), "ZXBasicStudio", "ZXBasicStudioOptions.json");
+                if (!File.Exists(filePath))
+                {
+                    string data = @"{
+  ""ZxbasmPath"": """",
+  ""ZxbcPath"": """",
+  ""EditorFontSize"": 16.0,
+  ""WordWrap"": true,
+  ""AudioDisabled"": false,
+  ""Cls"": true,
+  ""Borderless"": false,
+  ""AntiAlias"": false,
+  ""LastProjectPath"": """",
+  ""DefaultBuildSettings"": null,
+  ""NextEmulatorPath"": """",
+  ""DisableAuto"": true
+}";
+                    File.WriteAllText(filePath, data);
+                }
+
+                var sb = new StringBuilder();
+                var sr = new StreamReader(filePath);
+                while (!sr.EndOfStream)
+                {
+                    var line = sr.ReadLine();
+                    // Set values
+                    if (line.Contains("ZxbasmPath"))
+                    {
+                        string exe = "zxbasm";
+                        if (CurrentOperatingSystem == OperatingSystems.Windows)
+                        {
+                            exe += ".exe";
+                        }
+                        var dir = Path.Combine(GeneralConfig.BasePath, "zxbasic", exe).Replace("\\","\\\\");
+                        line = $"  \"ZxbasmPath\": \"{dir}\",";
+                    }
+                    else if (line.Contains("ZxbcPath"))
+                    {
+                        string exe = "zxbc";
+                        if (CurrentOperatingSystem == OperatingSystems.Windows)
+                        {
+                            exe += ".exe";
+                        }
+                        var dir = Path.Combine(GeneralConfig.BasePath, "zxbasic", exe).Replace("\\", "\\\\");
+                        line = $"  \"ZxbcPath\": \"{dir}\",";
+                    }
+                    sb.AppendLine(line);
+                }
+                sr.Close();
+                sr.Dispose();
+                File.WriteAllText(filePath, sb.ToString());
             }
-
-            // Subdirectorios
-            foreach (var dir in Directory.GetDirectories(source))
+            catch (Exception ex)
             {
-                var destDir = Path.Combine(dest, Path.GetFileName(dir));
-                MoveFiles(dir, destDir);
-            }
-
-            // Eliminar archivos sobrantes
-            foreach (var file in Directory.GetFiles(dest))
-            {
-                var sourceFile = Path.Combine(source, Path.GetFileName(file));
-                if (!File.Exists(sourceFile))
-                    File.Delete(file);
-            }
-
-            // Eliminar carpetas sobrantes
-            foreach (var dir in Directory.GetDirectories(dest))
-            {
-                var sourceDir = Path.Combine(source, Path.GetFileName(dir));
-                if (!Directory.Exists(sourceDir))
-                    Directory.Delete(dir, true);
+                //ShowMessage($"Error updating ZX Basic Studio options.\r\n{ex.Message}\r\n{ex.StackTrace}");
             }
         }
+
 
         #endregion
 

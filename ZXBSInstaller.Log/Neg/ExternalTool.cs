@@ -61,11 +61,6 @@ namespace ZXBSInstaller.Log.Neg
         /// </summary>
         public string FullLocalPath { get; set; }
         /// <summary>
-        /// Versions of the tool
-        /// </summary>
-        [JsonIgnore]
-        public ExternalTools_Version[] Versions { get; set; }
-        /// <summary>
         /// If this is true, the tool will be updated from ZXBSInstaller
         /// </summary>
         public bool DirectUpdate { get; set; }
@@ -73,5 +68,37 @@ namespace ZXBSInstaller.Log.Neg
         /// Order in the list
         /// </summary>
         public int Order { get; set; }
+        /// <summary>
+        /// Recommended
+        /// </summary>
+        public bool Recommended { get; set; }
+
+        /// <summary>
+        /// Versions of the tool
+        /// </summary>
+        [JsonIgnore]
+        public ExternalTools_Version[] Versions { get; set; }
+        /// <summary>
+        /// Version installed on local computer
+        /// </summary>
+        [JsonIgnore]
+        public ExternalTools_Version InstalledVersion { get; set; }
+        /// <summary>
+        /// Latest available version
+        /// </summary>
+        [JsonIgnore]
+        public ExternalTools_Version LatestVersion { get; set; }
+        /// <summary>
+        /// Need to update
+        /// </summary>
+        [JsonIgnore]
+        public bool UpdateNeeded { get; set; }
+
+        /// <summary>
+        /// Is selected for install
+        /// </summary>
+        [JsonIgnore]
+        public bool IsSelected { get; set; }
+
     }
 }
