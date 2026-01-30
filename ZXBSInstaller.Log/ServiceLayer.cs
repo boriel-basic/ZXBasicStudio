@@ -1,7 +1,9 @@
 ﻿using Microsoft.VisualBasic;
 using System;
 using System.Diagnostics;
+using System.Formats.Tar;
 using System.IO;
+using System.IO.Compression;
 using System.Reflection;
 using System.Reflection.Metadata.Ecma335;
 using System.Runtime;
@@ -822,7 +824,7 @@ namespace ZXBSInstaller.Log
                 var v = GetVersionNumber(version);
                 int number = v.Item1;
                 int beta = v.Item2;
-                
+
                 return new ExternalTools_Version()
                 {
                     DownloadUrl = "",
@@ -990,7 +992,7 @@ namespace ZXBSInstaller.Log
                 // Extract file
                 step = $"Installing {tool.Name}";
                 UpdateStatus($"Installing {tool.Name} version {version.Version}...", 50);
-                System.IO.Compression.ZipFile.ExtractToDirectory(tempFile, installationPath, true);
+                ExtractFile(tempFile, installationPath);
 
                 // Set ZXBS Options
                 step = "Set ZX Basic Studio options";
@@ -1009,6 +1011,73 @@ namespace ZXBSInstaller.Log
                 HideStatusPanel();
                 ShowMessage($"Error installing {tool.Name}\r\n{step}\r\n{ex.Message}\r\n{ex.StackTrace}");
             }
+        }
+
+
+        private static void ExtractFile(string archive, string destination)
+        {
+            if (archive.ToLower().EndsWith(".zip"))
+            {
+                System.IO.Compression.ZipFile.ExtractToDirectory(archive, destination, true);
+            }
+            else if (CurrentOperatingSystem != OperatingSystems.Windows)
+            {
+                Directory.CreateDirectory(destination);
+
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "tar",
+                    Arguments = $"-xzf \"{archive}\" -C \"{destination}\"",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+
+                using var process = Process.Start(psi)!;
+
+                string stdout = process.StandardOutput.ReadToEnd();
+                string stderr = process.StandardError.ReadToEnd();
+
+                process.WaitForExit();
+
+                if (process.ExitCode != 0)
+                {
+                    ShowMessage($"Error unpacking file {archive}\r\n{stderr}");
+                    return;
+                }
+            }
+            //if (archive.ToLower().EndsWith(".tar.gz"))
+            //{
+            //    Directory.CreateDirectory(destination);
+
+            //    using var fileStream = File.OpenRead(archive);
+            //    using var gzipStream = new GZipStream(fileStream, CompressionMode.Decompress);
+            //    using var tarReader = new TarReader(gzipStream);
+
+            //    TarEntry? entry;
+            //    while ((entry = tarReader.GetNextEntry()) != null)
+            //    {
+            //        string fullPath = Path.Combine(destination, entry.Name);
+
+            //        if (entry.EntryType == TarEntryType.Directory)
+            //        {
+            //            Directory.CreateDirectory(fullPath);
+            //        }
+            //        else
+            //        {
+            //            Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
+            //            if (entry.Length == 0)
+            //            {
+            //                File.WriteAllBytes(fullPath, new byte[0]);
+            //            }
+            //            else
+            //            {
+            //                entry.DataStream!.CopyTo(File.Create(fullPath));
+            //            }
+            //        }
+            //    }
+            //}
         }
 
 
@@ -1049,7 +1118,7 @@ namespace ZXBSInstaller.Log
                         {
                             exe += ".exe";
                         }
-                        var dir = Path.Combine(GeneralConfig.BasePath, "zxbasic", exe).Replace("\\","\\\\");
+                        var dir = Path.Combine(GeneralConfig.BasePath, "zxbasic", exe).Replace("\\", "\\\\");
                         line = $"  \"ZxbasmPath\": \"{dir}\",";
                     }
                     else if (line.Contains("ZxbcPath"))
