@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
+			 x:Class="ZXBSInstaller.Controls2.MainControl">
+	<Grid Grid.ColumnDefinitions="*,1,250" Grid.RowDefinitions="Auto,1,*,1,Auto">
+		<Label x:Name="lblTools" FontSize="20">Tools and components</Label>
+		<Label x:Name="lblSummary" Grid.Column="2" FontSize="20">Summary</Label>
+
+		<Grid Grid.Row="1" Grid.ColumnSpan="3" Background="Gray"></Grid>
+
+		<ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+			<WrapPanel x:Name="pnlTools"></WrapPanel>
+		</ScrollViewer>
+		<Grid Grid.Row="2" Grid.Column="1" Background="Gray"></Grid>
+
+		<ScrollViewer Grid.Column="2" Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+			<StackPanel x:Name="pnlSummary" Orientation="Vertical" Margin="4"></StackPanel>
+		</ScrollViewer>
+
+		<Grid Grid.Row="3" Grid.ColumnSpan="3" Background="Gray"></Grid>
+
+		<Grid Grid.Row="4" Margin="8">
+			<Grid Grid.ColumnDefinitions="*,Auto" Grid.RowDefinitions="Auto,Auto,Auto,Auto">
+				<Label x:Name="lblBasePath">Installation path</Label>
+				<TextBox x:Name="txtBasePath" Grid.Row="1" Margin="0,4,4,0"></TextBox>
+				<Button x:Name="btnSelectPath" Grid.Column="2" Grid.Row="1" Click="btnSelectPath_Click">...</Button>
+				<CheckBox x:Name="chkOnlyStableVersions" Grid.Row="2" Margin="0,4,0,0" Content="Show only stable versions (no beta)"/>
+				<CheckBox x:Name="chkSetZXBSOptions" Grid.Row="3" Margin="0,4,0,0" Content="Update ZX Basic Studio Options"/>
+			</Grid>
+		</Grid>
+		<Grid Grid.Column="2" Grid.Row="4" Margin="8" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+			<Button x:Name="btnInstall" Click="btnInstall_Click">Install selected components</Button>
+		</Grid>
+
+		<!-- Progress Status -->
+		<Grid x:Name="pnlStatus" Grid.ColumnSpan="3" Grid.RowSpan="5" Margin="0" IsVisible="False">
+			<Grid  Background="Black" Opacity="0.8"></Grid>
+			<StackPanel Orientation="Vertical" VerticalAlignment="Center">
+				<TextBlock x:Name="txtStatus" FontSize="14" HorizontalAlignment="Center" Margin="8" Foreground="Yellow" Text="Working..."/>
+				<ProgressBar x:Name="progressBar" Height="24" Width="300" VerticalAlignment="Center" Minimum="0" Maximum="100" Value="0" />
+			</StackPanel>
+		</Grid>
+
+		<!-- Modals -->
+		<Grid x:Name="pnlModalOverlay" Grid.ColumnSpan="3" Grid.RowSpan="5" Margin="0" IsVisible="False">
+			<Grid  Background="Black" Opacity="0.8"></Grid>
+			<Grid x:Name="pnlModalContainer">
+			</Grid>
+		</Grid>
+	</Grid>
+</UserControl>

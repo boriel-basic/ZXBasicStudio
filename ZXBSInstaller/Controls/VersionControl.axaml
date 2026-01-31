@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             Width="700" Height="22"
+             x:Class="ZXBSInstaller.Controls.VersionControl">
+  <Grid>
+	  <Grid x:Name="pnlHeader" Grid.ColumnDefinitions="*,100,200,100" IsVisible="False">
+		  <TextBlock FontWeight="Bold" TextWrapping="Wrap" Margin="2">Version</TextBlock>
+          <TextBlock Grid.Column="1" FontWeight="Bold" TextWrapping="Wrap" Margin="2">Status</TextBlock>
+          <TextBlock Grid.Column="2" FontWeight="Bold" TextWrapping="Wrap" Margin="2">Platform</TextBlock>
+          <TextBlock Grid.Column="3" FontWeight="Bold" TextWrapping="Wrap" Margin="2">Download</TextBlock>
+          <Border Grid.ColumnSpan="4" BorderBrush="Gray" BorderThickness="0,0,0,1" Margin="0,0,0,2"/>
+      </Grid>
+      <Grid x:Name="pnlRow" Grid.ColumnDefinitions="*,100,200,100" PointerEntered="pnlRow_PointerEntered" PointerExited="pnlRow_PointerExited">
+		  <TextBlock x:Name="txtVersion" TextWrapping="Wrap" Margin="2"></TextBlock>
+          <TextBlock x:Name="txtStatus" Grid.Column="1" TextWrapping="Wrap" Margin="2"></TextBlock>
+          <TextBlock x:Name="txtPlatform" Grid.Column="2" TextWrapping="Wrap" Margin="2"></TextBlock>
+          <Button x:Name="btnDownload" Grid.Column="3" Margin="0" Padding="4,1,4,1" Cursor="Hand" Click="btnDownload_Click">Download</Button>
+      </Grid>
+  </Grid>
+</UserControl>
