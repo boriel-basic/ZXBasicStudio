@@ -2,70 +2,23 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-			 x:Class="ZXBSInstaller.Controls.ToolItemControl">
-	<Grid Grid.RowDefinitions="*,4,Auto">
-		<ScrollViewer Margin="0">
-			<Grid Grid.RowDefinitions="Auto,1,Auto,4,Auto,4,*" Margin="4,4,22,4">
-				<StackPanel Orientation="Vertical">
-					<Grid Grid.ColumnDefinitions="128,4,*,Auto" Grid.RowDefinitions="Auto,4,*">
-						<Image x:Name="imgIcon" Grid.RowSpan="3" Width="128" Stretch="Uniform"  VerticalAlignment="Top" />
-						<Grid Grid.Column="2" Grid.ColumnDefinitions="Auto,*,200" VerticalAlignment="Top">
-							<TextBlock x:Name="txtName" FontWeight="Bold" FontSize="16"/>
+			 Width="360" Height="150"
+			 x:Class="ZXBSInstaller.Controls.ToolItemControl"
+			 FontSize="12">
+	<Grid Margin="8"  Background="#242424">
+		<Grid Grid.ColumnDefinitions="Auto,4,*,4,Auto" Grid.RowDefinitions="Auto,*,Auto,Auto" Margin="4">
+			<Image x:Name="imgIcon" Grid.RowSpan="3" Width="64" Stretch="Uniform" VerticalAlignment="Top" />
+			<TextBlock x:Name="txtName" Grid.Column="2" VerticalAlignment="Top" TextWrapping="Wrap" FontSize="14" FontWeight="Bold">Name</TextBlock>
+			<TextBlock x:Name="txtDescription" Grid.Column="2" Grid.Row="1" VerticalAlignment="Top" TextWrapping="Wrap">Description</TextBlock>
+			<CheckBox x:Name="chkSelect" Grid.Column="4" VerticalAlignment="Top" IsCheckedChanged="chkSelect_IsCheckedChanged"/>
 
-							<StackPanel Orientation="Horizontal" Grid.Column="1" HorizontalAlignment="Right">
-								<Border x:Name="iconWindows" Background="DarkGreen" CornerRadius="4" Padding="2" Margin="2">
-									<TextBlock FontSize="10" Foreground="White" Text="WIN"/>
-								</Border>
-								<Border x:Name="iconLinux" Background="DarkGreen" CornerRadius="4" Padding="2" Margin="2">
-									<TextBlock FontSize="10" Foreground="White" Text="LINUX"/>
-								</Border>
-								<Border x:Name="iconMac" Background="DarkGreen" CornerRadius="4" Padding="2" Margin="2">
-									<TextBlock FontSize="10" Foreground="White" Text="MACOS"/>
-								</Border>
-							</StackPanel>
-							<TextBlock x:Name="txtVersion" Grid.Column="3" FontStyle="Italic" Margin="0,4,0,0" HorizontalAlignment="Right"/>
-						</Grid>
+			<StackPanel Orientation="Vertical" Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="2" VerticalAlignment="Top" Margin="0,0,50,0">
+				<TextBlock x:Name="txtPath" TextWrapping="Wrap" IsVisible="False">Path</TextBlock>
+				<TextBlock x:Name="txtActual">Installed version:</TextBlock>
+				<TextBlock x:Name="txtLatest">Latest version:</TextBlock>
+			</StackPanel>
 
-						<StackPanel Orientation="Vertical" Grid.Column="2" Grid.Row="1" Margin="0,4,0,0">
-							<TextBlock x:Name="txtAuthor" TextWrapping="Wrap"/>
-							<TextBlock x:Name="txtLicense" TextWrapping="Wrap" Margin="0,4,0,0" Foreground="#b0b0b0"/>
-							<TextBlock x:Name="txtDescription" TextWrapping="Wrap" Margin="0,4,0,0"/>
-						</StackPanel>
-					</Grid>
-				</StackPanel>
-
-				<ScrollViewer Grid.Row="2" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Disabled">
-					<StackPanel x:Name="pnlScreenShhots" Orientation="Horizontal" Margin="0,0,0,16"></StackPanel>
-				</ScrollViewer>
-
-				<StackPanel Orientation="Vertical" Grid.ColumnSpan="5" Grid.Row="4">
-					<TextBlock x:Name="txtPath" VerticalAlignment="Bottom" TextWrapping="Wrap" />
-					<TextBlock x:Name="txtLocalVersion" VerticalAlignment="Bottom" TextWrapping="Wrap" Foreground="#b0b0b0"/>
-					<TextBlock x:Name="txtLatestStableVersion" VerticalAlignment="Bottom" TextWrapping="Wrap" Foreground="#b0b0b0"/>
-					<TextBlock x:Name="txtLatestVersion" VerticalAlignment="Bottom" TextWrapping="Wrap" Foreground="#b0b0b0"/>
-
-					<TextBlock x:Name="txtChecking" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="4" Foreground="Yellow" Text="Checking..." IsVisible="True"/>
-					<TextBlock x:Name="txtUpToDate" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="4" Foreground="LightGreen" TextAlignment="Right" Text="Up to date" IsVisible="False" />
-					<TextBlock x:Name="txtRecomended" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="4" Foreground="Red" Text="Update recomended" TextAlignment="Right" IsVisible="False"/>
-				</StackPanel>
-				
-				<Grid Grid.Row="6" Margin="0,16,0,0">
-					<StackPanel x:Name="pnlVersions" Orientation="Vertical" IsVisible="False">
-					</StackPanel>
-				</Grid>
-			</Grid>
-
-		</ScrollViewer>
-
-		<StackPanel Grid.Row="2" Grid.ColumnSpan="6" Orientation="Horizontal" HorizontalAlignment="Right">
-			<Button x:Name="btnSetPath" Content="Set install path" Width="140" Margin="4" HorizontalAlignment="Right" Click="btnSetPath_Click"/>
-			<Button x:Name="btnViewVersions" Content="Show all versions" Width="140" Margin="4" HorizontalAlignment="Right" Click="btnViewVersions_Click"/>
-			<Button x:Name="btnLicense" Content="View license" Width="120" Margin="4" HorizontalAlignment="Right" Click="btnLicense_Click"/>
-			<Button x:Name="btnVisit" Content="Visit site" Width="120" Margin="4" HorizontalAlignment="Right" Click="btnVisit_Click"/>
-			<Button x:Name="btnUpdate" Content="Install" Width="120" Margin="4" HorizontalAlignment="Right" Click="btnUpdate_Click" IsEnabled="False"/>
-		</StackPanel>
-
-
+			<Button x:Name="btnAllVersions" Grid.ColumnSpan="5" Grid.Row="2" HorizontalAlignment="Right" VerticalAlignment="Bottom" Click="btnAllVersions_Click">Versions</Button>
+		</Grid>
 	</Grid>
 </UserControl>

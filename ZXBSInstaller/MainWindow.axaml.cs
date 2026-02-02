@@ -29,7 +29,7 @@ namespace ZXBSInstaller
                 Title = $"ZX Basic Studio Installer - v{version.Version}";
             }
 
-            var ctrl = new Controls2.MainControl();
+            var ctrl = new Controls.MainControl();
             pnlMain.Children.Add(ctrl);
         }
 
