@@ -8,8 +8,29 @@ namespace ZXBasicStudio
 {
     internal class Program
     {
-        public static string Version = "";
-        public static string VersionDate = "";
+        public static string Version
+        {
+            get
+            {
+                if(string.IsNullOrEmpty(_Version))
+                {
+                    SetVerion();
+                }
+                return _Version;
+            }
+        }
+        private static string _Version = "";
+
+        public static string VersionDate {             get
+            {
+                if (string.IsNullOrEmpty(_VersionDate))
+                {
+                    SetVerion();
+                }
+                return _VersionDate;
+            }
+        }
+        public static string _VersionDate = "";
       
       
         // Initialization code. Don't use any Avalonia, third-party APIs or any
@@ -37,18 +58,18 @@ namespace ZXBasicStudio
             {
                 var assembly = System.Reflection.Assembly.GetEntryAssembly();
                 var version = assembly.GetName().Version;
-                Version = $"{version.Major}.{version.Minor}.{version.Build}";
+                _Version = $"{version.Major}.{version.Minor}.{version.Build}";
                 if (version.Revision != 0)
                 {
-                    Version = $"{Version} - beta {version.Revision}";
+                    _Version = $"{Version} - beta {version.Revision}";
                 }
                 var buildDate = System.IO.File.GetLastWriteTime(assembly.Location);
-                VersionDate = buildDate.ToString("yyyy.MM.dd");
+                _VersionDate = buildDate.ToString("yyyy.MM.dd");
             }
             catch
             {
-                Version = "Unknown version";
-                VersionDate = "Unknown date";
+                _Version = "";
+                _VersionDate = "";
             }
         }
 

@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using ZXBSInstaller.Log;
@@ -16,18 +17,22 @@ public partial class VersionControl : UserControl
 
     private bool IsPair = false;
 
-    public static bool IsPairGlobal = false;
-    public static SolidColorBrush ColorPair= new SolidColorBrush(Color.FromRgb(20, 20, 20));
-    public static SolidColorBrush ColorNormal= new SolidColorBrush(Colors.Black);
-    public static SolidColorBrush ColorHover = new SolidColorBrush(Colors.DarkBlue);
-    public static SolidColorBrush ColorGreen = new SolidColorBrush(Colors.LightGreen);
+    private static bool IsPairGlobal = false;
+    private static SolidColorBrush ColorPair= new SolidColorBrush(Color.FromRgb(20, 20, 20));
+    private static SolidColorBrush ColorNormal= new SolidColorBrush(Colors.Black);
+    private static SolidColorBrush ColorHover = new SolidColorBrush(Colors.DarkBlue);
+    private static SolidColorBrush ColorGreen = new SolidColorBrush(Colors.LightGreen);
+    private static Action<string, string> Command = null;
 
-    public VersionControl(ExternalTool tool, ExternalTools_Version toolVersion)
+
+    public VersionControl(ExternalTool tool, ExternalTools_Version toolVersion, Action<string,string> callBackCommand)
     {
         InitializeComponent();
 
         Tool= tool;
         ToolVersion = toolVersion;
+        Command = callBackCommand;
+
         if (tool == null)
         {
             pnlHeader.IsVisible = true;
@@ -62,7 +67,8 @@ public partial class VersionControl : UserControl
     {
         new Thread(() =>
         {
-            ServiceLayer.DownloadAndInstallTool(Tool, ToolVersion);
+            ServiceLayer.DownloadAndInstallTool(Tool, ToolVersion);            
+            Command(Tool.Id, "REFRESH");
         }).Start();
     }
 

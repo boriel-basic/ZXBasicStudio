@@ -3,13 +3,17 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using MsBox.Avalonia;
 using MsBox.Avalonia.Dto;
 using MsBox.Avalonia.Enums;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
+using ZXBSInstaller.Controls;
 using ZXBSInstaller.Log;
 using ZXBSInstaller.Log.Neg;
 
@@ -17,15 +21,17 @@ namespace ZXBSInstaller.Controls;
 
 public partial class MainControl : UserControl
 {
-    private ExternalTool[] tools = null;
-    private List<ToolsListItemControl> toolsControls = null;
+    private List<ToolItemControl> toolItemControls = new List<ToolItemControl>();
+
 
     public MainControl()
     {
         InitializeComponent();
 
         this.Loaded += MainControl_Loaded;
-        this.lstTools.SelectionChanged += LstTools_SelectionChanged;
+        txtBasePath.TextChanged += TxtBasePath_TextChanged;
+        chkOnlyStableVersions.IsCheckedChanged += ChkOnlyStableVersions_IsCheckedChanged;
+        chkSetZXBSOptions.IsCheckedChanged += ChkSetZXBSOptions_IsCheckedChanged;
     }
 
     private void MainControl_Loaded(object? sender, RoutedEventArgs e)
@@ -37,14 +43,15 @@ public partial class MainControl : UserControl
     private void Initialize()
     {
         ServiceLayer.Initialize(ShowStatusPanel, UpdateStatus, HideStatusPanel, GetExternalTools, ShowMessage);
-        if (ServiceLayer.GeneralConfig == null)
+
+        Dispatcher.UIThread.Post(() =>
         {
-            ShowConfig();
-        }
-        else
-        {
-            GetExternalTools();
-        }
+            txtBasePath.Text = ServiceLayer.GeneralConfig.BasePath;
+            chkOnlyStableVersions.IsChecked = ServiceLayer.GeneralConfig.OnlyStableVersions;
+            chkSetZXBSOptions.IsChecked = ServiceLayer.GeneralConfig.SetZXBSConfig;
+        });
+
+        GetExternalTools();
     }
 
 
@@ -71,12 +78,15 @@ public partial class MainControl : UserControl
     {
         Dispatcher.UIThread.Post(() =>
         {
+            mainVersions.IsVisible = false;
+            mainTools.IsVisible = true;
+
             txtStatus.Text = "Working...";
             progressBar.Value = 0;
             pnlStatus.IsVisible = true;
         });
 
-        tools = ServiceLayer.GetExternalTools();
+        var tools = ServiceLayer.GetExternalTools();
 
         Dispatcher.UIThread.Post(() =>
         {
@@ -96,26 +106,77 @@ public partial class MainControl : UserControl
             }
             else
             {
-                ShowData(tools);
+                ShowData();
             }
         });
     }
 
 
-    private void ShowData(ExternalTool[] tools)
+    private void ShowData()
     {
-        toolsControls = new List<ToolsListItemControl>();
+        toolItemControls.Clear();
+        var tools = ServiceLayer.ExternalTools;
 
-        lstTools.Items.Clear();
+        pnlTools.Children.Clear();
         foreach (var tool in tools)
         {
-            var control = new ToolsListItemControl();
-            control.ExternalTool = tool;
-            control.Refresh();
-            toolsControls.Add(control);
-            lstTools.Items.Add(control);
+            var control = new ToolItemControl(tool, Command_Received);
+            toolItemControls.Add(control);
+            pnlTools.Children.Add(control);
         }
-        lstTools.SelectedIndex = 0;
+        UpdateSummary();
+    }
+
+
+    private void Command_Received(string id, string command)
+    {
+        switch (command)
+        {
+            case "REFRESH":
+                GetExternalTools();
+                break;
+            case "CHECKED":
+                UpdateSummary();
+                break;
+            case "VERSIONS":
+                ShowVersions(id);
+                break;
+        }
+    }
+
+
+    private void UpdateSummary()
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            pnlSummary.Children.Clear();
+            bool allUpToDate = true;
+            foreach (var tool in toolItemControls)
+            {
+                if (tool.IsSelected)
+                {
+                    var tb = new TextBlock();
+                    tb.TextWrapping = Avalonia.Media.TextWrapping.Wrap;
+                    if (tool.ExternalTool.InstalledVersion == null)
+                    {
+                        tb.Text = $"- Install:\r\n\t{tool.ExternalTool.Name}\r\n\tPath: {tool.ExternalTool.LocalPath}\r\n";
+                    }
+                    else
+                    {
+                        tb.Text = $"- Update:\r\n\t{tool.ExternalTool.Name}\r\n\tPath: {tool.ExternalTool.LocalPath}\r\n";
+                    }
+                    pnlSummary.Children.Add(tb);
+                    allUpToDate = false;
+                }
+            }
+            if (allUpToDate)
+            {
+                var tb = new TextBlock();
+                tb.TextWrapping = Avalonia.Media.TextWrapping.Wrap;
+                tb.Text = "All tools are up to date.";
+                pnlSummary.Children.Add(tb);
+            }
+        });
     }
 
 
@@ -159,56 +220,107 @@ public partial class MainControl : UserControl
         });
     }
 
-
-    private void LstTools_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+    private void btnSelectPath_Click(object? sender, RoutedEventArgs e)
     {
-        if (lstTools.SelectedItems == null || lstTools.SelectedItems.Count == 0)
+        var dlg = new OpenFolderDialog()
         {
-            return;
-        }
-
-        var ctrl = lstTools.SelectedItems[0] as ToolsListItemControl;
-        if (ctrl == null)
+            Title = "Select tools base path"
+        };
+        dlg.Directory = txtBasePath.Text;
+        var wnd = this.GetVisualRoot() as Window;
+        dlg.ShowAsync(wnd).ContinueWith((t) =>
         {
-            return;
-        }
-
-        var tool = new ToolItemControl();
-        tool.ExternalTool = ctrl.ExternalTool;
-        tool.LocalVersion = ctrl.LocalVersion;
-        tool.Refresh();
-
-        pnlWorking.Children.Clear();
-        pnlWorking.Children.Add(tool);
-    }
-
-    private void btnConfig_Click(object? sender, RoutedEventArgs e)
-    {
-        ShowConfig();
-    }
-
-
-    private void ShowConfig()
-    {
-        Dispatcher.UIThread.Post(() =>
-        {
-            pnlModalContainer.Children.Clear();
-            pnlModalOverlay.IsVisible = true;
-            var dlgConfig = new ConfigControl();
-            dlgConfig.Show(ShowConfig_Closed);
-            pnlModalContainer.Children.Add(dlgConfig);
+            if (!string.IsNullOrEmpty(t.Result))
+            {
+                Dispatcher.UIThread.Post(() =>
+                {
+                    txtBasePath.Text = t.Result;
+                });
+            }
         });
     }
 
 
-    private void ShowConfig_Closed(bool saved)
+    private void btnInstall_Click(object? sender, RoutedEventArgs e)
     {
-        pnlModalOverlay.IsVisible = false;
-        pnlModalContainer.Children.Clear();
+        new Thread(ServiceLayer.DownloadAndInstallTools).Start();
+    }
 
-        if (saved)
+
+    private void ChkSetZXBSOptions_IsCheckedChanged(object? sender, RoutedEventArgs e)
+    {
+        ServiceLayer.GeneralConfig.SetZXBSConfig = chkSetZXBSOptions.IsChecked == true;
+        ServiceLayer.SaveConfig(ServiceLayer.GeneralConfig);
+    }
+
+
+    private void ChkOnlyStableVersions_IsCheckedChanged(object? sender, RoutedEventArgs e)
+    {
+        ServiceLayer.GeneralConfig.OnlyStableVersions = chkOnlyStableVersions.IsChecked == true;
+        ServiceLayer.SaveConfig(ServiceLayer.GeneralConfig);
+    }
+
+
+    private void TxtBasePath_TextChanged(object? sender, TextChangedEventArgs e)
+    {
+        ServiceLayer.GeneralConfig.BasePath = txtBasePath.Text;
+        ServiceLayer.SaveConfig(ServiceLayer.GeneralConfig);
+    }
+
+
+    private void ShowVersions(string id)
+    {
+        Dispatcher.UIThread.Post(() =>
         {
-            new Thread(GetExternalTools).Start();
-        }
+            mainTools.IsVisible = false;
+            mainVersions.IsVisible = true;
+            pnlVersions.Children.Clear();
+            var tool = ServiceLayer.ExternalTools.FirstOrDefault(d => d.Id == id);
+
+            {
+                var btn = new Button()
+                {
+                    Content = "Close",
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                    Margin = new Thickness(10)
+                };
+                btn.Click += Versions_Close;
+                pnlVersions.Children.Add(btn);
+            }
+
+            var versionControlHeader = new VersionControl(null, null,Command_Received);
+            pnlVersions.Children.Add(versionControlHeader);
+            foreach (var version in tool.Versions)
+            {
+                if (ServiceLayer.GeneralConfig.OnlyStableVersions && version.BetaNumber > 0)
+                {
+                    continue;
+                }
+                var versionControl = new VersionControl(tool, version, Command_Received);
+                pnlVersions.Children.Add(versionControl);
+            }
+
+            {
+                var btn = new Button()
+                {
+                    Content = "Close",
+                    HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                    Margin = new Thickness(10)
+                };
+                btn.Click += Versions_Close;
+                pnlVersions.Children.Add(btn);
+            }
+
+        });
+    }
+
+
+    private void Versions_Close(object? sender, RoutedEventArgs e)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            mainTools.IsVisible = true;
+            mainVersions.IsVisible = false;
+        });
     }
 }
