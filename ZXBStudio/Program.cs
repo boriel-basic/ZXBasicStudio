@@ -14,7 +14,7 @@ namespace ZXBasicStudio
             {
                 if(string.IsNullOrEmpty(_Version))
                 {
-                    SetVerion();
+                    SetVersion();
                 }
                 return _Version;
             }
@@ -25,7 +25,7 @@ namespace ZXBasicStudio
             {
                 if (string.IsNullOrEmpty(_VersionDate))
                 {
-                    SetVerion();
+                    SetVersion();
                 }
                 return _VersionDate;
             }
@@ -45,14 +45,14 @@ namespace ZXBasicStudio
                 TypeNameHandling = TypeNameHandling.Auto,
             };
 
-            SetVerion();
+            SetVersion();
 
             BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime(args);
         }
 
 
-        public static void SetVerion()
+        public static void SetVersion()
         {
             try
             {
@@ -61,15 +61,20 @@ namespace ZXBasicStudio
                 _Version = $"{version.Major}.{version.Minor}.{version.Build}";
                 if (version.Revision != 0)
                 {
-                    _Version = $"{Version} - beta {version.Revision}";
+                    _Version = $"{_Version} - beta {version.Revision}";
                 }
-                var buildDate = System.IO.File.GetLastWriteTime(assembly.Location);
+                
+                string path = assembly.Location;
+                if (string.IsNullOrEmpty(path))
+                    path = System.Diagnostics.Process.GetCurrentProcess().MainModule.FileName;
+
+                var buildDate = System.IO.File.GetLastWriteTime(path);
                 _VersionDate = buildDate.ToString("yyyy.MM.dd");
             }
             catch
             {
-                _Version = "";
-                _VersionDate = "";
+                _Version = "Unknown";
+                _VersionDate = "Unknown";
             }
         }
 
