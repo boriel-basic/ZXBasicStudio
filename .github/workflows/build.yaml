@@ -38,7 +38,8 @@ jobs:
             
       - name: Publish for Mac
         run: |
-          dotnet publish ZXBStudio/ZXBasicStudio.csproj -c Release -r osx-x64 --self-contained true -p:PublishSingleFile=true -o out-mac
+          dotnet publish ZXBStudio/ZXBasicStudio.csproj -c Release -r osx-x64 --self-contained true -p:PublishSingleFile=true -o out-mac-x64
+          dotnet publish ZXBStudio/ZXBasicStudio.csproj -c Release -r osx-arm64 --self-contained true -p:PublishSingleFile=true -o out-mac-arm64
 
       - uses: actions/upload-artifact@v4
         with:
@@ -53,5 +54,10 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: ZXBasicStudio-osx-x64
-          path: ~/work/ZXBasicStudio/ZXBasicStudio/out-mac/
+          path: ~/work/ZXBasicStudio/ZXBasicStudio/out-mac-x64/
+          
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ZXBasicStudio-osx-arm64
+          path: ~/work/ZXBasicStudio/ZXBasicStudio/out-mac-arm64/
       
