@@ -2,6 +2,8 @@ name: Build ZXB Studio
 
 on:
   push:
+  
+  workflow_dispatch:
 
 jobs:
   build:

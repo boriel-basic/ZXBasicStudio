@@ -2,6 +2,8 @@ name: Build ZXBInstaller
 
 on:
   push:
+  
+  workflow_dispatch:
 
 jobs:
   build:
