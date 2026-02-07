@@ -30,34 +30,34 @@ jobs:
     
       - name: Publish for Linux
         run: |
-          dotnet publish ZXBStudio/ZXBasicStudio.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -o out
+          dotnet publish ZXBSInstaller/ZXBSInstaller.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -o out
 
       - name: Publish for Windows
         run: |
-          dotnet publish ZXBStudio/ZXBasicStudio.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o out-win
+          dotnet publish ZXBSInstaller/ZXBSInstaller.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o out-win
             
       - name: Publish for Mac
         run: |
-          dotnet publish ZXBStudio/ZXBasicStudio.csproj -c Release -r osx-x64 --self-contained true -p:PublishSingleFile=true -o out-mac-x64
-          dotnet publish ZXBStudio/ZXBasicStudio.csproj -c Release -r osx-arm64 --self-contained true -p:PublishSingleFile=true -o out-mac-arm64
+          dotnet publish ZXBSInstaller/ZXBSInstaller.csproj -c Release -r osx-x64 --self-contained true -p:PublishSingleFile=true -o out-mac-x64
+          dotnet publish ZXBSInstaller/ZXBSInstaller.csproj -c Release -r osx-arm64 --self-contained true -p:PublishSingleFile=true -o out-mac-arm64
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ZXBasicStudio-linux-x64
+          name: ZXBSInstaller-linux-x64
           path: ~/work/ZXBasicStudio/ZXBasicStudio/out/
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ZXBasicStudio-win-x64
+          name: ZXBSInstaller-win-x64
           path: ~/work/ZXBasicStudio/ZXBasicStudio/out-win/
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ZXBasicStudio-osx-x64
+          name: ZXBSInstaller-osx-x64
           path: ~/work/ZXBasicStudio/ZXBasicStudio/out-mac-x64/
           
       - uses: actions/upload-artifact@v4
         with:
-          name: ZXBasicStudio-osx-arm64
+          name: ZXBSInstaller-osx-arm64
           path: ~/work/ZXBasicStudio/ZXBasicStudio/out-mac-arm64/
       
