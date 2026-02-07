@@ -1,0 +1,63 @@
+name: Build ZXBStudio
+
+on:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+  
+      - name: Install .NET 8
+        run: |
+          curl -Lo dotnet.tar.gz https://download.visualstudio.microsoft.com/download/pr/a91ddad4-a3c2-4303-9efc-1ca6b7af850c/be1763df9211599df1cf1c6f504b3c41/dotnet-sdk-8.0.405-linux-x64.tar.gz
+          mkdir dotnet
+          tar -C dotnet -xf dotnet.tar.gz
+          rm dotnet.tar.gz
+          echo DOTNET_ROOT=~/dotnet >> $GITHUB_ENV
+          echo PATH=$PATH:~/dotnet >> $GITHUB_ENV
+          
+      - name: Show version
+        run: dotnet --version
+
+      - name: Clean build artifacts
+        run: dotnet restore
+    
+      - name: Build project
+        run: dotnet build ZXBasicStudio.sln --configuration Release --no-restore
+    
+      - name: Publish for Linux
+        run: |
+          dotnet publish ZXBSInstaller/ZXBSInstaller.csproj -c Release -r linux-x64 --self-contained true -p:PublishSingleFile=true -o out
+
+      - name: Publish for Windows
+        run: |
+          dotnet publish ZXBSInstaller/ZXBSInstaller.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o out-win
+            
+      - name: Publish for Mac
+        run: |
+          dotnet publish ZXBSInstaller/ZXBSInstaller.csproj -c Release -r osx-x64 --self-contained true -p:PublishSingleFile=true -o out-mac-x64
+          dotnet publish ZXBSInstaller/ZXBSInstaller.csproj -c Release -r osx-arm64 --self-contained true -p:PublishSingleFile=true -o out-mac-arm64
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ZXBSInstaller-linux-x64
+          path: ~/work/ZXBSInstaller/ZXBSInstaller/out/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ZXBSInstaller-win-x64
+          path: ~/work/ZXBSInstaller/ZXBSInstaller/out-win/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ZXBSInstaller-osx-x64
+          path: ~/work/ZXBSInstaller/ZXBSInstaller/out-mac-x64/
+          
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ZXBSInstaller-osx-arm64
+          path: ~/work/ZXBSInstaller/ZXBSInstaller/out-mac-arm64/
+      

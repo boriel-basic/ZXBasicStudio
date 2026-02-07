@@ -1,4 +1,4 @@
-name: Build .NET project
+name: Build ZXBInstaller
 
 on:
   push:
