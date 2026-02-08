@@ -214,75 +214,81 @@ namespace ZXBSInstaller.Log
         /// if no external tools are configured or can download the config file.</returns>
         public static ExternalTool[] GetExternalTools()
         {
-            UpdateStatus?.Invoke("Retrieving external tools information...", 5);
-
-            using var httpClient = new HttpClient();
-            string json = httpClient.GetStringAsync(GeneralConfig.ToolsListURL).GetAwaiter().GetResult();
-            var tools = JsonSerializer.Deserialize<ExternalTool[]>(json);
-
-            int max = tools.Length;
-            int prg = 10;
-            for (int n = 0; n < max; n++)
+            try
             {
-                var tool = tools[n];
-                prg = (n * 90) / max;
-                UpdateStatus?.Invoke($"Retrieving versions for {tool.Name}...", prg + 10);
+                UpdateStatus?.Invoke("Retrieving external tools information...", 5);
 
-                tool.Versions = GetAvailableToolVersion(tool);
-                if (tool.Versions == null)
-                {
-                    tool.Versions = new ExternalTools_Version[0];
-                }
-                tool.InstalledVersion = GetToolVersion(tool.Id);
+                using var httpClient = new HttpClient();
+                string json = httpClient.GetStringAsync(GeneralConfig.ToolsListURL).GetAwaiter().GetResult();
+                var tools = JsonSerializer.Deserialize<ExternalTool[]>(json);
 
-                // Set latest version
-                if (GeneralConfig.OnlyStableVersions)
+                int max = tools.Length;
+                int prg = 10;
+                for (int n = 0; n < max; n++)
                 {
-                    tool.LatestVersion = tool.Versions.
-                        Where(d => d.OperatingSystem == CurrentOperatingSystem &&
-                            d.BetaNumber == 0).
-                        OrderByDescending(d => d.VersionNumber).
-                        FirstOrDefault();
-                }
-                if (tool.LatestVersion == null || !GeneralConfig.OnlyStableVersions)
-                {
-                    tool.LatestVersion = tool.Versions.
-                        Where(d => d.OperatingSystem == CurrentOperatingSystem).
-                        OrderByDescending(d => d.VersionNumber).
-                        FirstOrDefault();
-                }
+                    var tool = tools[n];
+                    prg = (n * 90) / max;
+                    UpdateStatus?.Invoke($"Retrieving versions for {tool.Name}...", prg + 10);
 
-                // Path for first versions of ZXBSInstalller
-                if (tool.Id == "zxbsinstaller" && tool.LatestVersion == null)
-                {
-                    tool.LatestVersion = tool.InstalledVersion;
-                }
-
-                // Determine whether you need to update
-                if (tool.InstalledVersion == null)
-                {
-                    tool.UpdateNeeded = true;
-                }
-                else
-                {
-                    if (tool.LatestVersion != null)
+                    tool.Versions = GetAvailableToolVersion(tool);
+                    if (tool.Versions == null)
                     {
-                        if (tool.LatestVersion.VersionNumber > tool.InstalledVersion.VersionNumber)
+                        tool.Versions = new ExternalTools_Version[0];
+                    }
+                    tool.InstalledVersion = GetToolVersion(tool.Id);
+
+                    // Set latest version
+                    if (GeneralConfig.OnlyStableVersions)
+                    {
+                        tool.LatestVersion = tool.Versions.
+                            Where(d => d.OperatingSystem == CurrentOperatingSystem &&
+                                d.BetaNumber == 0).
+                            OrderByDescending(d => d.VersionNumber).
+                            FirstOrDefault();
+                    }
+                    if (tool.LatestVersion == null || !GeneralConfig.OnlyStableVersions)
+                    {
+                        tool.LatestVersion = tool.Versions.
+                            Where(d => d.OperatingSystem == CurrentOperatingSystem).
+                            OrderByDescending(d => d.VersionNumber).
+                            FirstOrDefault();
+                    }
+
+                    // Path for first versions of ZXBSInstalller
+                    if (tool.Id == "zxbsinstaller" && tool.LatestVersion == null)
+                    {
+                        tool.LatestVersion = tool.InstalledVersion;
+                    }
+
+                    // Determine whether you need to update
+                    if (tool.InstalledVersion == null)
+                    {
+                        tool.UpdateNeeded = true;
+                    }
+                    else
+                    {
+                        if (tool.LatestVersion != null)
                         {
-                            tool.UpdateNeeded = true;
+                            if (tool.LatestVersion.VersionNumber > tool.InstalledVersion.VersionNumber)
+                            {
+                                tool.UpdateNeeded = true;
+                            }
                         }
                     }
+
+                    tool.LocalPath = Path.Combine(GeneralConfig.BasePath, tool.Id);
                 }
 
-                tool.LocalPath = Path.Combine(GeneralConfig.BasePath, tool.Id);
+                //GetPaths(ref tools);
+
+                ExternalTools = tools.OrderBy(d => d.Order).ToArray();
+
+                return ExternalTools;
             }
-
-            //GetPaths(ref tools);
-
-            ExternalTools = tools.OrderBy(d => d.Order).ToArray();
-
-            return ExternalTools;
-
+            catch (Exception ex)
+            {
+                return null;
+            }
 #if GENERATE_JSON
             var lst = new List<ExternalTool>();
             // Compiler
