@@ -97,12 +97,13 @@ public partial class MainControl : UserControl
                 {
                     ButtonDefinitions = ButtonEnum.Ok,
                     ContentTitle = "ERROR",
-                    ContentMessage = "Error retrieving the list of tools. Please check your internet connection.",
+                    ContentMessage = "Error retrieving the list of tools, please check your Internet connection.\r\nIt may be a temporary server error, report the error to duefectucorp@gmail.com and try again later.",
                     Icon = MsBox.Avalonia.Enums.Icon.Error,
                     WindowIcon = ((Window)this.VisualRoot).Icon,
                     WindowStartupLocation = WindowStartupLocation.CenterOwner
                 });
                 box.ShowAsPopupAsync(this);
+                
             }
             else
             {
