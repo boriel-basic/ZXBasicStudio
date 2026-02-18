@@ -7,6 +7,7 @@ using System.IO.Compression;
 using System.Reflection;
 using System.Reflection.Metadata.Ecma335;
 using System.Runtime;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -30,6 +31,8 @@ namespace ZXBSInstaller.Log
         private static Action HideStatusPanel = null;
         private static Action RefreshTools = null;
         private static Action<string> ShowMessage = null;
+        private static Action ExitApp = null;
+
 
         #region Constructor and tools
 
@@ -42,13 +45,15 @@ namespace ZXBSInstaller.Log
             Action<string, int> callBackUpdateStatus,
             Action callBackHideStatusPanel,
             Action callBackGetExternalTools,
-            Action<string> callBackShowMessage)
+            Action<string> callBackShowMessage,
+            Action callBackExitApp)
         {
             ShowStatusPanel = callBackShowStatusPanel;
             UpdateStatus = callBackUpdateStatus;
             HideStatusPanel = callBackHideStatusPanel;
             RefreshTools = callBackGetExternalTools;
             ShowMessage = callBackShowMessage;
+            ExitApp = callBackExitApp;
 
             GetConfig();
 
@@ -62,7 +67,14 @@ namespace ZXBSInstaller.Log
             }
             else if (OperatingSystem.IsMacOS())
             {
-                CurrentOperatingSystem = OperatingSystems.MacOS;
+                if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+                {
+                    CurrentOperatingSystem = OperatingSystems.MacOS_arm64;
+                }
+                else if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
+                {
+                    CurrentOperatingSystem = OperatingSystems.MacOS_x64;
+                }
             }
 
             return true;
@@ -191,7 +203,8 @@ namespace ZXBSInstaller.Log
                     case OperatingSystems.Linux:
                         Process.Start("xdg-open", url);
                         break;
-                    case OperatingSystems.MacOS:
+                    case OperatingSystems.MacOS_x64:
+                    case OperatingSystems.MacOS_arm64:
                         Process.Start("open", url);
                         break;
                 }
@@ -646,14 +659,14 @@ namespace ZXBSInstaller.Log
                         {
                             if (installer)
                             {
-                                if (!fl.Contains("zxbsinstaller"))
+                                if (!fl.Contains("ZXBSInstaller"))
                                 {
                                     continue;
                                 }
                             }
                             else
                             {
-                                if (fl.Contains("zxbsinstaller"))
+                                if (fl.Contains("ZXBSInstaller"))
                                 {
                                     continue;
                                 }
@@ -690,6 +703,14 @@ namespace ZXBSInstaller.Log
                 else if (fileLink.Contains("linux"))
                 {
                     version.OperatingSystem = OperatingSystems.Linux;
+                }
+                else if (fileLink.Contains("osx-x64"))
+                {
+                    version.OperatingSystem = OperatingSystems.MacOS_x64;
+                }
+                else if (fileLink.Contains("osx-arm64"))
+                {
+                    version.OperatingSystem = OperatingSystems.MacOS_arm64;
                 }
                 else if (fileLink.Contains("osx") || fileLink.Contains("mac"))
                 {
@@ -995,6 +1016,13 @@ namespace ZXBSInstaller.Log
                     }
                 }
 
+                // ZXBSInstaller auto install
+                if (tool.Id == "zxbsinstaller")
+                {
+                    InstallInstaller(tool, tempFile, installationPath);
+                    return;
+                }
+
                 // Extract file
                 step = $"Installing {tool.Name}";
                 UpdateStatus($"Installing {tool.Name} version {version.Version}...", 50);
@@ -1016,6 +1044,84 @@ namespace ZXBSInstaller.Log
             {
                 HideStatusPanel();
                 ShowMessage($"Error installing {tool.Name}\r\n{step}\r\n{ex.Message}\r\n{ex.StackTrace}");
+            }
+        }
+
+
+        private static void InstallInstaller(ExternalTool tool, string tempFile, string installationPath)
+        {
+            try
+            {
+                // Create batch/bash file
+                string bash = "";
+                string bashFile = "";
+                if (CurrentOperatingSystem == OperatingSystems.Windows)
+                {
+                    bashFile = Path.Combine(GeneralConfig.BasePath, "downloads", "zxbsinstall.bat");
+                    bash = @"
+@echo off
+echo Updating installer...
+timeout /t 5 /nobreak
+echo on
+tar -xf ""{tempFile}"" -C ""{installationPath}""
+del ""{tempFile}""
+cd ""{installationPath}""
+start ZXBSInstaller.exe";
+                }
+                else
+                {
+                    bashFile = Path.Combine(GeneralConfig.BasePath, "downloads", "zxbsinstall.sh");
+                    bash = @"
+#!/bin/bash
+
+echo ""Updating installer...""
+sleep 5
+
+set -x
+tar -xf ""{tempFile}"" -C ""{installationPath}""
+rm -f ""{tempFile}""
+cd ""{installationPath}"" || exit 1
+
+# Ejecutar sin esperar (en segundo plano)
+./ZXBSInstaller.exe &";
+                }
+                bash = bash.Replace("{tempFile}", tempFile).Replace("{installationPath}", installationPath);
+                File.WriteAllText(bashFile, bash);
+
+                // Set execute attr in Linux/Mac
+                if (CurrentOperatingSystem != OperatingSystems.Windows)
+                {
+                    var process = new Process();
+                    process.StartInfo.FileName = "chmod";
+                    process.StartInfo.ArgumentList.Add("+x");
+                    process.StartInfo.ArgumentList.Add(bashFile);
+                    process.StartInfo.RedirectStandardOutput = true;
+                    process.StartInfo.RedirectStandardError = true;
+                    process.StartInfo.UseShellExecute = false;
+                    process.Start();
+                    process.WaitForExit();
+                }
+
+                // Run batch/bash file
+                {
+                    ProcessStartInfo psi = new ProcessStartInfo
+                    {
+                        FileName = bashFile,
+                        WorkingDirectory = Path.Combine(GeneralConfig.BasePath, "downloads"),
+                        UseShellExecute = true,
+                    };
+                    var p = new Process { StartInfo = psi };
+                    p.Start();
+                }
+
+                // Exit app
+                ExitApp();
+            }
+
+            catch (Exception ex)
+            {
+                HideStatusPanel();
+                ShowMessage($"Error installing ZXBSInstaller\r\n{ex.Message}\r\n{ex.StackTrace}");
             }
         }
 
@@ -1053,37 +1159,6 @@ namespace ZXBSInstaller.Log
                     return;
                 }
             }
-            //if (archive.ToLower().EndsWith(".tar.gz"))
-            //{
-            //    Directory.CreateDirectory(destination);
-
-            //    using var fileStream = File.OpenRead(archive);
-            //    using var gzipStream = new GZipStream(fileStream, CompressionMode.Decompress);
-            //    using var tarReader = new TarReader(gzipStream);
-
-            //    TarEntry? entry;
-            //    while ((entry = tarReader.GetNextEntry()) != null)
-            //    {
-            //        string fullPath = Path.Combine(destination, entry.Name);
-
-            //        if (entry.EntryType == TarEntryType.Directory)
-            //        {
-            //            Directory.CreateDirectory(fullPath);
-            //        }
-            //        else
-            //        {
-            //            Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
-            //            if (entry.Length == 0)
-            //            {
-            //                File.WriteAllBytes(fullPath, new byte[0]);
-            //            }
-            //            else
-            //            {
-            //                entry.DataStream!.CopyTo(File.Create(fullPath));
-            //            }
-            //        }
-            //    }
-            //}
         }
 
 

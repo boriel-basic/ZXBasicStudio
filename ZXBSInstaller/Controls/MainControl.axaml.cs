@@ -44,7 +44,7 @@ public partial class MainControl : UserControl
 
     private void Initialize()
     {
-        ServiceLayer.Initialize(ShowStatusPanel, UpdateStatus, HideStatusPanel, GetExternalTools, ShowMessage);
+        ServiceLayer.Initialize(ShowStatusPanel, UpdateStatus, HideStatusPanel, GetExternalTools, ShowMessage, ExitApp);
 
         Dispatcher.UIThread.Post(() =>
         {
@@ -372,15 +372,22 @@ public partial class MainControl : UserControl
 
     private void btnPlayZXBS_Click(object? sender, RoutedEventArgs e)
     {
-        if (ServiceLayer.RunZXBasicStudio())
+        ExitApp();
+    }
+
+
+    private void ExitApp()
+    {
+        Dispatcher.UIThread.Post(() =>
         {
             if (App.Current?.ApplicationLifetime
                     is IClassicDesktopStyleApplicationLifetime desktop)
             {
                 desktop.Shutdown();
             }
-        }
+        });
     }
+
 
     private void btnRefresh_Click(object? sender, RoutedEventArgs e)
     {
