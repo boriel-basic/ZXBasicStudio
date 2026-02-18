@@ -16,9 +16,7 @@ namespace ZXBSInstaller
         {
             try
             {
-                //using var stream = File.OpenRead(fileName);
-                //imgControl.Source = new Bitmap(stream);
-                var uri= new Uri($"avares://ZXBSInstaller/Resources/{fileName}");
+                var uri= new Uri($"avares://ZXBSInstaller/Assets/{fileName}");
                 var asset=AssetLoader.Open(uri);
                 var bitmap=new Bitmap(asset);
                 imgControl.Source = bitmap;

@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using Avalonia.Threading;
@@ -103,7 +104,7 @@ public partial class MainControl : UserControl
                     WindowStartupLocation = WindowStartupLocation.CenterOwner
                 });
                 box.ShowAsPopupAsync(this);
-                
+
             }
             else
             {
@@ -289,7 +290,7 @@ public partial class MainControl : UserControl
                 pnlVersions.Children.Add(btn);
             }
 
-            var versionControlHeader = new VersionControl(null, null,Command_Received);
+            var versionControlHeader = new VersionControl(null, null, Command_Received);
             pnlVersions.Children.Add(versionControlHeader);
             foreach (var version in tool.Versions)
             {
@@ -323,5 +324,22 @@ public partial class MainControl : UserControl
             mainTools.IsVisible = true;
             mainVersions.IsVisible = false;
         });
+    }
+
+    private void btnPlayZXBS_Click(object? sender, RoutedEventArgs e)
+    {
+        if (ServiceLayer.RunZXBasicStudio())
+        {
+            if (App.Current?.ApplicationLifetime
+                    is IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                desktop.Shutdown();
+            }
+        }
+    }
+
+    private void btnRefresh_Click(object? sender, RoutedEventArgs e)
+    {
+        new Thread(GetExternalTools).Start();
     }
 }
