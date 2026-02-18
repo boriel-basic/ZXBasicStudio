@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,8 +16,10 @@ namespace ZXBSInstaller
         {
             try
             {
-                using var stream = File.OpenRead(fileName);
-                imgControl.Source = new Bitmap(stream);
+                var uri= new Uri($"avares://ZXBSInstaller/Assets/{fileName}");
+                var asset=AssetLoader.Open(uri);
+                var bitmap=new Bitmap(asset);
+                imgControl.Source = bitmap;
             }
             catch (Exception ex)
             {

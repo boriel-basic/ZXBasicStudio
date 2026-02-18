@@ -1152,5 +1152,35 @@ namespace ZXBSInstaller.Log
 
         #endregion
 
+
+        public static bool RunZXBasicStudio()
+        {
+            try
+            {
+                var fileName = Path.Combine(GeneralConfig.BasePath, "zxbs", "ZXBasicStudio.exe");
+                if (!File.Exists(fileName))
+                {
+                    fileName = Path.Combine(GeneralConfig.BasePath, "zxbs", "ZXBasicStudio");
+                }
+                if (!File.Exists(fileName))
+                {
+                    ServiceLayer.ShowMessage("ZX Basic Studio executable not found. Please check the installation.");
+                    return false;
+                }
+                ProcessStartInfo psi = new ProcessStartInfo
+                {
+                    FileName = fileName,
+                };
+                using Process process = new Process { StartInfo = psi };
+                process.Start();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ServiceLayer.ShowMessage("Error launching ZX Basic Studio. Please check the installation.");
+                return false;
+            }
+        }
+
     }
 }

@@ -25,7 +25,7 @@ public partial class ToolItemControl : UserControl
         ExternalTool = tool;
         Command = callBackCommand;
 
-        UITools.ShowImage($"InstallerResources/{ExternalTool.Id}.png", imgIcon);
+        UITools.ShowImage($"{ExternalTool.Id}.png", imgIcon);
         txtName.Text = tool.Name;
         txtDescription.Text = tool.Description;
         txtPath.Text = "Path: " + tool.LocalPath;

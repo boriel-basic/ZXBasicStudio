@@ -2,6 +2,7 @@
 			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:svg="using:Avalonia.Svg.Skia"
 			 mc:Ignorable="d" d:DesignWidth="1000" d:DesignHeight="600"
 			 x:Class="ZXBSInstaller.Controls.MainControl">
 	<Grid Grid.ColumnDefinitions="*,1,250" Grid.RowDefinitions="Auto,1,*,1,Auto">
@@ -36,9 +37,31 @@
 				<CheckBox x:Name="chkSetZXBSOptions" Grid.Row="3" Margin="0,4,0,0" Content="Update ZX Basic Studio Options"/>
 			</Grid>
 		</Grid>
-		<Grid Grid.Column="2" Grid.Row="4" Margin="8" HorizontalAlignment="Right" VerticalAlignment="Bottom">
-			<Button x:Name="btnInstall" Click="btnInstall_Click">Install selected components</Button>
+
+		<Grid Grid.Column="2" Grid.Row="4" Grid.RowDefinitions="*,Auto" Margin="8" HorizontalAlignment="Right">
+			<StackPanel Orientation="Vertical" HorizontalAlignment="Right">
+				<Button x:Name="btnPlayZXBS" Width="200" Click="btnPlayZXBS_Click">
+					<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+						<svg:Svg Path="/Assets/play.svg" Width="20" Margin="0,0,4,0"></svg:Svg>
+						<TextBlock Text="Run ZX Basic Studio"/>
+					</StackPanel>
+				</Button>
+				<Button x:Name="btnRefresh" Width="200" Margin="0,4,0,0" Click="btnRefresh_Click">
+					<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+						<svg:Svg Path="/Assets/refresh.svg" Width="20" Margin="0,0,4,0"></svg:Svg>
+						<TextBlock Text="Refrsh"/>
+					</StackPanel>
+				</Button>
+			</StackPanel>
+
+			<Button x:Name="btnInstall" Grid.Row="1" Width="200" Click="btnInstall_Click">
+				<StackPanel Orientation="Horizontal"  HorizontalAlignment="Center">
+					<svg:Svg Path="/Assets/install.svg" Width="20" Margin="0,0,4,0"></svg:Svg>
+					<TextBlock Text="Install components"/>
+				</StackPanel>
+			</Button>
 		</Grid>
+
 
 		<!-- Progress Status -->
 		<Grid x:Name="pnlStatus" Grid.ColumnSpan="3" Grid.RowSpan="5" Margin="0" IsVisible="False">
