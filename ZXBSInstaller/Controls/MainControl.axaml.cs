@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
 using MsBox.Avalonia;
@@ -23,7 +24,7 @@ namespace ZXBSInstaller.Controls;
 public partial class MainControl : UserControl
 {
     private List<ToolItemControl> toolItemControls = new List<ToolItemControl>();
-
+    private static Brush Yellow = new SolidColorBrush(Colors.Yellow);
 
     public MainControl()
     {
@@ -153,6 +154,7 @@ public partial class MainControl : UserControl
         {
             pnlSummary.Children.Clear();
             bool allUpToDate = true;
+            // Check for recommended updates/installs
             foreach (var tool in toolItemControls)
             {
                 if (tool.IsSelected)
@@ -177,6 +179,48 @@ public partial class MainControl : UserControl
                 tb.TextWrapping = Avalonia.Media.TextWrapping.Wrap;
                 tb.Text = "All tools are up to date.";
                 pnlSummary.Children.Add(tb);
+            }
+
+            // Separator
+            {
+                var separator = new Separator()
+                {
+                    Margin = new Thickness(0, 10, 0, 10)
+                };
+                pnlSummary.Children.Add(separator);
+            }
+
+            // Show tools tree
+            {
+                pnlSummary.Children.Add(new TextBlock()
+                {
+                    Text = "Base path:",
+                    Foreground = Yellow
+                });
+                pnlSummary.Children.Add(new TextBlock()
+                {
+                    Text = ServiceLayer.GeneralConfig.BasePath,
+                    Margin = new Thickness(10, 4, 0, 0)
+                });
+            }
+            foreach (var tool in toolItemControls)
+            {
+                var tb = new TextBlock();
+                tb.TextWrapping = Avalonia.Media.TextWrapping.Wrap;
+                if (tool.ExternalTool.InstalledVersion != null)
+                {
+                    pnlSummary.Children.Add(new TextBlock()
+                    {
+                        Text = tool.ExternalTool.Name + ":",
+                        Margin = new Thickness(0, 8, 0, 0),
+                        Foreground = Yellow
+                    });
+                    pnlSummary.Children.Add(new TextBlock()
+                    {
+                        Text = System.IO.Path.Combine(ServiceLayer.GeneralConfig.BasePath, tool.ExternalTool.Id),
+                        Margin = new Thickness(10, 4, 0, 0)
+                    });
+                }
             }
         });
     }
