@@ -61,7 +61,7 @@ public partial class MainControl : UserControl
     {
         Dispatcher.UIThread.Post(() =>
         {
-            pnlStatus.IsVisible = false;
+            HideStatusPanel();
             var box = MessageBoxManager.GetMessageBoxStandard(new MessageBoxStandardParams
             {
                 ButtonDefinitions = ButtonEnum.Ok,
@@ -83,16 +83,14 @@ public partial class MainControl : UserControl
             mainVersions.IsVisible = false;
             mainTools.IsVisible = true;
 
-            txtStatus.Text = "Working...";
-            progressBar.Value = 0;
-            pnlStatus.IsVisible = true;
+            ShowStatusPanel("Working...");
         });
 
         var tools = ServiceLayer.GetExternalTools();
 
         Dispatcher.UIThread.Post(() =>
         {
-            pnlStatus.IsVisible = false;
+            HideStatusPanel();
             if (tools == null)
             {
                 var box = MessageBoxManager.GetMessageBoxStandard(new MessageBoxStandardParams
@@ -230,9 +228,15 @@ public partial class MainControl : UserControl
     {
         Dispatcher.UIThread.Post(() =>
         {
+            ServiceLayer.Cancel = false;
             txtStatus.Text = message;
             progressBar.Value = 0;
             pnlStatus.IsVisible = true;
+
+            btnInstall.IsEnabled = false;
+            btnPlayZXBS.IsEnabled = false;
+            btnRefresh.IsEnabled = false;
+            btnSelectPath.IsEnabled = false;
         });
     }
 
@@ -242,6 +246,11 @@ public partial class MainControl : UserControl
         Dispatcher.UIThread.Post(() =>
         {
             pnlStatus.IsVisible = false;
+
+            btnInstall.IsEnabled = true;
+            btnPlayZXBS.IsEnabled = true;
+            btnRefresh.IsEnabled = true;
+            btnSelectPath.IsEnabled = true;
         });
     }
 
@@ -392,5 +401,10 @@ public partial class MainControl : UserControl
     private void btnRefresh_Click(object? sender, RoutedEventArgs e)
     {
         new Thread(GetExternalTools).Start();
+    }
+
+    private void btnCancel_Click(object? sender, RoutedEventArgs e)
+    {
+        ServiceLayer.Cancel = true;
     }
 }

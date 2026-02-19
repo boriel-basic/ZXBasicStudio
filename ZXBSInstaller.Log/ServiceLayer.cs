@@ -25,6 +25,8 @@ namespace ZXBSInstaller.Log
         public static Config GeneralConfig = null;
         public static ExternalTool[] ExternalTools = null;
         public static OperatingSystems CurrentOperatingSystem = OperatingSystems.All;
+        public static bool Cancel = false;
+
 
         private static Action<string> ShowStatusPanel = null;
         private static Action<string, int> UpdateStatus = null;
@@ -48,36 +50,44 @@ namespace ZXBSInstaller.Log
             Action<string> callBackShowMessage,
             Action callBackExitApp)
         {
-            ShowStatusPanel = callBackShowStatusPanel;
-            UpdateStatus = callBackUpdateStatus;
-            HideStatusPanel = callBackHideStatusPanel;
-            RefreshTools = callBackGetExternalTools;
-            ShowMessage = callBackShowMessage;
-            ExitApp = callBackExitApp;
+            try
+            {
+                ShowStatusPanel = callBackShowStatusPanel;
+                UpdateStatus = callBackUpdateStatus;
+                HideStatusPanel = callBackHideStatusPanel;
+                RefreshTools = callBackGetExternalTools;
+                ShowMessage = callBackShowMessage;
+                ExitApp = callBackExitApp;
 
-            GetConfig();
+                GetConfig();
 
-            if (OperatingSystem.IsWindows())
-            {
-                CurrentOperatingSystem = OperatingSystems.Windows;
-            }
-            else if (OperatingSystem.IsLinux())
-            {
-                CurrentOperatingSystem = OperatingSystems.Linux;
-            }
-            else if (OperatingSystem.IsMacOS())
-            {
-                if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+                if (OperatingSystem.IsWindows())
                 {
-                    CurrentOperatingSystem = OperatingSystems.MacOS_arm64;
+                    CurrentOperatingSystem = OperatingSystems.Windows;
                 }
-                else if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
+                else if (OperatingSystem.IsLinux())
                 {
-                    CurrentOperatingSystem = OperatingSystems.MacOS_x64;
+                    CurrentOperatingSystem = OperatingSystems.Linux;
                 }
-            }
+                else if (OperatingSystem.IsMacOS())
+                {
+                    if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+                    {
+                        CurrentOperatingSystem = OperatingSystems.MacOS_arm64;
+                    }
+                    else if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
+                    {
+                        CurrentOperatingSystem = OperatingSystems.MacOS_x64;
+                    }
+                }
 
-            return true;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error initializing.\r\n{ex.Message}{ex.StackTrace}");
+                return false;
+            }
         }
 
 
@@ -101,10 +111,10 @@ namespace ZXBSInstaller.Log
                     SaveConfig(GeneralConfig);
                 }
                 return GeneralConfig;
-
             }
             catch (Exception ex)
             {
+                ShowMessage($"Error retrieving configuration.\r\n{ex.Message}{ex.StackTrace}");
                 return null;
             }
         }
@@ -112,32 +122,40 @@ namespace ZXBSInstaller.Log
 
         public static Config CreateConfig()
         {
-            List<ExternalTools_Path> toolsPaths = null;
-            var cfg = ServiceLayer.GeneralConfig;
-            if (cfg == null)
+            try
             {
-                cfg = new Config()
+                List<ExternalTools_Path> toolsPaths = null;
+                var cfg = ServiceLayer.GeneralConfig;
+                if (cfg == null)
                 {
-                    BasePath = Directory.GetParent(Directory.GetCurrentDirectory()).FullName,
-                    OnlyStableVersions = true,
-                    SetZXBSConfig = true,
-                    ToolsListURL = "https://zx.duefectucorp.com/zxbsinstaller.json"
-                };
-            }
+                    cfg = new Config()
+                    {
+                        BasePath = Directory.GetParent(Directory.GetCurrentDirectory()).FullName,
+                        OnlyStableVersions = true,
+                        SetZXBSConfig = true,
+                        ToolsListURL = "https://zx.duefectucorp.com/zxbsinstaller.json"
+                    };
+                }
 
-            if (cfg.ExternalTools_Paths == null)
-            {
-                cfg.ExternalTools_Paths = new List<ExternalTools_Path>();
-            }
-            if (cfg.ExternalTools_Paths.Count == 0)
-            {
-                cfg.ExternalTools_Paths.Add(new ExternalTools_Path()
+                if (cfg.ExternalTools_Paths == null)
                 {
-                    Id = "zxbsinstaller",
-                    LocalPath = Directory.GetCurrentDirectory()
-                });
+                    cfg.ExternalTools_Paths = new List<ExternalTools_Path>();
+                }
+                if (cfg.ExternalTools_Paths.Count == 0)
+                {
+                    cfg.ExternalTools_Paths.Add(new ExternalTools_Path()
+                    {
+                        Id = "zxbsinstaller",
+                        LocalPath = Directory.GetCurrentDirectory()
+                    });
+                }
+                return cfg;
             }
-            return cfg;
+            catch (Exception ex)
+            {
+                ShowMessage($"Error creating default configuration.\r\n{ex.Message}{ex.StackTrace}");
+                return null;
+            }
         }
 
 
@@ -159,8 +177,10 @@ namespace ZXBSInstaller.Log
             }
             catch (Exception ex)
             {
+                ShowMessage($"Error saving configuration.\r\n{ex.Message}{ex.StackTrace}");
                 return null;
             }
+
         }
 
 
@@ -211,6 +231,7 @@ namespace ZXBSInstaller.Log
             }
             catch (Exception ex)
             {
+                ShowMessage($"Error opening {url}.\r\n{ex.Message}{ex.StackTrace}");
             }
         }
 
@@ -239,6 +260,10 @@ namespace ZXBSInstaller.Log
                 int prg = 10;
                 for (int n = 0; n < max; n++)
                 {
+                    if(Cancel)
+                    {
+                        return null;
+                    }
                     var tool = tools[n];
                     prg = (n * 90) / max;
                     UpdateStatus?.Invoke($"Retrieving versions for {tool.Name}...", prg + 10);
@@ -300,6 +325,7 @@ namespace ZXBSInstaller.Log
             }
             catch (Exception ex)
             {
+                ShowMessage($"Error retrieving external tools information. Please check your internet connection and try again.\r\n{ex.Message}{ex.StackTrace}");
                 return null;
             }
 #if GENERATE_JSON
@@ -446,101 +472,123 @@ namespace ZXBSInstaller.Log
 
         public static void GetPaths(ref ExternalTool[] tools)
         {
-            var filePath = Path.Combine(Environment.GetFolderPath(SpecialFolder.ApplicationData), "ZXBasicStudio", "ZXBasicStudioOptions.json");
-            if (!File.Exists(filePath))
+            try
             {
-                return;
-            }
-            var jsonString = File.ReadAllText(filePath);
-            using JsonDocument doc = JsonDocument.Parse(jsonString);
-            JsonElement root = doc.RootElement;
+                var filePath = Path.Combine(Environment.GetFolderPath(SpecialFolder.ApplicationData), "ZXBasicStudio", "ZXBasicStudioOptions.json");
+                if (!File.Exists(filePath))
+                {
+                    return;
+                }
+                var jsonString = File.ReadAllText(filePath);
+                using JsonDocument doc = JsonDocument.Parse(jsonString);
+                JsonElement root = doc.RootElement;
 
-            UpdatePath("zxbasic", "ZxbcPath", root, ref tools);
-            // ZX Basic Studio
-            {
-                var tool = tools.FirstOrDefault(t => t.Id == "zxbs");
-                if (tool != null)
+                UpdatePath("zxbasic", "ZxbcPath", root, ref tools);
+                // ZX Basic Studio
                 {
-                    tool.LocalPath = Directory.GetCurrentDirectory();
+                    var tool = tools.FirstOrDefault(t => t.Id == "zxbs");
+                    if (tool != null)
+                    {
+                        tool.LocalPath = Directory.GetCurrentDirectory();
+                    }
+                }
+                // ZX Basic Studio Installer
+                {
+                    var tool = tools.FirstOrDefault(t => t.Id == "zxbsinstaller");
+                    if (tool != null)
+                    {
+                        tool.LocalPath = Directory.GetCurrentDirectory();
+                    }
                 }
             }
-            // ZX Basic Studio Installer
+            catch (Exception ex)
             {
-                var tool = tools.FirstOrDefault(t => t.Id == "zxbsinstaller");
-                if (tool != null)
-                {
-                    tool.LocalPath = Directory.GetCurrentDirectory();
-                }
+                ShowMessage($"Error getting paths.\r\n{ex.Message}{ex.StackTrace}");
             }
         }
 
 
         private static void UpdatePath(string toolId, string property, JsonElement root, ref ExternalTool[] tools)
         {
-            var tool = tools.FirstOrDefault(t => t.Id == toolId);
-            if (tool == null)
+            try
             {
-                return;
+                var tool = tools.FirstOrDefault(t => t.Id == toolId);
+                if (tool == null)
+                {
+                    return;
+                }
+                if (root.TryGetProperty(property, out JsonElement element))
+                {
+                    string value = element.GetString();
+                    tool.FullLocalPath = value;
+                    var fn = Path.GetFileName(value);
+                    value = value.Replace(fn, "");
+                    tool.LocalPath = value;
+                }
             }
-            if (root.TryGetProperty(property, out JsonElement element))
+            catch (Exception ex)
             {
-                string value = element.GetString();
-                tool.FullLocalPath = value;
-                var fn = Path.GetFileName(value);
-                value = value.Replace(fn, "");
-                tool.LocalPath = value;
+                ShowMessage($"Error updating path.\r\n{ex.Message}{ex.StackTrace}");
             }
         }
 
 
         private static (int, int) GetVersionNumber(string versionString)
         {
-            int number = 0;
-            int betaNumber = 0;
-            string version = versionString;
-            if (version.Contains("-beta"))
+            try
             {
-                var mv = Regex.Match(version, @"beta(\d+)(?:[-\.]|$)", RegexOptions.IgnoreCase);
-                if (mv.Success)
+                int number = 0;
+                int betaNumber = 0;
+                string version = versionString;
+                if (version.Contains("-beta"))
                 {
-                    version = version.Replace("-beta", ".");
-                }
-            }
-            else
-            {
-                version += ".0";
-            }
-
-            var versionParts = version.Split(".");
-            if (versionParts.Length == 5)
-            {
-                versionParts[3] += versionParts[4];
-            }
-            for (int n = 0; n < 4; n++)
-            {
-                number *= 1000;
-                if (n < versionParts.Length)
-                {
-                    int v = ToInteger(versionParts[n]);
-                    if (n == 3)
+                    var mv = Regex.Match(version, @"beta(\d+)(?:[-\.]|$)", RegexOptions.IgnoreCase);
+                    if (mv.Success)
                     {
-                        betaNumber = v;
-                        if (betaNumber == 0)
+                        version = version.Replace("-beta", ".");
+                    }
+                }
+                else
+                {
+                    version += ".0";
+                }
+
+                var versionParts = version.Split(".");
+                if (versionParts.Length == 5)
+                {
+                    versionParts[3] += versionParts[4];
+                }
+                for (int n = 0; n < 4; n++)
+                {
+                    number *= 1000;
+                    if (n < versionParts.Length)
+                    {
+                        int v = ToInteger(versionParts[n]);
+                        if (n == 3)
                         {
-                            number += 999;
+                            betaNumber = v;
+                            if (betaNumber == 0)
+                            {
+                                number += 999;
+                            }
+                            else
+                            {
+                                number += betaNumber;
+                            }
                         }
                         else
                         {
-                            number += betaNumber;
+                            number += v;
                         }
                     }
-                    else
-                    {
-                        number += v;
-                    }
                 }
+                return (number, betaNumber);
             }
-            return (number, betaNumber);
+            catch (Exception ex)
+            {
+                ShowMessage($"Error parsing version number.\r\n{ex.Message}{ex.StackTrace}");
+                return (0, 0);
+            }
         }
 
         #endregion
@@ -550,19 +598,27 @@ namespace ZXBSInstaller.Log
 
         private static ExternalTools_Version[] GetAvailableToolVersion(ExternalTool tool)
         {
-            switch (tool.Id)
+            try
             {
-                case "zxbasic":
-                    return GetBorielBasicVersions(tool.VersionsUrl);
+                switch (tool.Id)
+                {
+                    case "zxbasic":
+                        return GetBorielBasicVersions(tool.VersionsUrl);
 
-                case "zxbs":
-                    return GetBorielZXBSVersions(tool.VersionsUrl, false);
+                    case "zxbs":
+                        return GetBorielZXBSVersions(tool.VersionsUrl, false);
 
-                case "zxbsinstaller":
-                    return GetBorielZXBSVersions(tool.VersionsUrl, true);
+                    case "zxbsinstaller":
+                        return GetBorielZXBSVersions(tool.VersionsUrl, true);
 
-                default:
-                    return null;
+                    default:
+                        return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error getting available versions.\r\n{ex.Message}{ex.StackTrace}");
+                return null;
             }
         }
 
@@ -628,6 +684,7 @@ namespace ZXBSInstaller.Log
             }
             catch (Exception ex)
             {
+                ShowMessage($"Error retrieving Boriel Basic versions.\r\n{ex.Message}{ex.StackTrace}");
                 return null;
             }
         }
@@ -683,6 +740,7 @@ namespace ZXBSInstaller.Log
             }
             catch (Exception ex)
             {
+                ShowMessage($"Error retrieving ZXBS/Installer versions.\r\n{ex.Message}{ex.StackTrace}");
                 return null;
             }
         }
@@ -747,6 +805,7 @@ namespace ZXBSInstaller.Log
             }
             catch (Exception ex)
             {
+                ShowMessage($"Error parsing ZXBS version.\r\n{ex.Message}{ex.StackTrace}");
                 return null;
             }
         }
@@ -754,35 +813,44 @@ namespace ZXBSInstaller.Log
 
         private static string[] GetAllLinks(string url, string pattern)
         {
-            // Get html file
-            string html;
-            var handler = new HttpClientHandler
+            try
             {
-                AllowAutoRedirect = true
-            };
-            using (HttpClient client = new HttpClient(handler))
-            {
-                html = client.GetStringAsync(url).GetAwaiter().GetResult();
+                // Get html file
+                string html;
+                var handler = new HttpClientHandler
+                {
+                    AllowAutoRedirect = true
+                };
+                using (HttpClient client = new HttpClient(handler))
+                {
+                    html = client.GetStringAsync(url).GetAwaiter().GetResult();
+                }
+                if (string.IsNullOrEmpty(html))
+                {
+                    return null;
+                }
+                //File.WriteAllText("c:/temp/html.text", html);
+                // Get links
+                var links = new List<string>();
+                {
+                    var regex = new Regex(
+                        pattern,
+                        RegexOptions.IgnoreCase);
+                    var matches = regex.Matches(html);
+                    foreach (Match match in matches)
+                    {
+                        links.Add(match.Groups[1].Value);
+                    }
+                }
+
+                return links.ToArray();
             }
-            if (string.IsNullOrEmpty(html))
+            catch (Exception ex)
             {
+                ShowMessage($"Error getting links.\r\n{ex.Message}{ex.StackTrace}");
                 return null;
             }
-            //File.WriteAllText("c:/temp/html.text", html);
-            // Get links
-            var links = new List<string>();
-            {
-                var regex = new Regex(
-                    pattern,
-                    RegexOptions.IgnoreCase);
-                var matches = regex.Matches(html);
-                foreach (Match match in matches)
-                {
-                    links.Add(match.Groups[1].Value);
-                }
-            }
 
-            return links.ToArray();
         }
 
         #endregion
@@ -805,12 +873,12 @@ namespace ZXBSInstaller.Log
                     case "zxbsinstaller":
                         return GetZXBSInstallerVersion(dir);
                 }
-                return null;
             }
             catch (Exception ex)
             {
-                return null;
+                ShowMessage($"Error retrieving local version for {id}.\r\n{ex.Message}{ex.StackTrace}");
             }
+            return null;
         }
 
 
@@ -863,8 +931,10 @@ namespace ZXBSInstaller.Log
             }
             catch (Exception ex)
             {
+                ShowMessage($"Error getting local Boriel Basic version.\r\n{ex.Message}{ex.StackTrace}");
                 return null;
             }
+
         }
 
 
@@ -911,6 +981,7 @@ namespace ZXBSInstaller.Log
             }
             catch (Exception ex)
             {
+                ShowMessage($"Error getting local ZXBS version.\r\n{ex.Message}{ex.StackTrace}");
                 return null;
             }
         }
@@ -945,6 +1016,7 @@ namespace ZXBSInstaller.Log
             }
             catch (Exception ex)
             {
+                ShowMessage($"Error getting local ZXBSInstaller version.\r\n{ex.Message}{ex.StackTrace}");
                 return null;
             }
         }
@@ -956,16 +1028,27 @@ namespace ZXBSInstaller.Log
 
         public static void DownloadAndInstallTools()
         {
-            ShowStatusPanel($"Working...");
-            foreach (var tool in ExternalTools)
+            try
             {
-                if (tool.IsSelected)
+                ShowStatusPanel($"Working...");
+                foreach (var tool in ExternalTools)
                 {
-                    DownloadAndInstallTool(tool, tool.LatestVersion);
+                    if (Cancel)
+                    {
+                        break;
+                    }
+                    if (tool.IsSelected)
+                    {
+                        DownloadAndInstallTool(tool, tool.LatestVersion);
+                    }
                 }
+                HideStatusPanel();
+                RefreshTools();
             }
-            HideStatusPanel();
-            RefreshTools();
+            catch (Exception ex)
+            {
+                ShowMessage($"Error installing.\r\n{ex.Message}{ex.StackTrace}");
+            }
         }
 
 
@@ -974,7 +1057,7 @@ namespace ZXBSInstaller.Log
             string step = "";
             try
             {
-                if(tool==null || version == null)
+                if (tool == null || version == null)
                 {
                     return;
                 }
@@ -1164,6 +1247,7 @@ cd ""$DEST_DIR"" || exit 1
 
         private static void ExtractFile(string archive, string destination)
         {
+            try { 
             if (archive.ToLower().EndsWith(".zip"))
             {
                 System.IO.Compression.ZipFile.ExtractToDirectory(archive, destination, true);
@@ -1194,6 +1278,11 @@ cd ""$DEST_DIR"" || exit 1
                     ShowMessage($"Error unpacking file {archive}\r\n{stderr}");
                     return;
                 }
+            }
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error unpacking file {archive} on {destination}.\r\n{ex.Message}{ex.StackTrace}");
             }
         }
 
@@ -1256,7 +1345,7 @@ cd ""$DEST_DIR"" || exit 1
             }
             catch (Exception ex)
             {
-                //ShowMessage($"Error updating ZX Basic Studio options.\r\n{ex.Message}\r\n{ex.StackTrace}");
+                ShowMessage($"Error updating ZX Basic Studio options.\r\n{ex.Message}\r\n{ex.StackTrace}");
             }
         }
 
@@ -1288,10 +1377,9 @@ cd ""$DEST_DIR"" || exit 1
             }
             catch (Exception ex)
             {
-                ServiceLayer.ShowMessage("Error launching ZX Basic Studio. Please check the installation.");
+                ServiceLayer.ShowMessage($"Error launching ZX Basic Studio. Please check the installation.\r\n{ex.Message}{ex.StackTrace}");
                 return false;
             }
         }
-
     }
 }

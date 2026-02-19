@@ -49,7 +49,7 @@
 				<Button x:Name="btnRefresh" Width="200" Margin="0,4,0,0" Click="btnRefresh_Click">
 					<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
 						<svg:Svg Path="/Assets/refresh.svg" Width="20" Margin="0,0,4,0"></svg:Svg>
-						<TextBlock Text="Refrsh"/>
+						<TextBlock Text="Refresh"/>
 					</StackPanel>
 				</Button>
 			</StackPanel>
@@ -69,6 +69,12 @@
 			<StackPanel Orientation="Vertical" VerticalAlignment="Center">
 				<TextBlock x:Name="txtStatus" FontSize="14" HorizontalAlignment="Center" Margin="8" Foreground="Yellow" Text="Working..."/>
 				<ProgressBar x:Name="progressBar" Height="24" Width="300" VerticalAlignment="Center" Minimum="0" Maximum="100" Value="0" />
+				<Button x:Name="btnCancel" Width="150" Margin="16" Click="btnCancel_Click" HorizontalAlignment="Center">
+					<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+						<svg:Svg Path="/Assets/cancel.svg" Width="20" Margin="0,0,4,0"></svg:Svg>
+						<TextBlock Text="Cancel"/>
+					</StackPanel>
+				</Button>
 			</StackPanel>
 		</Grid>
 

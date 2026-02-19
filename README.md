@@ -35,3 +35,4 @@ Have fun!
   - <a href="https://github.com/32pixelsCo/zest-icons/blob/master/packages/zest-free/LICENSE.md?ref=svgrepo.com" target="_blank">Zest</a> in MIT License
   - <a href="https://github.com/neuicons/neu?ref=svgrepo.com" target="_blank">Neuicons</a> in MIT License via
   - <a href="https://dazzleui.gumroad.com/l/dazzleiconsfree?ref=svgrepo.com" target="_blank">Dazzle Ui</a> in CC Attribution License
+  - <a href="https://github.com/siemens/ix-icons?ref=svgrepo.com" target="_blank">Siemens</a> in MIT License
