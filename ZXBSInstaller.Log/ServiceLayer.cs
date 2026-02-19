@@ -1073,17 +1073,35 @@ start ZXBSInstaller.exe";
                     bashFile = Path.Combine(GeneralConfig.BasePath, "downloads", "zxbsinstall.sh");
                     bash = @"
 #!/bin/bash
+set -e
 
 echo ""Updating installer...""
 sleep 5
 
-set -x
-tar -xf ""{tempFile}"" -C ""{installationPath}""
-rm -f ""{tempFile}""
-cd ""{installationPath}"" || exit 1
+ZIP_FILE=""{tempFile}""
+DEST_DIR=""{installationPath}""
 
-# Ejecutar sin esperar (en segundo plano)
-./ZXBSInstaller.exe &";
+extract_zip() {
+    if command -v unzip >/dev/null 2>&1; then
+        echo ""Using unzip...""
+        unzip -o ""$ZIP_FILE"" -d ""$DEST_DIR""
+    elif command -v tar >/dev/null 2>&1; then
+        echo ""Using tar...""
+        tar -xf ""$ZIP_FILE"" -C ""$DEST_DIR""
+    else
+        echo ""Error: Neither unzip nor tar is installed.""
+        exit 1
+    fi
+}
+
+extract_zip
+
+rm -f ""$ZIP_FILE""
+cd ""$DEST_DIR"" || exit 1
+
+# Ejecutar sin esperar
+./ZXBSInstaller &
+";
                 }
                 bash = bash.Replace("{tempFile}", tempFile).Replace("{installationPath}", installationPath);
                 File.WriteAllText(bashFile, bash);
