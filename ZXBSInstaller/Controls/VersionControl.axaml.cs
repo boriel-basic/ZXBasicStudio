@@ -59,7 +59,20 @@ public partial class VersionControl : UserControl
                 txtPlatform.Foreground = ColorGreen;
                 txtStatus.Foreground = ColorGreen;
                 txtVersion.Foreground = ColorGreen;
-            }            
+            }
+            if (ServiceLayer.CurrentOperatingSystem == OperatingSystems.MacOS_arm64 ||
+                ServiceLayer.CurrentOperatingSystem == OperatingSystems.MacOS_x64)
+            {
+                if(toolVersion.OperatingSystem== OperatingSystems.MacOS_arm64 ||
+                   toolVersion.OperatingSystem == OperatingSystems.MacOS_x64 ||
+                   toolVersion.OperatingSystem == OperatingSystems.MacOS)
+                {
+                    btnDownload.Foreground = ColorGreen;
+                    txtPlatform.Foreground = ColorGreen;
+                    txtStatus.Foreground = ColorGreen;
+                    txtVersion.Foreground = ColorGreen;
+                }
+            }
         }
     }
 
