@@ -974,6 +974,11 @@ namespace ZXBSInstaller.Log
             string step = "";
             try
             {
+                if(tool==null || version == null)
+                {
+                    return;
+                }
+
                 ShowStatusPanel($"Downloading {tool.Name} version {version.Version}...");
 
                 // Download path
@@ -1106,22 +1111,34 @@ cd ""$DEST_DIR"" || exit 1
                 bash = bash.Replace("{tempFile}", tempFile).Replace("{installationPath}", installationPath);
                 File.WriteAllText(bashFile, bash);
 
-                // Set execute attr in Linux/Mac
                 if (CurrentOperatingSystem != OperatingSystems.Windows)
                 {
-                    var process = new Process();
-                    process.StartInfo.FileName = "chmod";
-                    process.StartInfo.ArgumentList.Add("+x");
-                    process.StartInfo.ArgumentList.Add(bashFile);
-                    process.StartInfo.RedirectStandardOutput = true;
-                    process.StartInfo.RedirectStandardError = true;
-                    process.StartInfo.UseShellExecute = false;
-                    process.Start();
-                    process.WaitForExit();
+                    // Set execute attr in Linux/Mac
+                    {
+                        var process = new Process();
+                        process.StartInfo.FileName = "chmod";
+                        process.StartInfo.ArgumentList.Add("+x");
+                        process.StartInfo.ArgumentList.Add(bashFile);
+                        process.StartInfo.RedirectStandardOutput = true;
+                        process.StartInfo.RedirectStandardError = true;
+                        process.StartInfo.UseShellExecute = false;
+                        process.Start();
+                        process.WaitForExit();
+                    }
+                    // Launch .sh file
+                    ProcessStartInfo psi = new ProcessStartInfo
+                    {
+                        FileName = "bash",
+                        Arguments = bashFile,
+                        WorkingDirectory = Path.Combine(GeneralConfig.BasePath, "downloads"),
+                        UseShellExecute = true,
+                    };
+                    var p = new Process { StartInfo = psi };
+                    p.Start();
                 }
-
-                // Run batch/bash file
+                else
                 {
+                    // Launch .bat file
                     ProcessStartInfo psi = new ProcessStartInfo
                     {
                         FileName = bashFile,
@@ -1131,6 +1148,7 @@ cd ""$DEST_DIR"" || exit 1
                     var p = new Process { StartInfo = psi };
                     p.Start();
                 }
+
 
                 // Exit app
                 ExitApp();

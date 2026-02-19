@@ -33,7 +33,7 @@
 				<Label x:Name="lblBasePath">Installation path</Label>
 				<TextBox x:Name="txtBasePath" Grid.Row="1" Margin="0,4,4,0"></TextBox>
 				<Button x:Name="btnSelectPath" Grid.Column="2" Grid.Row="1" Click="btnSelectPath_Click">...</Button>
-				<CheckBox x:Name="chkOnlyStableVersions" Grid.Row="2" Margin="0,4,0,0" Content="Show only stable versions (no beta)"/>
+				<CheckBox x:Name="chkOnlyStableVersions" Grid.Row="2" Margin="0,4,0,0" Content="Show only stable versions (no beta if possible)"/>
 				<CheckBox x:Name="chkSetZXBSOptions" Grid.Row="3" Margin="0,4,0,0" Content="Update ZX Basic Studio Options"/>
 			</Grid>
 		</Grid>
