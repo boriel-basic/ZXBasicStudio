@@ -1,0 +1,62 @@
+[
+  {
+    "Id": "zxbsinstaller",
+    "Enabled": true,
+    "Name": "ZX Basic Studio Installer",
+    "Author": "Duefectu",
+    "Description": "This program, and it is used to download, install and keep all external tools and ZX Basic Studio itself up to date.",
+    "SupportedOperatingSystems": [
+      1,
+      2,
+      3
+    ],
+    "SiteUrl": "https://github.com/boriel-basic/ZXBasicStudio",
+    "LicenseType": "MIT License",
+    "LicenceUrl": "https://raw.githubusercontent.com/boriel-basic/ZXBasicStudio/refs/heads/master/LICENSE.txt",
+    "VersionsUrl": "https://github.com/boriel-basic/ZXBasicStudio/releases/",
+    "LocalPath": "",
+    "FullLocalPath": null,
+    "DirectUpdate": true,
+    "Order": 0
+  },
+  {
+    "Id": "zxbasic",
+    "Enabled": true,
+    "Name": "Boriel ZX Basic Compiler",
+    "Author": "Boriel",
+    "Description": "ZXBCompiler is a ZX Spectrum BASIC cross compiler that translates ZX Spectrum BASIC code into optimized machine code, enabling faster execution and enhanced performance on ZX Spectrum systems. This tool is required to run and debug programs.",
+    "SupportedOperatingSystems": [
+      1,
+      2,
+      3
+    ],
+    "SiteUrl": "https://boriel-basic.net",
+    "LicenseType": "GNU Affero General Public License v3.0",
+    "LicenceUrl": "https://raw.githubusercontent.com/boriel-basic/zxbasic/refs/heads/main/LICENSE.txt",
+    "VersionsUrl": "https://boriel.com/files/zxb/",
+    "LocalPath": "",
+    "FullLocalPath": "C:\\ZXNext\\zxbasic\\zxbc.exe",
+    "DirectUpdate": true,
+    "Order": 1
+  },
+  {
+    "Id": "zxbs",
+    "Enabled": true,
+    "Name": "ZX Basic Studio",
+    "Author": "Dr.Gusman, Boriel, Duefectu, AdolFITO, Hash6Iron and SirRickster",
+    "Description": "IDE (Integrated Development Environment) with Boriel Basic code editor, Assembler, UDGs, fonts, sprites, .tap editor, debugger, emulator, etc. This tool is optional but highly recommended.",
+    "SupportedOperatingSystems": [
+      1,
+      2,
+      3
+    ],
+    "SiteUrl": "https://github.com/boriel-basic/ZXBasicStudio",
+    "LicenseType": "MIT License",
+    "LicenceUrl": "https://raw.githubusercontent.com/boriel-basic/ZXBasicStudio/refs/heads/master/LICENSE.txt",
+    "VersionsUrl": "https://github.com/boriel-basic/ZXBasicStudio/releases/",
+    "LocalPath": "",
+    "FullLocalPath": null,
+    "DirectUpdate": true,
+    "Order": 2
+  }
+]

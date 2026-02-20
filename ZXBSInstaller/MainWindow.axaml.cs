@@ -18,7 +18,9 @@ namespace ZXBSInstaller
 
     public partial class MainWindow : Window
     {
-
+        /// <summary>
+        /// Set Controls.MainControl as content
+        /// </summary>
         public MainWindow()
         {
             InitializeComponent();

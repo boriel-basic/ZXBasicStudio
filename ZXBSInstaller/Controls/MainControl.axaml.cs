@@ -21,31 +21,56 @@ using ZXBSInstaller.Log.Neg;
 
 namespace ZXBSInstaller.Controls;
 
+/// <summary>
+/// Main window
+/// </summary>
 public partial class MainControl : UserControl
 {
+    /// <summary>
+    /// List of ToolItemControl created items
+    /// </summary>
     private List<ToolItemControl> toolItemControls = new List<ToolItemControl>();
+    /// <summary>
+    /// Yellow color for labels
+    /// </summary>
     private static Brush Yellow = new SolidColorBrush(Colors.Yellow);
 
+
+    /// <summary>
+    /// Main constructor
+    /// </summary>
     public MainControl()
     {
         InitializeComponent();
 
+        // Set events
         this.Loaded += MainControl_Loaded;
         txtBasePath.TextChanged += TxtBasePath_TextChanged;
         chkOnlyStableVersions.IsCheckedChanged += ChkOnlyStableVersions_IsCheckedChanged;
         chkSetZXBSOptions.IsCheckedChanged += ChkSetZXBSOptions_IsCheckedChanged;
     }
 
+
+    /// <summary>
+    /// Initialize in a new Thread when loaded
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void MainControl_Loaded(object? sender, RoutedEventArgs e)
     {
         new Thread(Initialize).Start();
     }
 
 
+    /// <summary>
+    /// Initialize
+    /// </summary>
     private void Initialize()
     {
+        // Initialize ServiceLayer
         ServiceLayer.Initialize(ShowStatusPanel, UpdateStatus, HideStatusPanel, GetExternalTools, ShowMessage, ExitApp);
 
+        // Set config fields in UIThread
         Dispatcher.UIThread.Post(() =>
         {
             txtBasePath.Text = ServiceLayer.GeneralConfig.BasePath;
@@ -53,10 +78,15 @@ public partial class MainControl : UserControl
             chkSetZXBSOptions.IsChecked = ServiceLayer.GeneralConfig.SetZXBSConfig;
         });
 
+        // Get external tools list
         GetExternalTools();
     }
 
 
+    /// <summary>
+    /// Show a message into a dialog box
+    /// </summary>
+    /// <param name="message">Message to display</param>
     private void ShowMessage(string message)
     {
         Dispatcher.UIThread.Post(() =>
@@ -76,16 +106,20 @@ public partial class MainControl : UserControl
     }
 
 
+    /// <summary>
+    /// Get list of external tools and local versions
+    /// </summary>
     private void GetExternalTools()
     {
+        // Set UI...
         Dispatcher.UIThread.Post(() =>
         {
             mainVersions.IsVisible = false;
             mainTools.IsVisible = true;
-
             ShowStatusPanel("Working...");
         });
 
+        // Get tools
         var tools = ServiceLayer.GetExternalTools();
 
         Dispatcher.UIThread.Post(() =>
@@ -93,6 +127,7 @@ public partial class MainControl : UserControl
             HideStatusPanel();
             if (tools == null)
             {
+                // Error!
                 var box = MessageBoxManager.GetMessageBoxStandard(new MessageBoxStandardParams
                 {
                     ButtonDefinitions = ButtonEnum.Ok,
@@ -107,12 +142,16 @@ public partial class MainControl : UserControl
             }
             else
             {
+                // Show tools
                 ShowData();
             }
         });
     }
 
 
+    /// <summary>
+    /// Show tools info
+    /// </summary>
     private void ShowData()
     {
         toolItemControls.Clear();
@@ -121,14 +160,21 @@ public partial class MainControl : UserControl
         pnlTools.Children.Clear();
         foreach (var tool in tools)
         {
+            // Create on ToolItemControl foreach tool
             var control = new ToolItemControl(tool, Command_Received);
             toolItemControls.Add(control);
             pnlTools.Children.Add(control);
         }
+        // Update summary area
         UpdateSummary();
     }
 
 
+    /// <summary>
+    /// Command received from sub-controls
+    /// </summary>
+    /// <param name="id">Tool id</param>
+    /// <param name="command">Command</param>
     private void Command_Received(string id, string command)
     {
         switch (command)
@@ -146,6 +192,9 @@ public partial class MainControl : UserControl
     }
 
 
+    /// <summary>
+    /// Show Summary panel
+    /// </summary>
     private void UpdateSummary()
     {
         Dispatcher.UIThread.Post(() =>
@@ -157,6 +206,7 @@ public partial class MainControl : UserControl
             {
                 if (tool.IsSelected)
                 {
+                    // Data for selected tools
                     var tb = new TextBlock();
                     tb.TextWrapping = Avalonia.Media.TextWrapping.Wrap;
                     if (tool.ExternalTool.InstalledVersion == null)
@@ -173,6 +223,7 @@ public partial class MainControl : UserControl
             }
             if (allUpToDate)
             {
+                // Nothing to update
                 var tb = new TextBlock();
                 tb.TextWrapping = Avalonia.Media.TextWrapping.Wrap;
                 tb.Text = "All tools are up to date.";
@@ -188,7 +239,7 @@ public partial class MainControl : UserControl
                 pnlSummary.Children.Add(separator);
             }
 
-            // Show tools tree
+            // Show base path
             {
                 pnlSummary.Children.Add(new TextBlock()
                 {
@@ -202,6 +253,7 @@ public partial class MainControl : UserControl
                     TextWrapping = TextWrapping.Wrap
                 });
             }
+            // Show tools installation paths
             foreach (var tool in toolItemControls)
             {
                 var tb = new TextBlock();
@@ -227,6 +279,10 @@ public partial class MainControl : UserControl
     }
 
 
+    /// <summary>
+    /// Show status panel
+    /// </summary>
+    /// <param name="message">Message to display</param>
     private void ShowStatusPanel(string message)
     {
         Dispatcher.UIThread.Post(() =>
@@ -244,6 +300,9 @@ public partial class MainControl : UserControl
     }
 
 
+    /// <summary>
+    /// Hide status panel
+    /// </summary>
     private void HideStatusPanel()
     {
         Dispatcher.UIThread.Post(() =>
@@ -278,6 +337,12 @@ public partial class MainControl : UserControl
         });
     }
 
+
+    /// <summary>
+    /// Button select path
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void btnSelectPath_Click(object? sender, RoutedEventArgs e)
     {
         var dlg = new OpenFolderDialog()
@@ -299,12 +364,23 @@ public partial class MainControl : UserControl
     }
 
 
+
+    /// <summary>
+    /// Button install components
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void btnInstall_Click(object? sender, RoutedEventArgs e)
     {
         new Thread(ServiceLayer.DownloadAndInstallTools).Start();
     }
 
 
+    /// <summary>
+    /// chkSetZXBSOptions checked changed
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void ChkSetZXBSOptions_IsCheckedChanged(object? sender, RoutedEventArgs e)
     {
         ServiceLayer.GeneralConfig.SetZXBSConfig = chkSetZXBSOptions.IsChecked == true;
@@ -312,6 +388,11 @@ public partial class MainControl : UserControl
     }
 
 
+    /// <summary>
+    /// chkOnlyStableVersions checked changed
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void ChkOnlyStableVersions_IsCheckedChanged(object? sender, RoutedEventArgs e)
     {
         ServiceLayer.GeneralConfig.OnlyStableVersions = chkOnlyStableVersions.IsChecked == true;
@@ -319,6 +400,11 @@ public partial class MainControl : UserControl
     }
 
 
+    /// <summary>
+    /// Base path changed
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void TxtBasePath_TextChanged(object? sender, TextChangedEventArgs e)
     {
         ServiceLayer.GeneralConfig.BasePath = txtBasePath.Text;
@@ -326,6 +412,10 @@ public partial class MainControl : UserControl
     }
 
 
+    /// <summary>
+    /// Show version info for a tool
+    /// </summary>
+    /// <param name="id">Tool id</param>
     private void ShowVersions(string id)
     {
         Dispatcher.UIThread.Post(() =>
@@ -333,8 +423,10 @@ public partial class MainControl : UserControl
             mainTools.IsVisible = false;
             mainVersions.IsVisible = true;
             pnlVersions.Children.Clear();
+
             var tool = ServiceLayer.ExternalTools.FirstOrDefault(d => d.Id == id);
 
+            // Close button
             {
                 var btn = new Button()
                 {
@@ -346,10 +438,12 @@ public partial class MainControl : UserControl
                 pnlVersions.Children.Add(btn);
             }
 
+            // Header
             var versionControlHeader = new VersionControl(null, null, Command_Received);
             pnlVersions.Children.Add(versionControlHeader);
             foreach (var version in tool.Versions)
             {
+                // Version line
                 if (ServiceLayer.GeneralConfig.OnlyStableVersions && version.BetaNumber > 0)
                 {
                     continue;
@@ -358,6 +452,7 @@ public partial class MainControl : UserControl
                 pnlVersions.Children.Add(versionControl);
             }
 
+            // Anothe Close button at the bottom of the list
             {
                 var btn = new Button()
                 {
@@ -373,6 +468,11 @@ public partial class MainControl : UserControl
     }
 
 
+    /// <summary>
+    /// Versions button
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void Versions_Close(object? sender, RoutedEventArgs e)
     {
         Dispatcher.UIThread.Post(() =>
@@ -382,6 +482,12 @@ public partial class MainControl : UserControl
         });
     }
 
+
+    /// <summary>
+    /// Run ZXBS button
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void btnPlayZXBS_Click(object? sender, RoutedEventArgs e)
     {
         ServiceLayer.RunZXBasicStudio();
@@ -389,6 +495,9 @@ public partial class MainControl : UserControl
     }
 
 
+    /// <summary>
+    /// Exit application
+    /// </summary>
     private void ExitApp()
     {
         Dispatcher.UIThread.Post(() =>
@@ -402,11 +511,22 @@ public partial class MainControl : UserControl
     }
 
 
+    /// <summary>
+    /// Refresh button
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void btnRefresh_Click(object? sender, RoutedEventArgs e)
     {
         new Thread(GetExternalTools).Start();
     }
 
+
+    /// <summary>
+    /// Cacel button
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
     private void btnCancel_Click(object? sender, RoutedEventArgs e)
     {
         ServiceLayer.Cancel = true;

@@ -12,6 +12,12 @@ namespace ZXBSInstaller
 {
     internal static class UITools
     {
+        /// <summary>
+        /// Load and show an image from embded resource into an Image control
+        /// File must be "AvaloniaResource"
+        /// </summary>
+        /// <param name="fileName">File name</param>
+        /// <param name="imgControl"></param>
         public static void ShowImage(string fileName, Image imgControl)
         {
             try
