@@ -384,6 +384,7 @@ public partial class MainControl : UserControl
 
     private void btnPlayZXBS_Click(object? sender, RoutedEventArgs e)
     {
+        ServiceLayer.RunZXBasicStudio();
         ExitApp();
     }
 
