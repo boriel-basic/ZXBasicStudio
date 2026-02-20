@@ -3,6 +3,7 @@ using Avalonia.Svg.Skia;
 using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
+using System.Linq;
 
 namespace ZXBasicStudio
 {
@@ -39,13 +40,20 @@ namespace ZXBasicStudio
         [STAThread]
         public static void Main(string[] args)
         {
+            SetVersion();
+
+            if (args.Contains("--version"))
+            {
+                Console.WriteLine($"{Version}");
+                return;
+            }
+
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings
             {
                 Formatting= Formatting.Indented,
                 TypeNameHandling = TypeNameHandling.Auto,
             };
 
-            SetVersion();
 
             BuildAvaloniaApp()
             .StartWithClassicDesktopLifetime(args);

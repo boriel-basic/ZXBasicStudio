@@ -198,7 +198,8 @@ public partial class MainControl : UserControl
                 pnlSummary.Children.Add(new TextBlock()
                 {
                     Text = ServiceLayer.GeneralConfig.BasePath,
-                    Margin = new Thickness(10, 4, 0, 0)
+                    Margin = new Thickness(10, 4, 0, 0),
+                    TextWrapping = TextWrapping.Wrap
                 });
             }
             foreach (var tool in toolItemControls)
@@ -211,12 +212,14 @@ public partial class MainControl : UserControl
                     {
                         Text = tool.ExternalTool.Name + ":",
                         Margin = new Thickness(0, 8, 0, 0),
-                        Foreground = Yellow
+                        Foreground = Yellow,
+                        TextWrapping = TextWrapping.Wrap
                     });
                     pnlSummary.Children.Add(new TextBlock()
                     {
                         Text = System.IO.Path.Combine(ServiceLayer.GeneralConfig.BasePath, tool.ExternalTool.Id),
-                        Margin = new Thickness(10, 4, 0, 0)
+                        Margin = new Thickness(10, 4, 0, 0),
+                        TextWrapping = TextWrapping.Wrap
                     });
                 }
             }

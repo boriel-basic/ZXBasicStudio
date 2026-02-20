@@ -260,7 +260,7 @@ namespace ZXBSInstaller.Log
                 int prg = 10;
                 for (int n = 0; n < max; n++)
                 {
-                    if(Cancel)
+                    if (Cancel)
                     {
                         return null;
                     }
@@ -889,13 +889,114 @@ namespace ZXBSInstaller.Log
                 var fileName = Path.Combine(exePath, "zxbc.exe");
                 if (!File.Exists(fileName))
                 {
-                    fileName = Path.Combine(exePath, "zxbc");
+                    fileName = Path.Combine(exePath, "zxbc.py");
                 }
                 if (!File.Exists(fileName))
                 {
                     return null;
                 }
+                return GetVersionFromParameter(fileName);
+
+#if OLD
                 // Launch "zxbc.exe --version"
+                ProcessStartInfo psi = new ProcessStartInfo
+                {
+                    FileName = fileName,
+                    Arguments = "--version",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+                using Process process = new Process { StartInfo = psi };
+                process.Start();
+                string output = process.StandardOutput.ReadToEnd();
+                string error = process.StandardError.ReadToEnd();
+                process.WaitForExit();
+
+                if (string.IsNullOrEmpty(output))
+                {
+                    return null;
+                }
+                var version = output.Replace("zxbc.py ", "").Replace("\n", "").Replace("\r", "").Replace("v", "");
+                var v = GetVersionNumber(version);
+                int number = v.Item1;
+                int beta = v.Item2;
+
+                return new ExternalTools_Version()
+                {
+                    DownloadUrl = "",
+                    BetaNumber = beta,
+                    OperatingSystem = OperatingSystems.All,
+                    Version = version,
+                    VersionNumber = number
+                };
+#endif
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error getting local Boriel Basic version.\r\n{ex.Message}{ex.StackTrace}");
+                return null;
+            }
+        }
+
+
+        private static ExternalTools_Version GetZXBSVersion(string exePath)
+        {
+            try
+            {
+                var fileName = Path.Combine(exePath, "version.txt");
+                if (!File.Exists(fileName))
+                {
+                    if(File.Exists(Path.Combine(exePath, "ZXBasicStudio.exe"))
+                        || File.Exists(Path.Combine(exePath, "ZXBasicStudio")))
+                    {
+                        return new ExternalTools_Version()
+                        {
+                            DownloadUrl = "",
+                            BetaNumber = 0,
+                            OperatingSystem = OperatingSystems.All,
+                            Version = "OLD version",
+                            VersionNumber = 0
+                        };
+                    }
+                    return null;
+                }
+                var txt = File.ReadAllText(fileName);
+                var v = GetVersionNumber(txt);
+
+                var version = new ExternalTools_Version()
+                {
+                    DownloadUrl = "",
+                    BetaNumber = v.Item2,
+                    OperatingSystem = OperatingSystems.All,
+                    Version = txt,
+                    VersionNumber = v.Item1
+                };
+                return version;
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error getting local ZXBS version.\r\n{ex.Message}{ex.StackTrace}");
+                return null;
+            }
+        }
+
+
+        /// <summary>
+        /// Get version from file using --version parameter
+        /// </summary>
+        /// <param name="fileName">Executable filename</param>
+        /// <returns>ExternalTools_Version with the version info</returns>
+        private static ExternalTools_Version GetVersionFromParameter(string fileName)
+        {
+            try
+            {
+                if (!File.Exists(fileName))
+                {
+                    return null;
+                }
+
                 ProcessStartInfo psi = new ProcessStartInfo
                 {
                     FileName = fileName,
@@ -932,56 +1033,6 @@ namespace ZXBSInstaller.Log
             catch (Exception ex)
             {
                 ShowMessage($"Error getting local Boriel Basic version.\r\n{ex.Message}{ex.StackTrace}");
-                return null;
-            }
-
-        }
-
-
-        private static ExternalTools_Version GetZXBSVersion(string exePath)
-        {
-            try
-            {
-                var fileName = Path.Combine(exePath, "ZXBasicStudio.exe");
-                if (!File.Exists(fileName))
-                {
-                    fileName = Path.Combine(exePath, "ZXBasicStudio");
-                }
-                if (!File.Exists(fileName))
-                {
-                    return null;
-                }
-
-                var fvi = FileVersionInfo.GetVersionInfo(fileName);
-                if (fvi != null)
-                {
-                    // Major, minor, Build, private
-                    var version = $"{fvi.ProductMajorPart}.{fvi.ProductMinorPart}.{fvi.ProductBuildPart}";
-                    if (fvi.ProductPrivatePart > 0)
-                    {
-                        version += $"-beta{fvi.ProductPrivatePart}";
-                    }
-                    if (version == "1.0.0")
-                    {
-                        version = "1.6.0-beta6.3";
-                    }
-                    var v = GetVersionNumber(version);
-                    var versionNumber = v.Item1;
-                    var beta = v.Item2;
-                    return new ExternalTools_Version()
-                    {
-                        DownloadUrl = "",
-                        BetaNumber = beta,
-                        OperatingSystem = OperatingSystems.All,
-                        Version = version,
-                        VersionNumber = versionNumber
-                    };
-                }
-                return null;
-            }
-            catch (Exception ex)
-            {
-                ShowMessage($"Error getting local ZXBS version.\r\n{ex.Message}{ex.StackTrace}");
                 return null;
             }
         }
@@ -1160,7 +1211,7 @@ start ZXBSInstaller.exe";
                 {
                     bashFile = Path.Combine(GeneralConfig.BasePath, "downloads", "zxbsinstall.sh");
                     bash = @"
-#!/bin/bash
+# !/bin/bash
 set -e
 
 echo ""Updating installer...""
@@ -1247,38 +1298,39 @@ cd ""$DEST_DIR"" || exit 1
 
         private static void ExtractFile(string archive, string destination)
         {
-            try { 
-            if (archive.ToLower().EndsWith(".zip"))
+            try
             {
-                System.IO.Compression.ZipFile.ExtractToDirectory(archive, destination, true);
-            }
-            else if (CurrentOperatingSystem != OperatingSystems.Windows)
-            {
-                Directory.CreateDirectory(destination);
-
-                var psi = new ProcessStartInfo
+                if (archive.ToLower().EndsWith(".zip"))
                 {
-                    FileName = "tar",
-                    Arguments = $"-xzf \"{archive}\" -C \"{destination}\"",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-
-                using var process = Process.Start(psi)!;
-
-                string stdout = process.StandardOutput.ReadToEnd();
-                string stderr = process.StandardError.ReadToEnd();
-
-                process.WaitForExit();
-
-                if (process.ExitCode != 0)
-                {
-                    ShowMessage($"Error unpacking file {archive}\r\n{stderr}");
-                    return;
+                    System.IO.Compression.ZipFile.ExtractToDirectory(archive, destination, true);
                 }
-            }
+                else if (CurrentOperatingSystem != OperatingSystems.Windows)
+                {
+                    Directory.CreateDirectory(destination);
+
+                    var psi = new ProcessStartInfo
+                    {
+                        FileName = "tar",
+                        Arguments = $"-xzf \"{archive}\" -C \"{destination}\"",
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
+
+                    using var process = Process.Start(psi)!;
+
+                    string stdout = process.StandardOutput.ReadToEnd();
+                    string stderr = process.StandardError.ReadToEnd();
+
+                    process.WaitForExit();
+
+                    if (process.ExitCode != 0)
+                    {
+                        ShowMessage($"Error unpacking file {archive}\r\n{stderr}");
+                        return;
+                    }
+                }
             }
             catch (Exception ex)
             {
