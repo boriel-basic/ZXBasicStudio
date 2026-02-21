@@ -1,4 +1,5 @@
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
@@ -15,6 +16,7 @@ namespace ZXBSInstaller
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
+                desktop.ShutdownMode = ShutdownMode.OnMainWindowClose;
                 desktop.MainWindow = new MainWindow();
             }
 
