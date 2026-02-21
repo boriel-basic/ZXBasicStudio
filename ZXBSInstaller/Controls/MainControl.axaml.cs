@@ -6,9 +6,6 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Avalonia.VisualTree;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Enums;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -92,16 +89,8 @@ public partial class MainControl : UserControl
         Dispatcher.UIThread.Post(() =>
         {
             HideStatusPanel();
-            var box = MessageBoxManager.GetMessageBoxStandard(new MessageBoxStandardParams
-            {
-                ButtonDefinitions = ButtonEnum.Ok,
-                ContentTitle = "ZX Basic Studio Installer",
-                ContentMessage = message,
-                Icon = MsBox.Avalonia.Enums.Icon.Info,
-                WindowIcon = ((Window)this.VisualRoot).Icon,
-                WindowStartupLocation = WindowStartupLocation.CenterOwner
-            });
-            box.ShowAsPopupAsync(this);
+            txtModalMessage.Text = message;
+            pnlModal.IsVisible = true;
         });
     }
 
@@ -128,17 +117,7 @@ public partial class MainControl : UserControl
             if (tools == null)
             {
                 // Error!
-                var box = MessageBoxManager.GetMessageBoxStandard(new MessageBoxStandardParams
-                {
-                    ButtonDefinitions = ButtonEnum.Ok,
-                    ContentTitle = "ERROR",
-                    ContentMessage = "Error retrieving the list of tools, please check your Internet connection.\r\nIt may be a temporary server error, report the error to duefectucorp@gmail.com and try again later.",
-                    Icon = MsBox.Avalonia.Enums.Icon.Error,
-                    WindowIcon = ((Window)this.VisualRoot).Icon,
-                    WindowStartupLocation = WindowStartupLocation.CenterOwner
-                });
-                box.ShowAsPopupAsync(this);
-
+                ShowMessage("Error retrieving the list of tools, please check your Internet connection.\r\nIt may be a temporary server error, report the error to duefectucorp@gmail.com and try again later.");
             }
             else
             {
@@ -530,5 +509,10 @@ public partial class MainControl : UserControl
     private void btnCancel_Click(object? sender, RoutedEventArgs e)
     {
         ServiceLayer.Cancel = true;
+    }
+
+    private void btnModalClose_Click(object? sender, RoutedEventArgs e)
+    {
+        pnlModal.IsVisible = false;
     }
 }

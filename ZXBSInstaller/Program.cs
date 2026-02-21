@@ -16,16 +16,6 @@ namespace ZXBSInstaller
         [STAThread]
         public static void Main(string[] args)
         {
-            var assembly = System.Reflection.Assembly.GetEntryAssembly();
-            var version = assembly.GetName().Version;
-            Version = $"{version.Major}.{version.Minor}.{version.Build}.{version.Revision}";
-
-            if (args.Contains("--version"))
-            {
-                Console.WriteLine($"{Version}");
-                return;
-            }
-
             BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         }
 

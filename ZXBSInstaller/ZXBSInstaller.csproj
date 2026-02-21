@@ -6,7 +6,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <ApplicationIcon>zxbs.ico</ApplicationIcon>
-    <Version>1.0.0.7</Version>
+    <Version>1.0.0.8</Version>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Assets\cancel.svg" />
@@ -53,7 +53,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MsBox.Avalonia\MsBox.Avalonia.csproj" />
     <ProjectReference Include="..\ZXBSInstaller.Log\ZXBSInstaller.Log.csproj" />
   </ItemGroup>
 

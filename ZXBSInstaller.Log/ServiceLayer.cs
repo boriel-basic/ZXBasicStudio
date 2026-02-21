@@ -519,7 +519,11 @@ namespace ZXBSInstaller.Log
                 // Get all hrefs in the page according to the pattern.
                 // The pattern is specific for the Boriel Basic repository page, which contains links to the versions in the format <a href="/boriel-basic/zxbasic/releases/download/v1.2.3/zxbasic-v1.2.3-win.zip">zxbasic-v1.2.3-win.zip</a>
                 var links = GetAllLinks(versionsUrl, @"<a\s+[^>]*href\s*=\s*[""']([^""']+)[""']");
-
+                if (links == null)
+                {
+                    ShowMessage("The Boriel Basic repository could not be accessed. Please check your internet connection or try again later.");
+                    return null;
+                }
                 // Parse links extracting versions data
                 var lst = new List<ExternalTools_Version>();
                 Regex _regex = new Regex(
@@ -588,6 +592,12 @@ namespace ZXBSInstaller.Log
             {
                 // Get all hrefs
                 var links = GetAllLinks(versionsUrl, @"href=""([^""]+)""");
+                if (links == null)
+                {
+                    ShowMessage("The ZX Basic Studio repository could not be accessed. Please check your internet connection or try again later.");
+                    return null;
+                }
+
                 // Get only releases
                 links = links.Where(d => d.Contains("/boriel-basic/ZXBasicStudio/releases/tag/")).ToArray();
 
@@ -598,6 +608,18 @@ namespace ZXBSInstaller.Log
                     var url = link.Replace("/boriel-basic/ZXBasicStudio/releases/tag/", "");
                     url = $"https://github.com/boriel-basic/ZXBasicStudio/releases/expanded_assets/{url}";
                     var filesLinks = GetAllLinks(url, @"href=""([^""]+)""");
+                    if (links == null)
+                    {
+                        if (installer)
+                        {
+                            ShowMessage("The ZXBSInstaller repository could not be accessed. Please check your internet connection or try again later.");
+                        }
+                        else
+                        {
+                            ShowMessage("The ZX Basic Studio repository could not be accessed. Please check your internet connection or try again later.");
+                        }
+                        return null;
+                    }
                     foreach (var fl in filesLinks)
                     {
                         if (fl.Contains("download"))
@@ -844,7 +866,7 @@ namespace ZXBSInstaller.Log
                 if (!File.Exists(fileName))
                 {
                     // no version.txt file
-                    if(File.Exists(Path.Combine(exePath, "ZXBasicStudio.exe"))
+                    if (File.Exists(Path.Combine(exePath, "ZXBasicStudio.exe"))
                         || File.Exists(Path.Combine(exePath, "ZXBasicStudio")))
                     {
                         // return "OLD version"
