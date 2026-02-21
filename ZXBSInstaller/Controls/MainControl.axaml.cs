@@ -111,20 +111,17 @@ public partial class MainControl : UserControl
         // Get tools
         var tools = ServiceLayer.GetExternalTools();
 
-        Dispatcher.UIThread.Post(() =>
+        HideStatusPanel();
+        if (tools == null)
         {
-            HideStatusPanel();
-            if (tools == null)
-            {
-                // Error!
-                ShowMessage("Error retrieving the list of tools, please check your Internet connection.\r\nIt may be a temporary server error, report the error to duefectucorp@gmail.com and try again later.");
-            }
-            else
-            {
-                // Show tools
-                ShowData();
-            }
-        });
+            // Error!
+            ShowMessage("Error retrieving the list of tools, please check your Internet connection.\r\nIt may be a temporary server error, report the error to duefectucorp@gmail.com and try again later.");
+        }
+        else
+        {
+            // Show tools
+            ShowData();
+        }
     }
 
 
@@ -133,19 +130,22 @@ public partial class MainControl : UserControl
     /// </summary>
     private void ShowData()
     {
-        toolItemControls.Clear();
-        var tools = ServiceLayer.ExternalTools;
-
-        pnlTools.Children.Clear();
-        foreach (var tool in tools)
+        Dispatcher.UIThread.Post(() =>
         {
-            // Create on ToolItemControl foreach tool
-            var control = new ToolItemControl(tool, Command_Received);
-            toolItemControls.Add(control);
-            pnlTools.Children.Add(control);
-        }
-        // Update summary area
-        UpdateSummary();
+            toolItemControls.Clear();
+            var tools = ServiceLayer.ExternalTools;
+
+            pnlTools.Children.Clear();
+            foreach (var tool in tools)
+            {
+                // Create on ToolItemControl foreach tool
+                var control = new ToolItemControl(tool, Command_Received);
+                toolItemControls.Add(control);
+                pnlTools.Children.Add(control);
+            }
+            // Update summary area
+            UpdateSummary();
+        });
     }
 
 
