@@ -35,6 +35,10 @@ namespace ZXBSInstaller.Log
         /// </summary>
         public static OperatingSystems CurrentOperatingSystem = OperatingSystems.All;
         /// <summary>
+        /// True if the computer is a Mac
+        /// </summary>
+        public static bool IsMac=false;
+        /// <summary>
         /// Used to cancel the current operation. It is set to true when the user clicks the cancel button and it is checked in all long operations to stop them if it is true.
         /// </summary>
         public static bool Cancel = false;
@@ -105,6 +109,7 @@ namespace ZXBSInstaller.Log
                 }
                 else if (OperatingSystem.IsMacOS())
                 {
+                    IsMac = true;
                     if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
                     {
                         CurrentOperatingSystem = OperatingSystems.MacOS_arm64;
@@ -344,18 +349,39 @@ namespace ZXBSInstaller.Log
                     // Set latest version
                     if (GeneralConfig.OnlyStableVersions)
                     {
-                        tool.LatestVersion = tool.Versions.
-                            Where(d => d.OperatingSystem == CurrentOperatingSystem &&
-                                d.BetaNumber == 0).
-                            OrderByDescending(d => d.VersionNumber).
-                            FirstOrDefault();
+                        if (tool.Id == "zxbasic" && IsMac)
+                        {
+                            tool.LatestVersion = tool.Versions.
+                                Where(d => d.OperatingSystem == OperatingSystems.MacOS &&
+                                    d.BetaNumber == 0).
+                                OrderByDescending(d => d.VersionNumber).
+                                FirstOrDefault();
+                        }
+                        else
+                        {
+                            tool.LatestVersion = tool.Versions.
+                                Where(d => d.OperatingSystem == CurrentOperatingSystem &&
+                                    d.BetaNumber == 0).
+                                OrderByDescending(d => d.VersionNumber).
+                                FirstOrDefault();
+                        }
                     }
                     if (tool.LatestVersion == null || !GeneralConfig.OnlyStableVersions)
                     {
-                        tool.LatestVersion = tool.Versions.
-                            Where(d => d.OperatingSystem == CurrentOperatingSystem).
-                            OrderByDescending(d => d.VersionNumber).
-                            FirstOrDefault();
+                        if (tool.Id == "zxbasic" && IsMac)
+                        {
+                            tool.LatestVersion = tool.Versions.
+                                Where(d => d.OperatingSystem == OperatingSystems.MacOS).
+                                OrderByDescending(d => d.VersionNumber).
+                                FirstOrDefault();
+                        }
+                        else
+                        {
+                            tool.LatestVersion = tool.Versions.
+                                Where(d => d.OperatingSystem == CurrentOperatingSystem).
+                                OrderByDescending(d => d.VersionNumber).
+                                FirstOrDefault();
+                        }
                     }
 
                     // Path for first versions of ZXBSInstalller

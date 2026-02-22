@@ -6,7 +6,7 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <ApplicationIcon>zxbs.ico</ApplicationIcon>
-    <Version>1.0.0.10</Version>
+    <Version>1.0.0.11</Version>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Assets\cancel.svg" />
