@@ -24,7 +24,7 @@
     "Enabled": true,
     "Name": "Boriel ZX Basic Compiler",
     "Author": "Boriel",
-    "Description": "ZXBCompiler is a ZX Spectrum BASIC cross compiler that translates ZX Spectrum BASIC code into optimized machine code, enabling faster execution and enhanced performance on ZX Spectrum systems. This tool is required to run and debug programs.",
+    "Description": "ZXBCompiler is a BORIEL BASIC cross compiler tool. It's a required tool.'",
     "SupportedOperatingSystems": [
       1,
       2,
@@ -44,7 +44,7 @@
     "Enabled": true,
     "Name": "ZX Basic Studio",
     "Author": "Dr.Gusman, Boriel, Duefectu, AdolFITO, Hash6Iron and SirRickster",
-    "Description": "IDE (Integrated Development Environment) with Boriel Basic code editor, Assembler, UDGs, fonts, sprites, .tap editor, debugger, emulator, etc. This tool is optional but highly recommended.",
+    "Description": "IDE (Integrated Development Environment) with code editor, Assembler, UDGs, fonts, sprites, .tap editor, debugger, emulator, etc.",
     "SupportedOperatingSystems": [
       1,
       2,

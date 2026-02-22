@@ -6,11 +6,13 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <ApplicationIcon>zxbs.ico</ApplicationIcon>
-    <Version>1.0.0.12</Version>
+    <Version>1.0.0.13</Version>
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Assets\cancel.svg" />
+    <None Remove="Assets\history.svg" />
     <None Remove="Assets\install.svg" />
+    <None Remove="Assets\internet.svg" />
     <None Remove="Assets\play.svg" />
     <None Remove="Assets\refresh.svg" />
     <None Remove="ExternalTools.json" />
@@ -18,7 +20,9 @@
   </ItemGroup>
   <ItemGroup>
     <AvaloniaResource Include="Assets\cancel.svg" />
+    <AvaloniaResource Include="Assets\history.svg" />
     <AvaloniaResource Include="Assets\install.svg" />
+    <AvaloniaResource Include="Assets\internet.svg" />
     <AvaloniaResource Include="Assets\play.svg" />
     <AvaloniaResource Include="Assets\refresh.svg" />
     <AvaloniaResource Include="zxbs.ico" />

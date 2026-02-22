@@ -776,10 +776,15 @@ namespace ZXBSInstaller.Log
                 int retries = 5;
                 while (retries-- > 0)
                 {
-                    using (HttpClient client = new HttpClient(handler))
+                    try
                     {
-                        html = client.GetStringAsync(url).GetAwaiter().GetResult();
+                        using (HttpClient client = new HttpClient(handler))
+                        {
+                            client.Timeout = TimeSpan.FromSeconds(20);
+                            html = client.GetStringAsync(url).GetAwaiter().GetResult();
+                        }
                     }
+                    catch { }
                     if (!string.IsNullOrEmpty(html))
                     {
                         break;
@@ -1082,6 +1087,11 @@ namespace ZXBSInstaller.Log
                 if (tool == null || version == null)
                 {
                     return;
+                }
+
+                if(tool.Id == "zxbsinstaller")
+                {
+                    ShowStatusPanel($"After installing or updating ZXBSInstaller, run this program from {tool.LocalPath}.");
                 }
 
                 ShowStatusPanel($"Downloading {tool.Name} version {version.Version}...");

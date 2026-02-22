@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using System;
+using ZXBSInstaller.Log;
 using ZXBSInstaller.Log.Neg;
 
 namespace ZXBSInstaller.Controls;
@@ -50,7 +51,8 @@ public partial class ToolItemControl : UserControl
         txtName.Text = tool.Name;
         txtDescription.Text = tool.Description;
         txtPath.Text = "Path: " + tool.LocalPath;
-
+        txtLicense.Text = "Licence: " + tool.LicenseType;
+        txtAuthor.Text = "Author(s): " + tool.Author;
         // Set chkSelect status
         IsSelected = tool.UpdateNeeded;
         tool.IsSelected = IsSelected;
@@ -108,5 +110,10 @@ public partial class ToolItemControl : UserControl
     private void btnAllVersions_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         Command(ExternalTool.Id, "VERSIONS");
+    }
+
+    private void btnViewSite_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        ServiceLayer.OpenUrlInBrowser(ExternalTool.SiteUrl);
     }
 }
