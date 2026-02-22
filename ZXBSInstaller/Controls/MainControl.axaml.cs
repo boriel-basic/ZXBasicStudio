@@ -109,13 +109,14 @@ public partial class MainControl : UserControl
         });
 
         // Get tools
-        var tools = ServiceLayer.GetExternalTools();
+        var json = UITools.GetTextResource("ExternalTools.json");
+        var tools = ServiceLayer.SetExternalTools(json);
 
         HideStatusPanel();
         if (tools == null)
         {
-            // Error!
-            ShowMessage("Error retrieving the list of tools, please check your Internet connection.\r\nIt may be a temporary server error, report the error to duefectucorp@gmail.com and try again later.");
+            // No tools, no way!
+            ExitApp();
         }
         else
         {

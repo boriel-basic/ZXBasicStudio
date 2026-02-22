@@ -302,19 +302,21 @@ namespace ZXBSInstaller.Log
         /// <summary>
         /// Retrieves all external tools configured for use with the application.
         /// </summary>
+        /// <param name="json">Json string with the external tools information</param>
         /// <returns>An array of <see cref="ExternalTool"/> objects representing the available external tools. The array is empty
         /// if no external tools are configured or can download the config file.</returns>
-        public static ExternalTool[] GetExternalTools()
+        public static ExternalTool[] SetExternalTools(string json)
         {
             try
             {
                 UpdateStatus?.Invoke("Retrieving external tools information...", 5);
 
-                var json = File.ReadAllText("ExternalTools.json");
-                //// Download the external tools list from the configured URL
-                //using var httpClient = new HttpClient();
-                //string json = httpClient.GetStringAsync(GeneralConfig.ToolsListURL).GetAwaiter().GetResult();
                 var tools = JsonSerializer.Deserialize<ExternalTool[]>(json);
+                if (tools == null)
+                {
+                    ShowMessage("ERROR, unable to obtain the list of external tools. Download and install a new version of ZXBSInstaller.");
+                    return null;
+                }
 
                 int max = tools.Length;
                 int prg = 10;

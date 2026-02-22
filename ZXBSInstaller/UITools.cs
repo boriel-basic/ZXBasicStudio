@@ -31,5 +31,26 @@ namespace ZXBSInstaller
             {
             }
         }
+
+
+        /// <summary>
+        /// Read a text file from embedded resource and return the content as string
+        /// </summary>
+        /// <param name="fileName">FileName</param>
+        /// <returns></returns>
+        public static string GetTextResource(string fileName)
+        {
+            try
+            {
+                var uri = new Uri($"avares://ZXBSInstaller/{fileName}");
+                var asset = AssetLoader.Open(uri);
+                var txt= new StreamReader(asset).ReadToEnd();
+                return txt;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
     }
 }
