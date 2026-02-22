@@ -636,7 +636,7 @@ namespace ZXBSInstaller.Log
                     var url = link.Replace("/boriel-basic/ZXBasicStudio/releases/tag/", "");
                     url = $"https://github.com/boriel-basic/ZXBasicStudio/releases/expanded_assets/{url}";
                     var filesLinks = GetAllLinks(url, @"href=""([^""]+)""");
-                    if (links == null)
+                    if (filesLinks == null)
                     {
                         if (installer)
                         {
