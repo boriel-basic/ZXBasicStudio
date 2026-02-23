@@ -33,7 +33,7 @@
 				<Label x:Name="lblBasePath">Installation path</Label>
 				<TextBox x:Name="txtBasePath" Grid.Row="1" Margin="0,4,4,0"></TextBox>
 				<Button x:Name="btnSelectPath" Grid.Column="2" Grid.Row="1" Click="btnSelectPath_Click">...</Button>
-				<CheckBox x:Name="chkOnlyStableVersions" Grid.Row="2" Margin="0,4,0,0" Content="Show only stable versions (no beta)"/>
+				<CheckBox x:Name="chkOnlyStableVersions" Grid.Row="2" Margin="0,4,0,0" Content="Show only stable versions (no beta if possible)"/>
 				<CheckBox x:Name="chkSetZXBSOptions" Grid.Row="3" Margin="0,4,0,0" Content="Update ZX Basic Studio Options"/>
 			</Grid>
 		</Grid>
@@ -49,7 +49,7 @@
 				<Button x:Name="btnRefresh" Width="200" Margin="0,4,0,0" Click="btnRefresh_Click">
 					<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
 						<svg:Svg Path="/Assets/refresh.svg" Width="20" Margin="0,0,4,0"></svg:Svg>
-						<TextBlock Text="Refrsh"/>
+						<TextBlock Text="Refresh"/>
 					</StackPanel>
 				</Button>
 			</StackPanel>
@@ -69,14 +69,36 @@
 			<StackPanel Orientation="Vertical" VerticalAlignment="Center">
 				<TextBlock x:Name="txtStatus" FontSize="14" HorizontalAlignment="Center" Margin="8" Foreground="Yellow" Text="Working..."/>
 				<ProgressBar x:Name="progressBar" Height="24" Width="300" VerticalAlignment="Center" Minimum="0" Maximum="100" Value="0" />
+				<Button x:Name="btnCancel" Width="150" Margin="16" Click="btnCancel_Click" HorizontalAlignment="Center">
+					<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+						<svg:Svg Path="/Assets/cancel.svg" Width="20" Margin="0,0,4,0"></svg:Svg>
+						<TextBlock Text="Cancel"/>
+					</StackPanel>
+				</Button>
 			</StackPanel>
 		</Grid>
 
 		<!-- Modals -->
-		<Grid x:Name="pnlModalOverlay" Grid.ColumnSpan="3" Grid.RowSpan="5" Margin="0" IsVisible="False">
+		<Grid x:Name="pnlModal" Grid.ColumnSpan="3" Grid.RowSpan="5" Margin="0" IsVisible="False">
 			<Grid  Background="Black" Opacity="0.8"></Grid>
-			<Grid x:Name="pnlModalContainer">
-			</Grid>
+			<Border Background="Black" Width="600" Height="300" BorderBrush="White" BorderThickness="1"
+					Padding="16" CornerRadius="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+				<Grid Grid.RowDefinitions="Auto,*,Auto">
+					<Grid>
+						<TextBlock x:Name="txtModalTitle" FontSize="20" Margin="0,0,0,8" Foreground="Yellow" Text="ZXBSInstaller"/>
+					</Grid>
+					<ScrollViewer Grid.Row="1" Margin="4">
+						<TextBlock x:Name="txtModalMessage" FontSize="16" Margin="0,0,0,16" TextWrapping="Wrap" Text=""/>
+					</ScrollViewer>
+					<Button x:Name="btnModalClose" Grid.Row="2" Width="100" HorizontalAlignment="Right" Click="btnModalClose_Click">
+						<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+							<svg:Svg Path="/Assets/cancel.svg" Width="20" Margin="0,0,4,0"></svg:Svg>
+							<TextBlock Text="Cancel"/>
+						</StackPanel>
+					</Button>
+				</Grid>
+			</Border>
 		</Grid>
+
 	</Grid>
 </UserControl>

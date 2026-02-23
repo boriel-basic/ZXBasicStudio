@@ -11,7 +11,7 @@ Documentation will come in the near future, take a look at the book [Boriel Basi
 
 Have fun!
 
-## Credits
+## ZX Basic Studio Team
 - Development team:
   - El Dr. Gusman
   - Boriel
@@ -19,6 +19,13 @@ Have fun!
   - AdolFITO 
   - HashIron
   - SirRickster
+- Testers:
+  - AbenZaX
+  - Pedro Tomás (Pere)
+  - Jose Daniel Fernandez Santos (Fenix)
+  - Yoruguaman
+
+## Credits
 - Icons from [SVG REPO](https://www.svgrepo.com/):
   - <a href="https://github.com/blivesta/flexicon?ref=svgrepo.com" target="_blank">Blivesta</a> in MIT License
 	- <a href="https://dazzleui.gumroad.com/l/dazzleiconsfree?ref=svgrepo.com" target="_blank">Dazzle Ui</a> in CC Attribution License
@@ -35,3 +42,8 @@ Have fun!
   - <a href="https://github.com/32pixelsCo/zest-icons/blob/master/packages/zest-free/LICENSE.md?ref=svgrepo.com" target="_blank">Zest</a> in MIT License
   - <a href="https://github.com/neuicons/neu?ref=svgrepo.com" target="_blank">Neuicons</a> in MIT License via
   - <a href="https://dazzleui.gumroad.com/l/dazzleiconsfree?ref=svgrepo.com" target="_blank">Dazzle Ui</a> in CC Attribution License
+  - <a href="https://github.com/siemens/ix-icons?ref=svgrepo.com" target="_blank">Siemens</a> in MIT License
+  - <a href="https://github.com/32pixelsCo/zest-icons/blob/master/packages/zest-free/LICENSE.md?ref=svgrepo.com" target="_blank">Zest</a> in MIT License
+  - <a href="https://www.figma.com/community/file/1071678557813409125?ref=svgrepo.com" target="_blank">Ananthanath A X Kalaiism</a> in PD License
+
+

@@ -12,6 +12,12 @@ namespace ZXBSInstaller
 {
     internal static class UITools
     {
+        /// <summary>
+        /// Load and show an image from embded resource into an Image control
+        /// File must be "AvaloniaResource"
+        /// </summary>
+        /// <param name="fileName">File name</param>
+        /// <param name="imgControl"></param>
         public static void ShowImage(string fileName, Image imgControl)
         {
             try
@@ -23,6 +29,27 @@ namespace ZXBSInstaller
             }
             catch (Exception ex)
             {
+            }
+        }
+
+
+        /// <summary>
+        /// Read a text file from embedded resource and return the content as string
+        /// </summary>
+        /// <param name="fileName">FileName</param>
+        /// <returns></returns>
+        public static string GetTextResource(string fileName)
+        {
+            try
+            {
+                var uri = new Uri($"avares://ZXBSInstaller/{fileName}");
+                var asset = AssetLoader.Open(uri);
+                var txt= new StreamReader(asset).ReadToEnd();
+                return txt;
+            }
+            catch (Exception ex)
+            {
+                return null;
             }
         }
     }

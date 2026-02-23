@@ -22,15 +22,52 @@ namespace ZXBSInstaller.Log
     /// </summary>
     public static class ServiceLayer
     {
+        /// <summary>
+        /// Application configuration. It is stored in %AppData%\ZXBasicStudio\ZXBSInstallerOptions.json
+        /// </summary>
         public static Config GeneralConfig = null;
+        /// <summary>
+        /// List of external tools.
+        /// </summary>
         public static ExternalTool[] ExternalTools = null;
+        /// <summary>
+        /// Current operating system
+        /// </summary>
         public static OperatingSystems CurrentOperatingSystem = OperatingSystems.All;
+        /// <summary>
+        /// True if the computer is a Mac
+        /// </summary>
+        public static bool IsMac=false;
+        /// <summary>
+        /// Used to cancel the current operation. It is set to true when the user clicks the cancel button and it is checked in all long operations to stop them if it is true.
+        /// </summary>
+        public static bool Cancel = false;
 
+
+        // Callbacks to update the UI from the service layer
+        /// <summary>
+        /// Show the status panel with a message. The message is used to inform the user about the current operation being performed. It is called from the service layer to update the UI.
+        /// </summary>
         private static Action<string> ShowStatusPanel = null;
+        /// <summary>
+        /// Update the status message and progress. It is called from the service layer to update the UI. The message is used to inform the user about the current operation being performed and the progress is a value between 0 and 100 that indicates the progress of the current operation.
+        /// </summary>
         private static Action<string, int> UpdateStatus = null;
+        /// <summary>
+        /// Hide the status panel. It is called from the service layer to update the UI when the current operation is finished or cancelled.
+        /// </summary>
         private static Action HideStatusPanel = null;
+        /// <summary>
+        /// Refresh the list of external tools. It is called from the service layer to update the UI when the list of external tools is updated, for example, after installing or updating a tool.
+        /// </summary>
         private static Action RefreshTools = null;
+        /// <summary>
+        /// Show a message in a dialog window. It is called from the service layer to show error messages or any other information that needs to be shown to the user.
+        /// </summary>
         private static Action<string> ShowMessage = null;
+        /// <summary>
+        /// Exit the application. It is called from the service layer to exit the application when launching ZXBasicStudio. 
+        /// </summary>
         private static Action ExitApp = null;
 
 
@@ -48,46 +85,64 @@ namespace ZXBSInstaller.Log
             Action<string> callBackShowMessage,
             Action callBackExitApp)
         {
-            ShowStatusPanel = callBackShowStatusPanel;
-            UpdateStatus = callBackUpdateStatus;
-            HideStatusPanel = callBackHideStatusPanel;
-            RefreshTools = callBackGetExternalTools;
-            ShowMessage = callBackShowMessage;
-            ExitApp = callBackExitApp;
+            try
+            {
+                // Set callbacks
+                ShowStatusPanel = callBackShowStatusPanel;
+                UpdateStatus = callBackUpdateStatus;
+                HideStatusPanel = callBackHideStatusPanel;
+                RefreshTools = callBackGetExternalTools;
+                ShowMessage = callBackShowMessage;
+                ExitApp = callBackExitApp;
 
-            GetConfig();
+                // Retrive the configuration
+                GetConfig();
 
-            if (OperatingSystem.IsWindows())
-            {
-                CurrentOperatingSystem = OperatingSystems.Windows;
-            }
-            else if (OperatingSystem.IsLinux())
-            {
-                CurrentOperatingSystem = OperatingSystems.Linux;
-            }
-            else if (OperatingSystem.IsMacOS())
-            {
-                if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+                // Set current operating system
+                if (OperatingSystem.IsWindows())
                 {
-                    CurrentOperatingSystem = OperatingSystems.MacOS_arm64;
+                    CurrentOperatingSystem = OperatingSystems.Windows;
                 }
-                else if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
+                else if (OperatingSystem.IsLinux())
                 {
-                    CurrentOperatingSystem = OperatingSystems.MacOS_x64;
+                    CurrentOperatingSystem = OperatingSystems.Linux;
                 }
-            }
+                else if (OperatingSystem.IsMacOS())
+                {
+                    IsMac = true;
+                    if (RuntimeInformation.ProcessArchitecture == Architecture.Arm64)
+                    {
+                        CurrentOperatingSystem = OperatingSystems.MacOS_arm64;
+                    }
+                    else if (RuntimeInformation.ProcessArchitecture == Architecture.X64)
+                    {
+                        CurrentOperatingSystem = OperatingSystems.MacOS_x64;
+                    }
+                }
 
-            return true;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error initializing.\r\n{ex.Message}{ex.StackTrace}");
+                return false;
+            }
         }
 
 
-        public static Config GetConfig()
+        /// <summary>
+        /// Get the config from file or create a new one if it doesn't exist. The config file is stored in %AppData%\ZXBasicStudio\ZXBSInstallerOptions.json and it contains the configuration for the installer, such as the URL to retrieve the external tools list, the base path to install the tools, etc.
+        /// </summary>
+        /// <returns>Config data. ServiceLayer.GeneralConfig is set</returns>
+        private static Config GetConfig()
         {
             try
             {
+                // Build filePath
                 var filePath = Path.Combine(Environment.GetFolderPath(SpecialFolder.ApplicationData), "ZXBasicStudio", "ZXBSInstallerOptions.json");
                 if (File.Exists(filePath))
                 {
+                    // Read config from file
                     var jsonString = File.ReadAllText(filePath);
                     var cfg = JsonSerializer.Deserialize<Config>(jsonString);
 
@@ -97,60 +152,83 @@ namespace ZXBSInstaller.Log
                 }
                 else
                 {
+                    // Create default config and save it to file
                     GeneralConfig = CreateConfig();
                     SaveConfig(GeneralConfig);
                 }
                 return GeneralConfig;
-
             }
             catch (Exception ex)
             {
+                ShowMessage($"Error retrieving configuration.\r\n{ex.Message}{ex.StackTrace}");
                 return null;
             }
         }
 
 
-        public static Config CreateConfig()
+        /// <summary>
+        /// Create the default config
+        /// </summary>
+        /// <returns>Config object with the default config</returns>
+        private static Config CreateConfig()
         {
-            List<ExternalTools_Path> toolsPaths = null;
-            var cfg = ServiceLayer.GeneralConfig;
-            if (cfg == null)
+            try
             {
-                cfg = new Config()
+                List<ExternalTools_Path> toolsPaths = null;
+                var cfg = ServiceLayer.GeneralConfig;
+                if (cfg == null)
                 {
-                    BasePath = Directory.GetParent(Directory.GetCurrentDirectory()).FullName,
-                    OnlyStableVersions = true,
-                    SetZXBSConfig = true,
-                    ToolsListURL = "https://zx.duefectucorp.com/zxbsinstaller.json"
-                };
-            }
+                    // Create base config
+                    cfg = new Config()
+                    {
+                        BasePath = Directory.GetParent(Directory.GetCurrentDirectory()).FullName,
+                        OnlyStableVersions = true,
+                        SetZXBSConfig = true,
+                        ToolsListURL = "https://zx.duefectucorp.com/zxbsinstaller.json"
+                    };
+                }
 
-            if (cfg.ExternalTools_Paths == null)
-            {
-                cfg.ExternalTools_Paths = new List<ExternalTools_Path>();
-            }
-            if (cfg.ExternalTools_Paths.Count == 0)
-            {
-                cfg.ExternalTools_Paths.Add(new ExternalTools_Path()
+                // Fill paths
+                if (cfg.ExternalTools_Paths == null)
                 {
-                    Id = "zxbsinstaller",
-                    LocalPath = Directory.GetCurrentDirectory()
-                });
+                    cfg.ExternalTools_Paths = new List<ExternalTools_Path>();
+                }
+                if (cfg.ExternalTools_Paths.Count == 0)
+                {
+                    cfg.ExternalTools_Paths.Add(new ExternalTools_Path()
+                    {
+                        Id = "zxbsinstaller",
+                        LocalPath = Directory.GetCurrentDirectory()
+                    });
+                }
+                return cfg;
             }
-            return cfg;
+            catch (Exception ex)
+            {
+                ShowMessage($"Error creating default configuration.\r\n{ex.Message}{ex.StackTrace}");
+                return null;
+            }
         }
 
 
+        /// <summary>
+        /// Save config to file. The config file is stored in %AppData%\ZXBasicStudio\ZXBSInstallerOptions.json and it contains the configuration for the installer, such as the URL to retrieve the external tools list, the base path to install the tools, etc. ServiceLayer.GeneralConfig is updated with the new config data.
+        /// </summary>
+        /// <param name="config">Config to store</param>
+        /// <returns>Config with the current configuration</returns>
         public static Config SaveConfig(Config config)
         {
             try
             {
+                // Build dir and file path
                 var dir = Path.Combine(Environment.GetFolderPath(SpecialFolder.ApplicationData), "ZXBasicStudio");
                 var fileName = Path.Combine(dir, "ZXBSInstallerOptions.json");
                 if (!Directory.Exists(dir))
                 {
+                    // Create directory if it doesn't exist
                     Directory.CreateDirectory(dir);
                 }
+                // Save config to file
                 var jsonString = JsonSerializer.Serialize<Config>(config, new JsonSerializerOptions() { WriteIndented = true });
                 File.WriteAllText(fileName, jsonString);
                 GeneralConfig = config;
@@ -159,8 +237,10 @@ namespace ZXBSInstaller.Log
             }
             catch (Exception ex)
             {
+                ShowMessage($"Error saving configuration.\r\n{ex.Message}{ex.StackTrace}");
                 return null;
             }
+
         }
 
 
@@ -188,6 +268,10 @@ namespace ZXBSInstaller.Log
         }
 
 
+        /// <summary>
+        /// Open an url in the default browser. It is used to open the site and license urls of the external tools. It is called from the service layer when the user clicks on the site or license buttons of an external tool.
+        /// </summary>
+        /// <param name="url">Url to open</param>
         public static void OpenUrlInBrowser(string url)
         {
             try
@@ -211,6 +295,7 @@ namespace ZXBSInstaller.Log
             }
             catch (Exception ex)
             {
+                ShowMessage($"Error opening {url}.\r\n{ex.Message}{ex.StackTrace}");
             }
         }
 
@@ -221,50 +306,82 @@ namespace ZXBSInstaller.Log
 
         /// <summary>
         /// Retrieves all external tools configured for use with the application.
-        /// The data is stored in https://raw.githubusercontent.com/boriel-basic/ZXBasicStudio/refs/heads/master/externaltools.json
         /// </summary>
+        /// <param name="json">Json string with the external tools information</param>
         /// <returns>An array of <see cref="ExternalTool"/> objects representing the available external tools. The array is empty
         /// if no external tools are configured or can download the config file.</returns>
-        public static ExternalTool[] GetExternalTools()
+        public static ExternalTool[] SetExternalTools(string json)
         {
             try
             {
                 UpdateStatus?.Invoke("Retrieving external tools information...", 5);
 
-                using var httpClient = new HttpClient();
-                string json = httpClient.GetStringAsync(GeneralConfig.ToolsListURL).GetAwaiter().GetResult();
                 var tools = JsonSerializer.Deserialize<ExternalTool[]>(json);
+                if (tools == null)
+                {
+                    ShowMessage("ERROR, unable to obtain the list of external tools. Download and install a new version of ZXBSInstaller.");
+                    return null;
+                }
 
                 int max = tools.Length;
                 int prg = 10;
                 for (int n = 0; n < max; n++)
                 {
+                    // Cancel?
+                    if (Cancel)
+                    {
+                        return null;
+                    }
+                    // Update status
                     var tool = tools[n];
                     prg = (n * 90) / max;
                     UpdateStatus?.Invoke($"Retrieving versions for {tool.Name}...", prg + 10);
 
+                    // Get available versions for tool
                     tool.Versions = GetAvailableToolVersion(tool);
                     if (tool.Versions == null)
                     {
                         tool.Versions = new ExternalTools_Version[0];
                     }
+                    // Get installed version
                     tool.InstalledVersion = GetToolVersion(tool.Id);
 
                     // Set latest version
                     if (GeneralConfig.OnlyStableVersions)
                     {
-                        tool.LatestVersion = tool.Versions.
-                            Where(d => d.OperatingSystem == CurrentOperatingSystem &&
-                                d.BetaNumber == 0).
-                            OrderByDescending(d => d.VersionNumber).
-                            FirstOrDefault();
+                        if (tool.Id == "zxbasic" && IsMac)
+                        {
+                            tool.LatestVersion = tool.Versions.
+                                Where(d => d.OperatingSystem == OperatingSystems.MacOS &&
+                                    d.BetaNumber == 0).
+                                OrderByDescending(d => d.VersionNumber).
+                                FirstOrDefault();
+                        }
+                        else
+                        {
+                            tool.LatestVersion = tool.Versions.
+                                Where(d => d.OperatingSystem == CurrentOperatingSystem &&
+                                    d.BetaNumber == 0).
+                                OrderByDescending(d => d.VersionNumber).
+                                FirstOrDefault();
+                        }
                     }
                     if (tool.LatestVersion == null || !GeneralConfig.OnlyStableVersions)
                     {
-                        tool.LatestVersion = tool.Versions.
-                            Where(d => d.OperatingSystem == CurrentOperatingSystem).
-                            OrderByDescending(d => d.VersionNumber).
-                            FirstOrDefault();
+                        if (tool.Id == "zxbasic" && IsMac)
+                        {
+                            tool.LatestVersion = tool.Versions.
+                                Where(d => d.OperatingSystem == OperatingSystems.MacOS).
+                                OrderByDescending(d => d.VersionNumber).
+                                FirstOrDefault();
+                        }
+                        else
+                        {
+                            tool.LatestVersion = tool.Versions.
+                                Where(d => d.OperatingSystem == CurrentOperatingSystem).
+                                OrderByDescending(d => d.VersionNumber).
+                                FirstOrDefault();
+                        }
                     }
 
                     // Path for first versions of ZXBSInstalller
@@ -288,259 +405,92 @@ namespace ZXBSInstaller.Log
                             }
                         }
                     }
-
+                    // Set tool local path
                     tool.LocalPath = Path.Combine(GeneralConfig.BasePath, tool.Id);
                 }
 
-                //GetPaths(ref tools);
-
+                // order tools by order property
                 ExternalTools = tools.OrderBy(d => d.Order).ToArray();
-
                 return ExternalTools;
             }
             catch (Exception ex)
             {
+                ShowMessage($"Error retrieving external tools information. Please check your internet connection and try again.\r\n{ex.Message}{ex.StackTrace}");
                 return null;
             }
-#if GENERATE_JSON
-            var lst = new List<ExternalTool>();
-            // Compiler
-            {
-                UpdateStatus?.Invoke(null, 10);
-                var tool = new ExternalTool()
-                {
-                    Id = "zxbasic",
-                    Enabled = true,
-                    Name = "Boriel ZX Basic Compiler",
-                    Author = "Boriel",
-                    Description = "ZXBCompiler is a ZX Spectrum BASIC cross compiler that translates ZX Spectrum BASIC code into optimized machine code, enabling faster execution and enhanced performance on ZX Spectrum systems. This tool is required to run and debug programs.",
-                    DirectUpdate = true,
-                    SupportedOperatingSystems = new OperatingSystems[] { OperatingSystems.Windows, OperatingSystems.Linux, OperatingSystems.MacOS },
-                    SiteUrl = "https://boriel-basic.net",
-                    LicenceUrl = "https://raw.githubusercontent.com/boriel-basic/zxbasic/refs/heads/main/LICENSE.txt",
-                    LicenseType = "GNU Affero General Public License v3.0",
-                    VersionsUrl = "https://boriel.com/files/zxb/",
-                    Order = 1
-                };
-                UpdateStatus?.Invoke(null, 15);
-                tool.Versions = GetBorielBasicVersions(tool.VersionsUrl);
-                lst.Add(tool);
-                UpdateStatus?.Invoke(null, 20);
-            }
-
-            // ZXBasic Studio IDE
-            {
-                UpdateStatus?.Invoke(null, 20);
-                var tool = new ExternalTool()
-                {
-                    Id = "zxbs",
-                    Enabled = true,
-                    Name = "ZX Basic Studio",
-                    Author = "Dr.Gusman, Boriel, Duefectu, AdolFITO, Hash6Iron and SirRickster",
-                    Description = "IDE (Integrated Development Environment) with Boriel Basic code editor, Assembler, UDGs, fonts, sprites, .tap editor, debugger, emulator, etc. This tool is optional but highly recommended.",
-                    DirectUpdate = true,
-                    SupportedOperatingSystems = new OperatingSystems[] { OperatingSystems.Windows, OperatingSystems.Linux, OperatingSystems.MacOS },
-                    SiteUrl = "https://github.com/boriel-basic/ZXBasicStudio",
-                    LicenceUrl = "https://raw.githubusercontent.com/boriel-basic/ZXBasicStudio/refs/heads/master/LICENSE.txt",
-                    LicenseType = "MIT License",
-                    VersionsUrl = "https://github.com/boriel-basic/ZXBasicStudio/releases/",
-                    Order=2
-                };
-                UpdateStatus?.Invoke(null, 25);
-                // Versions
-                var versions = new List<ExternalTools_Version>();
-                versions.Add(new ExternalTools_Version()
-                {
-                    Version = "1.6.0-beta5",
-                    BetaNumber = 5,
-                    VersionNumber = 1006005,
-                    DownloadUrl = "https://github.com/boriel-basic/ZXBasicStudio/releases/download/v1.6/ZXBasicStudio-linux-x64.v1.6.0-beta5.zip",
-                    OperatingSystem = OperatingSystems.Linux,
-                });
-                versions.Add(new ExternalTools_Version()
-                {
-                    Version = "1.6.0-beta5",
-                    BetaNumber = 5,
-                    VersionNumber = 1006005,
-                    DownloadUrl = "https://github.com/boriel-basic/ZXBasicStudio/releases/download/v1.6/ZXBasicStudio-osx-x64.v1.6.0-beta5.zip",
-                    OperatingSystem = OperatingSystems.MacOS,
-                });
-                versions.Add(new ExternalTools_Version()
-                {
-                    Version = "1.6.0-beta5",
-                    BetaNumber = 5,
-                    VersionNumber = 1006005,
-                    DownloadUrl = "https://github.com/boriel-basic/ZXBasicStudio/releases/download/v1.6/ZXBasicStudio-win-x64.v1.6.0-beta5.zip",
-                    OperatingSystem = OperatingSystems.Windows,
-                });
-                tool.Versions = versions.ToArray();
-                lst.Add(tool);
-                UpdateStatus?.Invoke(null, 30);
-            }
-            // Get tools paths from ZXBS config file
-            GetPaths(ref lst);
-
-
-            // ZXBasic Studio Installer
-            {
-                UpdateStatus?.Invoke(null, 30);
-                var tool = new ExternalTool()
-                {
-                    Id = "zxbsinstaller",
-                    Enabled = true,
-                    Name = "ZX Basic Studio Installer",
-                    Author = "Duefectu",
-                    Description = "This program, and it is used to download, install and keep all external tools and ZX Basic Studio itself up to date.",
-                    DirectUpdate = true,
-                    SupportedOperatingSystems = new OperatingSystems[] { OperatingSystems.Windows, OperatingSystems.Linux, OperatingSystems.MacOS },
-                    SiteUrl = "https://github.com/boriel-basic/ZXBasicStudio",
-                    LicenceUrl = "https://raw.githubusercontent.com/boriel-basic/ZXBasicStudio/refs/heads/master/LICENSE.txt",
-                    LicenseType = "MIT License",
-                    VersionsUrl = "https://github.com/boriel-basic/ZXBasicStudio/releases/",
-                    Order = 0
-                };
-                UpdateStatus?.Invoke(null, 35);
-                // Versions
-                var versions = new List<ExternalTools_Version>();
-                versions.Add(new ExternalTools_Version()
-                {
-                    Version = "0.0.1-beta1",
-                    BetaNumber = 1,
-                    VersionNumber = 1001,
-                    DownloadUrl = "https://github.com/boriel-basic/ZXBasicStudio/releases/download/v1.6/ZXBasicStudio-linux-x64.v1.6.0-beta5.zip",
-                    OperatingSystem = OperatingSystems.Linux,
-                });
-                versions.Add(new ExternalTools_Version()
-                {
-                    Version = "0.0.1-beta1",
-                    BetaNumber = 1,
-                    VersionNumber = 1001,
-                    DownloadUrl = "https://github.com/boriel-basic/ZXBasicStudio/releases/download/v1.6/ZXBasicStudio-osx-x64.v1.6.0-beta5.zip",
-                    OperatingSystem = OperatingSystems.MacOS,
-                });
-                versions.Add(new ExternalTools_Version()
-                {
-                    Version = "0.0.1-beta1",
-                    BetaNumber = 1,
-                    VersionNumber = 1001,
-                    DownloadUrl = "https://github.com/boriel-basic/ZXBasicStudio/releases/download/v1.6/ZXBasicStudio-win-x64.v1.6.0-beta5.zip",
-                    OperatingSystem = OperatingSystems.Windows,
-                });
-                tool.Versions = versions.ToArray();
-                lst.Add(tool);
-                UpdateStatus?.Invoke(null, 40);
-            }
-            // Get tools paths from ZXBS config file
-            GetPaths(ref lst);
-
-            externalTools = lst.OrderBy(d=>d.Order).ToArray();
-            
-            var test=JsonSerializer.Serialize(externalTools);
-            File.WriteAllText(@"c:\temp\zxbsinstaller.json",test);
-
-            return externalTools;
-#endif
         }
 
 
-
-        public static void GetPaths(ref ExternalTool[] tools)
-        {
-            var filePath = Path.Combine(Environment.GetFolderPath(SpecialFolder.ApplicationData), "ZXBasicStudio", "ZXBasicStudioOptions.json");
-            if (!File.Exists(filePath))
-            {
-                return;
-            }
-            var jsonString = File.ReadAllText(filePath);
-            using JsonDocument doc = JsonDocument.Parse(jsonString);
-            JsonElement root = doc.RootElement;
-
-            UpdatePath("zxbasic", "ZxbcPath", root, ref tools);
-            // ZX Basic Studio
-            {
-                var tool = tools.FirstOrDefault(t => t.Id == "zxbs");
-                if (tool != null)
-                {
-                    tool.LocalPath = Directory.GetCurrentDirectory();
-                }
-            }
-            // ZX Basic Studio Installer
-            {
-                var tool = tools.FirstOrDefault(t => t.Id == "zxbsinstaller");
-                if (tool != null)
-                {
-                    tool.LocalPath = Directory.GetCurrentDirectory();
-                }
-            }
-        }
-
-
-        private static void UpdatePath(string toolId, string property, JsonElement root, ref ExternalTool[] tools)
-        {
-            var tool = tools.FirstOrDefault(t => t.Id == toolId);
-            if (tool == null)
-            {
-                return;
-            }
-            if (root.TryGetProperty(property, out JsonElement element))
-            {
-                string value = element.GetString();
-                tool.FullLocalPath = value;
-                var fn = Path.GetFileName(value);
-                value = value.Replace(fn, "");
-                tool.LocalPath = value;
-            }
-        }
-
-
+        /// <summary>
+        /// Get version numeric value and beta value from version string. 
+        /// Four values are used, the last one identifying the beta version number. If it is 0, it is the stable version.
+        /// 1.2.3.0 = version 1.2.3 stable
+        /// 1.2.3.4 = version 1.2.3 beta 4
+        /// Values are multiplied by 1000 to get a single integer value that can be compared easily. For example:
+        /// 1.2.3.0 = 1*1000*1000*1000 + 2*1000*1000 + 3*1000 + 0 = 1002003000
+        /// 1.2.3.4 = 1*1000*1000*1000 + 2*1000*1000 + 3*1000 + 4 = 1002003004
+        /// </summary>
+        /// <param name="versionString">Version string</param>
+        /// <returns>Item1 = version number, Item2 = beta number</returns>
         private static (int, int) GetVersionNumber(string versionString)
         {
-            int number = 0;
-            int betaNumber = 0;
-            string version = versionString;
-            if (version.Contains("-beta"))
+            try
             {
-                var mv = Regex.Match(version, @"beta(\d+)(?:[-\.]|$)", RegexOptions.IgnoreCase);
-                if (mv.Success)
+                int number = 0;
+                int betaNumber = 0;
+                string version = versionString;
+                // If it is a beta version, replace the -beta with . and add the beta number as the fourth value.
+                if (version.Contains("-beta"))
                 {
-                    version = version.Replace("-beta", ".");
-                }
-            }
-            else
-            {
-                version += ".0";
-            }
-
-            var versionParts = version.Split(".");
-            if (versionParts.Length == 5)
-            {
-                versionParts[3] += versionParts[4];
-            }
-            for (int n = 0; n < 4; n++)
-            {
-                number *= 1000;
-                if (n < versionParts.Length)
-                {
-                    int v = ToInteger(versionParts[n]);
-                    if (n == 3)
+                    var mv = Regex.Match(version, @"beta(\d+)(?:[-\.]|$)", RegexOptions.IgnoreCase);
+                    if (mv.Success)
                     {
-                        betaNumber = v;
-                        if (betaNumber == 0)
+                        version = version.Replace("-beta", ".");
+                    }
+                }
+                else
+                {
+                    version += ".0";
+                }
+
+                // Split version string
+                var versionParts = version.Split(".");
+                if (versionParts.Length == 5)
+                {
+                    versionParts[3] += versionParts[4];
+                }
+                // Get value for each part of the version string
+                for (int n = 0; n < 4; n++)
+                {
+                    number *= 1000;
+                    if (n < versionParts.Length)
+                    {
+                        int v = ToInteger(versionParts[n]);
+                        if (n == 3)
                         {
-                            number += 999;
+                            betaNumber = v;
+                            if (betaNumber == 0)
+                            {
+                                number += 999;
+                            }
+                            else
+                            {
+                                number += betaNumber;
+                            }
                         }
                         else
                         {
-                            number += betaNumber;
+                            number += v;
                         }
                     }
-                    else
-                    {
-                        number += v;
-                    }
                 }
+                return (number, betaNumber);
             }
-            return (number, betaNumber);
+            catch (Exception ex)
+            {
+                ShowMessage($"Error parsing version number.\r\n{ex.Message}{ex.StackTrace}");
+                return (0, 0);
+            }
         }
 
         #endregion
@@ -548,21 +498,39 @@ namespace ZXBSInstaller.Log
 
         #region External tools versions retrieval
 
+        /// <summary>
+        /// Get the versions available for the specified tool. 
+        /// The versions are retrieved from the tool's VersionsUrl property, which is configured in the external tools list. 
+        /// The method parses the HTML of the VersionsUrl page to extract the available versions and their download URLs. 
+        /// The parsing is specific for each tool, depending on how the versions are listed in the page. 
+        /// The method returns an array of ExternalTools_Version objects that contain the version information, such as version number, beta number, download URL and operating system. 
+        /// If there is an error retrieving or parsing the versions, it returns null and shows an error message to the user.
+        /// </summary>
+        /// <param name="tool"></param>
+        /// <returns></returns>
         private static ExternalTools_Version[] GetAvailableToolVersion(ExternalTool tool)
         {
-            switch (tool.Id)
+            try
             {
-                case "zxbasic":
-                    return GetBorielBasicVersions(tool.VersionsUrl);
+                switch (tool.Id)
+                {
+                    case "zxbasic":
+                        return GetBorielBasicVersions(tool.VersionsUrl);
 
-                case "zxbs":
-                    return GetBorielZXBSVersions(tool.VersionsUrl, false);
+                    case "zxbs":
+                        return GetBorielZXBSVersions(tool.VersionsUrl, false);
 
-                case "zxbsinstaller":
-                    return GetBorielZXBSVersions(tool.VersionsUrl, true);
+                    case "zxbsinstaller":
+                        return GetBorielZXBSVersions(tool.VersionsUrl, true);
 
-                default:
-                    return null;
+                    default:
+                        return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error getting available versions.\r\n{ex.Message}{ex.StackTrace}");
+                return null;
             }
         }
 
@@ -570,14 +538,20 @@ namespace ZXBSInstaller.Log
         /// <summary>
         /// Get versions data for Boriel Basic Compiler
         /// </summary>
-        /// <param name="versionsUrl"></param>
-        /// <returns></returns>
+        /// <param name="versionsUrl">Repository URL</param>
+        /// <returns>Array of versions</returns>
         private static ExternalTools_Version[] GetBorielBasicVersions(string versionsUrl)
         {
             try
             {
+                // Get all hrefs in the page according to the pattern.
+                // The pattern is specific for the Boriel Basic repository page, which contains links to the versions in the format <a href="/boriel-basic/zxbasic/releases/download/v1.2.3/zxbasic-v1.2.3-win.zip">zxbasic-v1.2.3-win.zip</a>
                 var links = GetAllLinks(versionsUrl, @"<a\s+[^>]*href\s*=\s*[""']([^""']+)[""']");
-
+                if (links == null)
+                {
+                    ShowMessage("The Boriel Basic repository could not be accessed. Please check your internet connection or try again later.");
+                    return null;
+                }
                 // Parse links extracting versions data
                 var lst = new List<ExternalTools_Version>();
                 Regex _regex = new Regex(
@@ -628,6 +602,7 @@ namespace ZXBSInstaller.Log
             }
             catch (Exception ex)
             {
+                ShowMessage($"Error retrieving Boriel Basic versions.\r\n{ex.Message}{ex.StackTrace}");
                 return null;
             }
         }
@@ -636,23 +611,43 @@ namespace ZXBSInstaller.Log
         /// <summary>
         /// Get versions data for ZX Basic Studio Compiler
         /// </summary>
-        /// <param name="versionsUrl"></param>
-        /// <returns></returns>
+        /// <param name="versionsUrl">Repository URL</param>
+        /// <param name="installer">True to get installer versions or false to get ZXBS versions</param>
+        /// <returns>Array of versions</returns>
         private static ExternalTools_Version[] GetBorielZXBSVersions(string versionsUrl, bool installer)
         {
             try
             {
                 // Get all hrefs
                 var links = GetAllLinks(versionsUrl, @"href=""([^""]+)""");
+                if (links == null)
+                {
+                    ShowMessage("The ZX Basic Studio repository could not be accessed. Please check your internet connection or try again later.");
+                    return null;
+                }
+
                 // Get only releases
                 links = links.Where(d => d.Contains("/boriel-basic/ZXBasicStudio/releases/tag/")).ToArray();
 
+                // Process all links
                 var versions = new List<ExternalTools_Version>();
                 foreach (var link in links)
                 {
                     var url = link.Replace("/boriel-basic/ZXBasicStudio/releases/tag/", "");
                     url = $"https://github.com/boriel-basic/ZXBasicStudio/releases/expanded_assets/{url}";
                     var filesLinks = GetAllLinks(url, @"href=""([^""]+)""");
+                    if (filesLinks == null)
+                    {
+                        if (installer)
+                        {
+                            ShowMessage("The ZXBSInstaller repository could not be accessed. Please check your internet connection or try again later.");
+                        }
+                        else
+                        {
+                            ShowMessage("The ZX Basic Studio repository could not be accessed. Please check your internet connection or try again later.");
+                        }
+                        return null;
+                    }
                     foreach (var fl in filesLinks)
                     {
                         if (fl.Contains("download"))
@@ -683,11 +678,17 @@ namespace ZXBSInstaller.Log
             }
             catch (Exception ex)
             {
+                ShowMessage($"Error retrieving ZXBS/Installer versions.\r\n{ex.Message}{ex.StackTrace}");
                 return null;
             }
         }
 
 
+        /// <summary>
+        /// Get version based on the link for ZXBS and ZXBSInstaller.
+        /// </summary>
+        /// <param name="fileLink">Link of the version</param>
+        /// <returns>Version info</returns>
         private static ExternalTools_Version GetGitHubZXBSVersion(string fileLink)
         {
             try
@@ -747,42 +748,75 @@ namespace ZXBSInstaller.Log
             }
             catch (Exception ex)
             {
+                ShowMessage($"Error parsing ZXBS version.\r\n{ex.Message}{ex.StackTrace}");
                 return null;
             }
         }
 
 
+        /// <summary>
+        /// Get all links of an url based on a regex pattern. 
+        /// It is used to parse the HTML of the versions page of the tools to extract the links of the versions. 
+        /// The pattern is specific for each tool, depending on how the versions are listed in the page.
+        /// </summary>
+        /// <param name="url">Url to retrive</param>
+        /// <param name="pattern">Regex patter for the urls</param>
+        /// <returns>Array of links in string format</returns>
         private static string[] GetAllLinks(string url, string pattern)
         {
-            // Get html file
-            string html;
-            var handler = new HttpClientHandler
+            try
             {
-                AllowAutoRedirect = true
-            };
-            using (HttpClient client = new HttpClient(handler))
-            {
-                html = client.GetStringAsync(url).GetAwaiter().GetResult();
+                // Get html file
+                string html = "";
+                var handler = new HttpClientHandler
+                {
+                    AllowAutoRedirect = true
+                };
+                // Download page with retries in case of network errors or timeouts
+                int retries = 5;
+                while (retries-- > 0)
+                {
+                    try
+                    {
+                        using (HttpClient client = new HttpClient(handler))
+                        {
+                            client.Timeout = TimeSpan.FromSeconds(20);
+                            html = client.GetStringAsync(url).GetAwaiter().GetResult();
+                        }
+                    }
+                    catch { }
+                    if (!string.IsNullOrEmpty(html))
+                    {
+                        break;
+                    }
+                    Thread.Sleep(1000);
+                }
+                if (string.IsNullOrEmpty(html))
+                {
+                    return null;
+                }
+
+                // Get links
+                var links = new List<string>();
+                {
+                    var regex = new Regex(
+                        pattern,
+                        RegexOptions.IgnoreCase);
+                    var matches = regex.Matches(html);
+                    foreach (Match match in matches)
+                    {
+                        links.Add(match.Groups[1].Value);
+                    }
+                }
+
+                return links.ToArray();
             }
-            if (string.IsNullOrEmpty(html))
+            catch (Exception ex)
             {
+                ShowMessage($"Error getting links.\r\n{ex.Message}{ex.StackTrace}");
                 return null;
             }
-            //File.WriteAllText("c:/temp/html.text", html);
-            // Get links
-            var links = new List<string>();
-            {
-                var regex = new Regex(
-                    pattern,
-                    RegexOptions.IgnoreCase);
-                var matches = regex.Matches(html);
-                foreach (Match match in matches)
-                {
-                    links.Add(match.Groups[1].Value);
-                }
-            }
 
-            return links.ToArray();
         }
 
         #endregion
@@ -790,6 +824,11 @@ namespace ZXBSInstaller.Log
 
         #region Local tools versions
 
+        /// <summary>
+        /// Get local version of one external tool
+        /// </summary>
+        /// <param name="id">Tool id</param>
+        /// <returns>Installed version</returns>
         public static ExternalTools_Version GetToolVersion(string id)
         {
             try
@@ -805,29 +844,119 @@ namespace ZXBSInstaller.Log
                     case "zxbsinstaller":
                         return GetZXBSInstallerVersion(dir);
                 }
-                return null;
             }
             catch (Exception ex)
             {
+                ShowMessage($"Error retrieving local version for {id}.\r\n{ex.Message}{ex.StackTrace}");
+            }
+            return null;
+        }
+
+
+        /// <summary>
+        /// Get installed Boriel ZX Basic Compiler version
+        /// </summary>
+        /// <param name="exePath">Path of the tool</param>
+        /// <returns>Version info</returns>
+        private static ExternalTools_Version GetBorielBasicVersion(string exePath)
+        {
+            try
+            {
+                // Windows fileName
+                var fileName = Path.Combine(exePath, "zxbc.exe");
+                if (!File.Exists(fileName))
+                {
+                    // If not exist, try Linux/Mac fileName
+                    fileName = Path.Combine(exePath, "zxbc.py");
+                }
+                if (!File.Exists(fileName))
+                {
+                    // Not found
+                    return null;
+                }
+                // Retrieve version executing with --version parameter
+                return GetVersionFromParameter(fileName);
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error getting local Boriel Basic version.\r\n{ex.Message}{ex.StackTrace}");
                 return null;
             }
         }
 
 
-        private static ExternalTools_Version GetBorielBasicVersion(string exePath)
+        /// <summary>
+        /// Get intalled ZX Basic Studio version.
+        /// The version is stored in version.txt file in ZXBS folder
+        /// </summary>
+        /// <param name="exePath">ZXBS path</param>
+        /// <returns>Version info</returns>
+        private static ExternalTools_Version GetZXBSVersion(string exePath)
         {
             try
             {
-                var fileName = Path.Combine(exePath, "zxbc.exe");
+                var fileName = Path.Combine(exePath, "version.txt");
                 if (!File.Exists(fileName))
                 {
-                    fileName = Path.Combine(exePath, "zxbc");
+                    // no version.txt file
+                    if (File.Exists(Path.Combine(exePath, "ZXBasicStudio.exe"))
+                        || File.Exists(Path.Combine(exePath, "ZXBasicStudio")))
+                    {
+                        // return "OLD version"
+                        return new ExternalTools_Version()
+                        {
+                            DownloadUrl = "",
+                            BetaNumber = 0,
+                            OperatingSystem = OperatingSystems.All,
+                            Version = "OLD version",
+                            VersionNumber = 0
+                        };
+                    }
+                    return null;
                 }
+                // Read version from file
+                var txt = File.ReadAllText(fileName);
+                var v = GetVersionNumber(txt);
+
+                // Is an stable version (ends with .0)
+                var parts = txt.Split(".");
+                if (parts.Length == 4 && parts[3] == "0")
+                {
+                    txt = $"{parts[0]}.{parts[1]}.{parts[2]}";
+                }
+
+                var version = new ExternalTools_Version()
+                {
+                    DownloadUrl = "",
+                    BetaNumber = v.Item2,
+                    OperatingSystem = OperatingSystems.All,
+                    Version = txt,
+                    VersionNumber = v.Item1
+                };
+                return version;
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error getting local ZXBS version.\r\n{ex.Message}{ex.StackTrace}");
+                return null;
+            }
+        }
+
+
+        /// <summary>
+        /// Get version from file using --version parameter
+        /// </summary>
+        /// <param name="fileName">Executable filename</param>
+        /// <returns>ExternalTools_Version with the version info</returns>
+        private static ExternalTools_Version GetVersionFromParameter(string fileName)
+        {
+            try
+            {
                 if (!File.Exists(fileName))
                 {
                     return null;
                 }
-                // Launch "zxbc.exe --version"
+
                 ProcessStartInfo psi = new ProcessStartInfo
                 {
                     FileName = fileName,
@@ -863,63 +992,22 @@ namespace ZXBSInstaller.Log
             }
             catch (Exception ex)
             {
+                ShowMessage($"Error getting local Boriel Basic version.\r\n{ex.Message}{ex.StackTrace}");
                 return null;
             }
         }
 
 
-        private static ExternalTools_Version GetZXBSVersion(string exePath)
-        {
-            try
-            {
-                var fileName = Path.Combine(exePath, "ZXBasicStudio.exe");
-                if (!File.Exists(fileName))
-                {
-                    fileName = Path.Combine(exePath, "ZXBasicStudio");
-                }
-                if (!File.Exists(fileName))
-                {
-                    return null;
-                }
-
-                var fvi = FileVersionInfo.GetVersionInfo(fileName);
-                if (fvi != null)
-                {
-                    // Major, minor, Build, private
-                    var version = $"{fvi.ProductMajorPart}.{fvi.ProductMinorPart}.{fvi.ProductBuildPart}";
-                    if (fvi.ProductPrivatePart > 0)
-                    {
-                        version += $"-beta{fvi.ProductPrivatePart}";
-                    }
-                    if (version == "1.0.0")
-                    {
-                        version = "1.6.0-beta6.3";
-                    }
-                    var v = GetVersionNumber(version);
-                    var versionNumber = v.Item1;
-                    var beta = v.Item2;
-                    return new ExternalTools_Version()
-                    {
-                        DownloadUrl = "",
-                        BetaNumber = beta,
-                        OperatingSystem = OperatingSystems.All,
-                        Version = version,
-                        VersionNumber = versionNumber
-                    };
-                }
-                return null;
-            }
-            catch (Exception ex)
-            {
-                return null;
-            }
-        }
-
-
+        /// <summary>
+        /// Gewt own version
+        /// </summary>
+        /// <param name="exePath">Not needed</param>
+        /// <returns>Version info</returns>
         public static ExternalTools_Version GetZXBSInstallerVersion(string exePath)
         {
             try
             {
+                // Get assembly version
                 var assemblyVersion = Assembly.GetEntryAssembly()?.GetName().Version?.ToString();
                 var parts = assemblyVersion.Split('.');
                 if (parts.Length < 4)
@@ -928,6 +1016,7 @@ namespace ZXBSInstaller.Log
                 }
                 ;
                 var version = $"{parts[0]}.{parts[1]}.{parts[2]}";
+                // It's a beta?
                 var beta = ToInteger(parts[3]);
                 if (beta > 0)
                 {
@@ -945,6 +1034,7 @@ namespace ZXBSInstaller.Log
             }
             catch (Exception ex)
             {
+                ShowMessage($"Error getting local ZXBSInstaller version.\r\n{ex.Message}{ex.StackTrace}");
                 return null;
             }
         }
@@ -954,26 +1044,56 @@ namespace ZXBSInstaller.Log
 
         #region Install external tool
 
+        /// <summary>
+        /// Download and install al selected tools
+        /// </summary>
         public static void DownloadAndInstallTools()
         {
-            ShowStatusPanel($"Working...");
-            foreach (var tool in ExternalTools)
+            try
             {
-                if (tool.IsSelected)
+                ShowStatusPanel($"Working...");
+                foreach (var tool in ExternalTools)
                 {
-                    DownloadAndInstallTool(tool, tool.LatestVersion);
+                    if (Cancel)
+                    {
+                        break;
+                    }
+                    if (tool.IsSelected)
+                    {
+                        DownloadAndInstallTool(tool, tool.LatestVersion);
+                    }
                 }
+                HideStatusPanel();
+                RefreshTools();
             }
-            HideStatusPanel();
-            RefreshTools();
+            catch (Exception ex)
+            {
+                ShowMessage($"Error installing.\r\n{ex.Message}{ex.StackTrace}");
+            }
         }
 
 
+        /// <summary>
+        /// Download and install one tool
+        /// </summary>
+        /// <param name="tool">Tool to install</param>
+        /// <param name="version">Version info to install</param>
         public static void DownloadAndInstallTool(ExternalTool tool, ExternalTools_Version version)
         {
+            // For debug
             string step = "";
             try
             {
+                if (tool == null || version == null)
+                {
+                    return;
+                }
+
+                if(tool.Id == "zxbsinstaller")
+                {
+                    ShowStatusPanel($"After installing or updating ZXBSInstaller, run this program from {tool.LocalPath}.");
+                }
+
                 ShowStatusPanel($"Downloading {tool.Name} version {version.Version}...");
 
                 // Download path
@@ -1048,6 +1168,13 @@ namespace ZXBSInstaller.Log
         }
 
 
+        /// <summary>
+        /// Install ZXBSInstaller...
+        /// Generate a batch/bash file to expand .zip, decompress and launch ZXBSInstaller
+        /// </summary>
+        /// <param name="tool">Tool info for ZXBSInstaller</param>
+        /// <param name="tempFile">Local path of the downloaded .zip file with the new version of ZXBSInstaller</param>
+        /// <param name="installationPath">Installation destination path</param>
         private static void InstallInstaller(ExternalTool tool, string tempFile, string installationPath)
         {
             try
@@ -1057,6 +1184,7 @@ namespace ZXBSInstaller.Log
                 string bashFile = "";
                 if (CurrentOperatingSystem == OperatingSystems.Windows)
                 {
+                    // Windows
                     bashFile = Path.Combine(GeneralConfig.BasePath, "downloads", "zxbsinstall.bat");
                     bash = @"
 @echo off
@@ -1070,40 +1198,71 @@ start ZXBSInstaller.exe";
                 }
                 else
                 {
+                    // Linux and Mac
                     bashFile = Path.Combine(GeneralConfig.BasePath, "downloads", "zxbsinstall.sh");
                     bash = @"
-#!/bin/bash
+# !/bin/bash
+set -e
 
 echo ""Updating installer...""
 sleep 5
 
-set -x
-tar -xf ""{tempFile}"" -C ""{installationPath}""
-rm -f ""{tempFile}""
-cd ""{installationPath}"" || exit 1
+ZIP_FILE=""{tempFile}""
+DEST_DIR=""{installationPath}""
 
-# Ejecutar sin esperar (en segundo plano)
-./ZXBSInstaller.exe &";
+extract_zip() {
+    if command -v unzip >/dev/null 2>&1; then
+        echo ""Using unzip...""
+        unzip -o ""$ZIP_FILE"" -d ""$DEST_DIR""
+    elif command -v tar >/dev/null 2>&1; then
+        echo ""Using tar...""
+        tar -xf ""$ZIP_FILE"" -C ""$DEST_DIR""
+    else
+        echo ""Error: Neither unzip nor tar is installed.""
+        exit 1
+    fi
+}
+
+extract_zip
+
+rm -f ""$ZIP_FILE""
+cd ""$DEST_DIR"" || exit 1
+
+# Ejecutar sin esperar
+./ZXBSInstaller &
+";
                 }
                 bash = bash.Replace("{tempFile}", tempFile).Replace("{installationPath}", installationPath);
                 File.WriteAllText(bashFile, bash);
 
-                // Set execute attr in Linux/Mac
                 if (CurrentOperatingSystem != OperatingSystems.Windows)
                 {
-                    var process = new Process();
-                    process.StartInfo.FileName = "chmod";
-                    process.StartInfo.ArgumentList.Add("+x");
-                    process.StartInfo.ArgumentList.Add(bashFile);
-                    process.StartInfo.RedirectStandardOutput = true;
-                    process.StartInfo.RedirectStandardError = true;
-                    process.StartInfo.UseShellExecute = false;
-                    process.Start();
-                    process.WaitForExit();
+                    // Set execute attr in Linux/Mac
+                    {
+                        var process = new Process();
+                        process.StartInfo.FileName = "chmod";
+                        process.StartInfo.ArgumentList.Add("+x");
+                        process.StartInfo.ArgumentList.Add(bashFile);
+                        process.StartInfo.RedirectStandardOutput = true;
+                        process.StartInfo.RedirectStandardError = true;
+                        process.StartInfo.UseShellExecute = false;
+                        process.Start();
+                        process.WaitForExit();
+                    }
+                    // Launch .sh file
+                    ProcessStartInfo psi = new ProcessStartInfo
+                    {
+                        FileName = "bash",
+                        Arguments = bashFile,
+                        WorkingDirectory = Path.Combine(GeneralConfig.BasePath, "downloads"),
+                        UseShellExecute = true,
+                    };
+                    var p = new Process { StartInfo = psi };
+                    p.Start();
                 }
-
-                // Run batch/bash file
+                else
                 {
+                    // Launch .bat file
                     ProcessStartInfo psi = new ProcessStartInfo
                     {
                         FileName = bashFile,
@@ -1126,49 +1285,68 @@ cd ""{installationPath}"" || exit 1
         }
 
 
+        /// <summary>
+        /// Extract file
+        /// </summary>
+        /// <param name="archive">Path of the .zip file</param>
+        /// <param name="destination">Destination folder</param>
         private static void ExtractFile(string archive, string destination)
         {
-            if (archive.ToLower().EndsWith(".zip"))
+            try
             {
-                System.IO.Compression.ZipFile.ExtractToDirectory(archive, destination, true);
-            }
-            else if (CurrentOperatingSystem != OperatingSystems.Windows)
-            {
-                Directory.CreateDirectory(destination);
-
-                var psi = new ProcessStartInfo
+                if (archive.ToLower().EndsWith(".zip"))
                 {
-                    FileName = "tar",
-                    Arguments = $"-xzf \"{archive}\" -C \"{destination}\"",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-
-                using var process = Process.Start(psi)!;
-
-                string stdout = process.StandardOutput.ReadToEnd();
-                string stderr = process.StandardError.ReadToEnd();
-
-                process.WaitForExit();
-
-                if (process.ExitCode != 0)
-                {
-                    ShowMessage($"Error unpacking file {archive}\r\n{stderr}");
-                    return;
+                    // Extract .zip file
+                    System.IO.Compression.ZipFile.ExtractToDirectory(archive, destination, true);
                 }
+                else if (CurrentOperatingSystem != OperatingSystems.Windows)
+                {
+                    // Extract .tar file on Linux and Mac
+                    Directory.CreateDirectory(destination);
+
+                    var psi = new ProcessStartInfo
+                    {
+                        FileName = "tar",
+                        Arguments = $"-xzf \"{archive}\" -C \"{destination}\"",
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
+
+                    using var process = Process.Start(psi)!;
+
+                    string stdout = process.StandardOutput.ReadToEnd();
+                    string stderr = process.StandardError.ReadToEnd();
+
+                    process.WaitForExit();
+
+                    if (process.ExitCode != 0)
+                    {
+                        ShowMessage($"Error unpacking file {archive}\r\n{stderr}");
+                        return;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error unpacking file {archive} on {destination}.\r\n{ex.Message}{ex.StackTrace}");
             }
         }
 
 
+        /// <summary>
+        /// Update ZX Basic Studio config with the tools path for "zxbc" and "zxbasm"
+        /// </summary>
         private static void SetZXBSConfig()
         {
             try
             {
+                // Build path for ZX Basic Studio configuration file
                 var filePath = Path.Combine(Environment.GetFolderPath(SpecialFolder.ApplicationData), "ZXBasicStudio", "ZXBasicStudioOptions.json");
                 if (!File.Exists(filePath))
                 {
+                    // Create a default config if not exists
                     string data = @"{
   ""ZxbasmPath"": """",
   ""ZxbcPath"": """",
@@ -1186,10 +1364,12 @@ cd ""{installationPath}"" || exit 1
                     File.WriteAllText(filePath, data);
                 }
 
+                // Open config file
                 var sb = new StringBuilder();
                 var sr = new StreamReader(filePath);
                 while (!sr.EndOfStream)
                 {
+                    // Read one line
                     var line = sr.ReadLine();
                     // Set values
                     if (line.Contains("ZxbasmPath"))
@@ -1220,7 +1400,7 @@ cd ""{installationPath}"" || exit 1
             }
             catch (Exception ex)
             {
-                //ShowMessage($"Error updating ZX Basic Studio options.\r\n{ex.Message}\r\n{ex.StackTrace}");
+                ShowMessage($"Error updating ZX Basic Studio options.\r\n{ex.Message}\r\n{ex.StackTrace}");
             }
         }
 
@@ -1228,6 +1408,10 @@ cd ""{installationPath}"" || exit 1
         #endregion
 
 
+        /// <summary>
+        /// Launch ZX Basic Studio
+        /// </summary>
+        /// <returns>True if correct or false if error</returns>
         public static bool RunZXBasicStudio()
         {
             try
@@ -1252,10 +1436,9 @@ cd ""{installationPath}"" || exit 1
             }
             catch (Exception ex)
             {
-                ServiceLayer.ShowMessage("Error launching ZX Basic Studio. Please check the installation.");
+                ServiceLayer.ShowMessage($"Error launching ZX Basic Studio. Please check the installation.\r\n{ex.Message}{ex.StackTrace}");
                 return false;
             }
         }
-
     }
 }

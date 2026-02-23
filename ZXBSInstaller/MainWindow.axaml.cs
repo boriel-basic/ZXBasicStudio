@@ -2,9 +2,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
-using MsBox.Avalonia;
-using MsBox.Avalonia.Dto;
-using MsBox.Avalonia.Enums;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -18,7 +15,9 @@ namespace ZXBSInstaller
 
     public partial class MainWindow : Window
     {
-
+        /// <summary>
+        /// Set Controls.MainControl as content
+        /// </summary>
         public MainWindow()
         {
             InitializeComponent();
