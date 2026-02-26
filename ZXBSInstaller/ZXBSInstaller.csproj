@@ -15,7 +15,6 @@
     <None Remove="Assets\internet.svg" />
     <None Remove="Assets\play.svg" />
     <None Remove="Assets\refresh.svg" />
-    <None Remove="ExternalTools.json" />
     <None Remove="version.txt" />
   </ItemGroup>
   <ItemGroup>
@@ -23,8 +22,23 @@
     <AvaloniaResource Include="Assets\history.svg" />
     <AvaloniaResource Include="Assets\install.svg" />
     <AvaloniaResource Include="Assets\internet.svg" />
+    <AvaloniaResource Include="Assets\tbbluemame.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Assets\nextsdimage.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Assets\zxbsmame.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
     <AvaloniaResource Include="Assets\play.svg" />
     <AvaloniaResource Include="Assets\refresh.svg" />
+    <AvaloniaResource Include="Assets\mame.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
+    <AvaloniaResource Include="Assets\hdfmonkey.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AvaloniaResource>
     <AvaloniaResource Include="zxbs.ico" />
   </ItemGroup>
   <ItemGroup>
@@ -36,9 +50,6 @@
     </AvaloniaResource>
     <AvaloniaResource Include="Assets\zxbsinstaller.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </AvaloniaResource>
-    <AvaloniaResource Include="ExternalTools.json">
-      <CopyToOutputDirectory></CopyToOutputDirectory>
     </AvaloniaResource>
     <Content Include="zxbs.ico" />
   </ItemGroup>

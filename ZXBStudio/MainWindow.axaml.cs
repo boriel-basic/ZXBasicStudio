@@ -35,6 +35,7 @@ using System.Reflection.Metadata;
 using System.Resources;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.Arm;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using ZXBasicStudio.BuildSystem;
@@ -1500,6 +1501,10 @@ namespace ZXBasicStudio
                                     errorMsg = "Error executing custom emulator launcher.";
                                 }
                             }
+                            else if (emulatorName.ToLower() == "mame")
+                            {
+                                errorMsg = BuildAndRun_MAME(emulatorPath, nextDrive, settings, project);
+                            }
                             else if (emulatorName.ToLower() == "cspect")
                             {
                                 if (!File.Exists(emulatorPath))
@@ -1549,7 +1554,7 @@ namespace ZXBasicStudio
                             errorMsg = "Error executing emulator: " + ex.Message + ex.StackTrace;
                             if (ex.InnerException != null)
                             {
-                                var ex2= ex.InnerException;
+                                var ex2 = ex.InnerException;
                                 errorMsg += "\r\nInner Exception: " + ex.Message + ex.StackTrace;
                             }
                         }
@@ -2502,6 +2507,126 @@ namespace ZXBasicStudio
         private void MnuReportBug_Click(object? sender, RoutedEventArgs e)
         {
             OpenUrl("https://github.com/boriel-basic/ZXBasicStudio/issues");
+        }
+
+
+        #endregion
+
+
+        #region MAME
+
+        private string BuildAndRun_MAME(string emulatorPath, string nextDrive, ZXBuildSettings settings, ZXProjectManager project)
+        {
+            if (!File.Exists(emulatorPath))
+            {
+                return "Emulator not found on: " + emulatorPath;
+            }
+
+            var basePath =Directory.GetParent(Directory.GetParent(emulatorPath).FullName).FullName;
+
+            // Delete /nextzxos/autoexec.1st
+            Hdfmonkey("rm ../nextsdimage/nextimage.img /nextzxos/autoexec.1st", basePath);
+            // Copy /nextzxos/autoexec.bas
+            if (!Hdfmonkey("put ../nextsdimage/nextimage.img ../nextsdimage/autoexec.bas /nextzxos/autoexec.bas", basePath))
+            {
+                return "Error copying autoexec.bas to the emulator image.";
+            }
+            // Empty /zxbsdev folder
+            // TODO: Sync!
+            Hdfmonkey("rm ../nextsdimage/nextimage.img /zxbsdev", basePath);
+            // Create /zxbsdev
+            Hdfmonkey("mkdir ../nextsdimage/nextimage.img /zxbsdev", basePath);
+            // Copy nextdrive to /zxbsdev
+            Hdfmonkey($"putdir ../nextsdimage/nextimage.img \"{nextDrive}\" /zxbsdev/", basePath);
+
+            // Launch mame
+            {
+                outLog.Writer.WriteLine("Launching MAME...");
+                var parameters = $"-ui_active -nounevenstretch -aspect 2:1 -video bgfx  -bgfx_screen_chains unfiltered -window -skip_gameinfo -mouse_device none -confirm_quit tbblue -hard1 ../nextsdimage/nextimage.img -plugin zxbs -debug -debugger none -console";
+                var psi = new ProcessStartInfo()
+                {
+                    FileName = emulatorPath,
+                    Arguments = parameters,
+                    WorkingDirectory = Directory.GetParent(emulatorPath).FullName,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+                var process = new Process()
+                {
+                    StartInfo = psi
+                };
+
+                outLog.Writer.WriteLine($">mame {parameters}");
+
+                process.OutputDataReceived += MAME_DataReceived;
+                process.ErrorDataReceived += MAME_ErrorReceived;
+
+                process.Start();
+
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                process.WaitForExit();
+
+                process.OutputDataReceived -= MAME_DataReceived;
+                process.ErrorDataReceived -= MAME_ErrorReceived;
+            }
+            return "";
+        }
+
+        private bool Hdfmonkey(string parameters, string basePath)
+        {
+            var hdfPath = Path.Combine(basePath, "hdfmonkey");
+
+            outLog.Writer.WriteLine($"> hdfmonkey {parameters}");
+            var psi = new ProcessStartInfo()
+            {
+                FileName = Path.Combine(hdfPath, "hdfmonkey.exe"),
+                Arguments = parameters,
+                WorkingDirectory = hdfPath,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            };
+            var process = new Process()
+            {
+                StartInfo = psi
+            };
+            process.Start();
+            var output = process.StandardOutput.ReadToEnd();
+            var error = process.StandardError.ReadToEnd();
+            process.WaitForExit();
+
+            if (!string.IsNullOrEmpty(error))
+            {
+                outLog.Writer.WriteLine("hdfmonkey ERROR> " + error);
+            }
+            if (!string.IsNullOrEmpty(output))
+            {
+                outLog.Writer.WriteLine("hdfmonkey> " + error);
+            }
+
+            return string.IsNullOrEmpty(error);
+        }
+
+        private void MAME_ErrorReceived(object sender, DataReceivedEventArgs e)
+        {
+            if (e.Data != null)
+            {
+                outLog.Writer.WriteLine("MAME ERROR> " + e.Data.ToStringNoNull());
+            }
+        }
+
+
+        private void MAME_DataReceived(object sender, DataReceivedEventArgs e)
+        {
+            if (e.Data != null)
+            {
+                outLog.Writer.WriteLine("MAME> " + e.Data.ToStringNoNull());
+            }
         }
 
 

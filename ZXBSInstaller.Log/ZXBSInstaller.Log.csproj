@@ -6,4 +6,14 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="ExternalTools.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="ExternalTools.json">
+      <CopyToOutputDirectory></CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

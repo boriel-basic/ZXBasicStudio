@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Threading;
 using ZXBSInstaller.Controls;
@@ -109,8 +110,7 @@ public partial class MainControl : UserControl
         });
 
         // Get tools
-        var json = UITools.GetTextResource("ExternalTools.json");
-        var tools = ServiceLayer.SetExternalTools(json);
+        var tools = ServiceLayer.GetExternalTools();
 
         HideStatusPanel();
         if (tools == null)
@@ -136,17 +136,68 @@ public partial class MainControl : UserControl
             toolItemControls.Clear();
             var tools = ServiceLayer.ExternalTools;
 
-            pnlTools.Children.Clear();
-            foreach (var tool in tools)
+            mainTools.Children.Clear();
+            // ZX Basic Studio
             {
-                // Create on ToolItemControl foreach tool
-                var control = new ToolItemControl(tool, Command_Received);
-                toolItemControls.Add(control);
-                pnlTools.Children.Add(control);
+                var groupTools = tools.Where(t => t.Group == "ZX Basic Studio");
+                {
+                    mainTools.Children.Add(new CheckBox()
+                    {
+                        Content = "ZX Basic Studio",
+                        FontSize = 16,
+                        IsChecked = true,
+                        Margin = new Thickness(10, 10, 0, 0),
+                        Foreground = Yellow
+                    });
+                    mainTools.Children.Add(new Separator()
+                    {
+                        Margin = new Thickness(0),
+                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch
+                    });
+                }
+                var pnlTools = new WrapPanel();
+                mainTools.Children.Add(pnlTools);
+                ShowData_AddTools(pnlTools, groupTools);
             }
+
+            // Next
+            {
+                var groupTools = tools.Where(t => t.Group == "ZX Spectrum Next");
+                {
+                    mainTools.Children.Add(new CheckBox()
+                    {
+                        Content = "ZX Spectrum Next",
+                        FontSize = 16,
+                        IsChecked = true,
+                        Margin = new Thickness(10, 10, 0, 0),
+                        Foreground = Yellow
+                    });
+                    mainTools.Children.Add(new Separator()
+                    {
+                        Margin = new Thickness(0),
+                        HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Stretch
+                    });
+                }
+                var pnlTools = new WrapPanel();
+                mainTools.Children.Add(pnlTools);
+                ShowData_AddTools(pnlTools, groupTools);
+            }
+
             // Update summary area
             UpdateSummary();
         });
+    }
+
+
+    private void ShowData_AddTools(WrapPanel panel, IEnumerable<ExternalTool> tools)
+    {
+        foreach (var tool in tools)
+        {
+            // Create on ToolItemControl foreach tool
+            var control = new ToolItemControl(tool, Command_Received);
+            toolItemControls.Add(control);
+            panel.Children.Add(control);
+        }
     }
 
 

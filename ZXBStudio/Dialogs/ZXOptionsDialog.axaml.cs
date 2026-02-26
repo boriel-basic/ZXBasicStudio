@@ -94,8 +94,9 @@ namespace ZXBasicStudio.Dialogs
                 Title = "Select Next emulator path...",
                 FileTypeFilter = new[]
                 {
-                    new FilePickerFileType("CSpect") { Patterns = new[] { "CSpect.exe" } },
-                    new FilePickerFileType("ZEsarUX") { Patterns = new[] { "zesarux.exe" } },
+                    new FilePickerFileType("MAME") { Patterns = new[] { "mame.exe", "mame" } },
+                    new FilePickerFileType("CSpect") { Patterns = new[] { "CSpect.exe", "CSpect" } },
+                    new FilePickerFileType("ZEsarUX") { Patterns = new[] { "zesarux.exe", "zesarux" } },
                     new FilePickerFileType("All files") { Patterns = new[] { "*", "*.*" } }
                 }
             });

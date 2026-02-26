@@ -37,7 +37,7 @@ namespace ZXBSInstaller.Log
         /// <summary>
         /// True if the computer is a Mac
         /// </summary>
-        public static bool IsMac=false;
+        public static bool IsMac = false;
         /// <summary>
         /// Used to cancel the current operation. It is set to true when the user clicks the cancel button and it is checked in all long operations to stop them if it is true.
         /// </summary>
@@ -307,20 +307,39 @@ namespace ZXBSInstaller.Log
         /// <summary>
         /// Retrieves all external tools configured for use with the application.
         /// </summary>
-        /// <param name="json">Json string with the external tools information</param>
         /// <returns>An array of <see cref="ExternalTool"/> objects representing the available external tools. The array is empty
         /// if no external tools are configured or can download the config file.</returns>
-        public static ExternalTool[] SetExternalTools(string json)
+        public static ExternalTool[] GetExternalTools()
         {
             try
             {
                 UpdateStatus?.Invoke("Retrieving external tools information...", 5);
 
-                var tools = JsonSerializer.Deserialize<ExternalTool[]>(json);
-                if (tools == null)
+                // Get external tools list from embded resource
+                ExternalTool[] tools = null;
                 {
-                    ShowMessage("ERROR, unable to obtain the list of external tools. Download and install a new version of ZXBSInstaller.");
-                    return null;
+                    var assembly = Assembly.GetExecutingAssembly();
+                    using (Stream? stream = assembly.GetManifestResourceStream("ZXBSInstaller.Log.ExternalTools.json"))
+                    {
+                        if (stream == null)
+                        {
+                            ShowMessage("ERROR, unable to obtain the list of external tools. Download and install a new version of ZXBSInstaller: ERROR #1");
+                            return null;
+                        }
+                        using StreamReader reader = new StreamReader(stream, Encoding.UTF8);
+                        var json = reader.ReadToEnd();
+                        if (string.IsNullOrEmpty(json))
+                        {
+                            ShowMessage("ERROR, unable to obtain the list of external tools. Download and install a new version of ZXBSInstaller: ERROR #2");
+                            return null;
+                        }
+                        tools = JsonSerializer.Deserialize<ExternalTool[]>(json);
+                        if (tools == null)
+                        {
+                            ShowMessage("ERROR, unable to obtain the list of external tools. Download and install a new version of ZXBSInstaller. ERROR #3");
+                            return null;
+                        }
+                    }
                 }
 
                 int max = tools.Length;
@@ -1089,7 +1108,7 @@ namespace ZXBSInstaller.Log
                     return;
                 }
 
-                if(tool.Id == "zxbsinstaller")
+                if (tool.Id == "zxbsinstaller")
                 {
                     ShowStatusPanel($"After installing or updating ZXBSInstaller, run this program from {tool.LocalPath}.");
                 }

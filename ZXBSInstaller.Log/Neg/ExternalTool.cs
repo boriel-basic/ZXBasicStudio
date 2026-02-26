@@ -72,7 +72,10 @@ namespace ZXBSInstaller.Log.Neg
         /// Recommended
         /// </summary>
         public bool Recommended { get; set; }
-
+        /// <summary>
+        /// Tools group
+        /// </summary>
+        public string Group { get; set; }
         /// <summary>
         /// Versions of the tool
         /// </summary>
