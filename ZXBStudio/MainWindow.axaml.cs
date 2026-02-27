@@ -2523,26 +2523,39 @@ namespace ZXBasicStudio
             }
 
             var basePath =Directory.GetParent(Directory.GetParent(emulatorPath).FullName).FullName;
+            var sdimagePath= Path.Combine(basePath, "nextsdimage", "cspect-next-2gb.img");
 
             // Delete /nextzxos/autoexec.1st
-            Hdfmonkey("rm ../nextsdimage/nextimage.img /nextzxos/autoexec.1st", basePath);
+            Hdfmonkey($"rm \"{sdimagePath}\" /nextzxos/autoexec.1st", basePath);
+
+            // Create autoexec.bas
+            var nextPath =Path.GetFileNameWithoutExtension(project.GetMainFile());
+            string autoexec = $@"#autostart 10
+10 CD ""{nextPath}""
+20 .nexload {nextPath}.nex
+";
+            var bytes=Common.Txt2Bas.Txt2BasConverter.Text2Bas(autoexec);
+            var autoexecPath = Path.Combine(basePath, "hdfmonkey", "autoexec.bas");
+            File.WriteAllBytes(autoexecPath, bytes);
+
             // Copy /nextzxos/autoexec.bas
-            if (!Hdfmonkey("put ../nextsdimage/nextimage.img ../nextsdimage/autoexec.bas /nextzxos/autoexec.bas", basePath))
+            if (!Hdfmonkey($"put \"{sdimagePath}\" \"{autoexecPath}\" /nextzxos/autoexec.bas", basePath))
             {
                 return "Error copying autoexec.bas to the emulator image.";
             }
+
             // Empty /zxbsdev folder
             // TODO: Sync!
-            Hdfmonkey("rm ../nextsdimage/nextimage.img /zxbsdev", basePath);
+            Hdfmonkey($"rm \"{sdimagePath}\" /{nextPath}", basePath);
             // Create /zxbsdev
-            Hdfmonkey("mkdir ../nextsdimage/nextimage.img /zxbsdev", basePath);
+            Hdfmonkey($"mkdir \"{sdimagePath}\" /{nextPath}", basePath);
             // Copy nextdrive to /zxbsdev
-            Hdfmonkey($"putdir ../nextsdimage/nextimage.img \"{nextDrive}\" /zxbsdev/", basePath);
+            Hdfmonkey($"putdir \"{sdimagePath}\" \"{nextDrive}\" /{nextPath}/", basePath);
 
             // Launch mame
             {
                 outLog.Writer.WriteLine("Launching MAME...");
-                var parameters = $"-ui_active -nounevenstretch -aspect 2:1 -video bgfx  -bgfx_screen_chains unfiltered -window -skip_gameinfo -mouse_device none -confirm_quit tbblue -hard1 ../nextsdimage/nextimage.img -plugin zxbs -debug -debugger none -console";
+                var parameters = $"-ui_active -nounevenstretch -aspect 2:1 -video bgfx  -bgfx_screen_chains unfiltered -window -skip_gameinfo -mouse_device none -confirm_quit tbblue -hard1 {sdimagePath} -plugin zxbs -debug -debugger none -console";
                 var psi = new ProcessStartInfo()
                 {
                     FileName = emulatorPath,

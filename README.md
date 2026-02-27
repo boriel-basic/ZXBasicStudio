@@ -19,11 +19,11 @@ Have fun!
   - AdolFITO 
   - HashIron
   - SirRickster
+  - Yoruguaman
 - Testers:
   - AbenZaX
   - Pedro Tomás (Pere)
   - Jose Daniel Fernandez Santos (Fenix)
-  - Yoruguaman
 
 ## Credits
 - Icons from [SVG REPO](https://www.svgrepo.com/):
