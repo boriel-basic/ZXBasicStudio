@@ -12,11 +12,11 @@
         /// <summary>
         /// Numer of the Beta version, 0 if not a beta
         /// </summary>
-        public int BetaNumber { get; set; }
+        public decimal BetaNumber { get; set; }
         /// <summary>
         /// Internal version number to order versions
         /// </summary>
-        public int VersionNumber { get; set; }
+        public decimal VersionNumber { get; set; }
         /// <summary>
         /// Download url for this version
         /// </summary>

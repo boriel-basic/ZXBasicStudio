@@ -5,6 +5,7 @@ using System.Formats.Tar;
 using System.IO;
 using System.IO.Compression;
 using System.Reflection;
+using System.Reflection.Metadata;
 using System.Reflection.Metadata.Ecma335;
 using System.Runtime;
 using System.Runtime.InteropServices;
@@ -269,6 +270,30 @@ namespace ZXBSInstaller.Log
 
 
         /// <summary>
+        /// Convert an objet to his decimnal value or 0 if it can't do it
+        /// </summary>
+        /// <param name="value">Value to convert</param>
+        /// <returns>Numeric value or 0 if can't do it</returns>
+        private static decimal ToDecimal(object value)
+        {
+            try
+            {
+                if (value == null)
+                {
+                    return 0;
+                }
+                decimal v = 0;
+                if (decimal.TryParse(value.ToString(), out v))
+                {
+                    return v;
+                }
+            }
+            catch { }
+            return 0;
+        }
+
+
+        /// <summary>
         /// Open an url in the default browser. It is used to open the site and license urls of the external tools. It is called from the service layer when the user clicks on the site or license buttons of an external tool.
         /// </summary>
         /// <param name="url">Url to open</param>
@@ -363,7 +388,7 @@ namespace ZXBSInstaller.Log
                         tool.Versions = new ExternalTools_Version[0];
                     }
                     // Get installed version
-                    tool.InstalledVersion = GetToolVersion(tool.Id);
+                    tool.InstalledVersion = GetToolVersion(tool);
 
                     // Set latest version
                     if (GeneralConfig.OnlyStableVersions)
@@ -379,7 +404,8 @@ namespace ZXBSInstaller.Log
                         else
                         {
                             tool.LatestVersion = tool.Versions.
-                                Where(d => d.OperatingSystem == CurrentOperatingSystem &&
+                                Where(d => (d.OperatingSystem == OperatingSystems.All ||
+                                    d.OperatingSystem == CurrentOperatingSystem) &&
                                     d.BetaNumber == 0).
                                 OrderByDescending(d => d.VersionNumber).
                                 FirstOrDefault();
@@ -397,7 +423,8 @@ namespace ZXBSInstaller.Log
                         else
                         {
                             tool.LatestVersion = tool.Versions.
-                                Where(d => d.OperatingSystem == CurrentOperatingSystem).
+                                Where(d => (d.OperatingSystem == OperatingSystems.All ||
+                                    d.OperatingSystem == CurrentOperatingSystem)).
                                 OrderByDescending(d => d.VersionNumber).
                                 FirstOrDefault();
                         }
@@ -425,7 +452,14 @@ namespace ZXBSInstaller.Log
                         }
                     }
                     // Set tool local path
-                    tool.LocalPath = Path.Combine(GeneralConfig.BasePath, tool.Id);
+                    if (string.IsNullOrEmpty(tool.LocalPath))
+                    {
+                        tool.LocalPath = Path.Combine(GeneralConfig.BasePath, tool.Id);
+                    }
+                    else
+                    {
+                        tool.LocalPath = Path.Combine(GeneralConfig.BasePath, tool.LocalPath);
+                    }
                 }
 
                 // order tools by order property
@@ -451,12 +485,12 @@ namespace ZXBSInstaller.Log
         /// </summary>
         /// <param name="versionString">Version string</param>
         /// <returns>Item1 = version number, Item2 = beta number</returns>
-        private static (int, int) GetVersionNumber(string versionString)
+        private static (decimal, decimal) GetVersionNumber(string versionString)
         {
             try
             {
-                int number = 0;
-                int betaNumber = 0;
+                decimal number = 0;
+                decimal betaNumber = 0;
                 string version = versionString;
                 // If it is a beta version, replace the -beta with . and add the beta number as the fourth value.
                 if (version.Contains("-beta"))
@@ -484,7 +518,7 @@ namespace ZXBSInstaller.Log
                     number *= 1000;
                     if (n < versionParts.Length)
                     {
-                        int v = ToInteger(versionParts[n]);
+                        decimal v = ToDecimal(versionParts[n]);
                         if (n == 3)
                         {
                             betaNumber = v;
@@ -541,6 +575,19 @@ namespace ZXBSInstaller.Log
 
                     case "zxbsinstaller":
                         return GetBorielZXBSVersions(tool.VersionsUrl, true);
+
+                    case "mame":
+                        return GetMAMEVersions();
+
+                    case "tbbluemame":
+                        return GetTBBLueMAMEVersions();
+
+                    case "zxbsmame":
+                    case "hdfmonkey":
+                        return GetDuefectuVersions(tool.VersionsUrl);
+
+                    case "nextsdimage":
+                        return GetNextSDImageVersions();
 
                     default:
                         return null;
@@ -848,10 +895,15 @@ namespace ZXBSInstaller.Log
         /// </summary>
         /// <param name="id">Tool id</param>
         /// <returns>Installed version</returns>
-        public static ExternalTools_Version GetToolVersion(string id)
+        public static ExternalTools_Version GetToolVersion(ExternalTool tool)
         {
             try
             {
+                if (tool == null)
+                {
+                    return null;
+                }
+                var id = tool.Id;
                 var dir = Path.Combine(GeneralConfig.BasePath, id);
 
                 switch (id)
@@ -862,11 +914,20 @@ namespace ZXBSInstaller.Log
                         return GetZXBSVersion(dir);
                     case "zxbsinstaller":
                         return GetZXBSInstallerVersion(dir);
+                    case "mame":
+                        return GetMAMEVersion(dir);
+                    case "tbbluemame":
+                        return GetTBBLueMAMEVersion(Path.Combine(GeneralConfig.BasePath, tool.LocalPath));
+                    case "zxbsmame":
+                    case "hdfmonkey":
+                        return GetDuefectuVersion(tool);
+                    case "nextsdimage":
+                        return GetNextSDImageVersion(tool);
                 }
             }
             catch (Exception ex)
             {
-                ShowMessage($"Error retrieving local version for {id}.\r\n{ex.Message}{ex.StackTrace}");
+                ShowMessage($"Error retrieving local version for {tool.Id}.\r\n{ex.Message}{ex.StackTrace}");
             }
             return null;
         }
@@ -997,8 +1058,8 @@ namespace ZXBSInstaller.Log
                 }
                 var version = output.Replace("zxbc.py ", "").Replace("\n", "").Replace("\r", "").Replace("v", "");
                 var v = GetVersionNumber(version);
-                int number = v.Item1;
-                int beta = v.Item2;
+                decimal number = v.Item1;
+                decimal beta = v.Item2;
 
                 return new ExternalTools_Version()
                 {
@@ -1128,13 +1189,21 @@ namespace ZXBSInstaller.Log
 
                 // Get installation path
                 step = "Creating installation path";
-                var installationPath = Path.Combine(GeneralConfig.BasePath, tool.Id);
+                string installationPath = "";
+                if (string.IsNullOrEmpty(tool.LocalPath))
+                {
+                    installationPath = Path.Combine(GeneralConfig.BasePath, tool.Id);
+                }
+                else
+                {
+                    installationPath = Path.Combine(GeneralConfig.BasePath, tool.LocalPath);
+                }
                 // Patch for Boriel Basic
                 if (tool.Id == "zxbasic")
                 {
                     installationPath = Directory.GetParent(installationPath).FullName;
                 }
-                if (!Directory.Exists(installationPath))
+                if (tool.Unzip && !Directory.Exists(installationPath))
                 {
                     step = $"Creating application path [{installationPath}]";
                     Directory.CreateDirectory(installationPath);
@@ -1163,9 +1232,28 @@ namespace ZXBSInstaller.Log
                 }
 
                 // Extract file
-                step = $"Installing {tool.Name}";
-                UpdateStatus($"Installing {tool.Name} version {version.Version}...", 50);
-                ExtractFile(tempFile, installationPath);
+                if (tool.Unzip)
+                {
+                    step = $"Installing {tool.Name}";
+                    UpdateStatus($"Installing {tool.Name} version {version.Version}...", 50);
+                    ExtractFile(tempFile, installationPath);
+                }
+                else
+                {
+                    var dest = Path.Combine(GeneralConfig.BasePath, tool.LocalPath);
+                    if (File.Exists(dest))
+                    {
+                        File.Delete(dest);
+                    }
+                    File.Move(tempFile, installationPath);
+                }
+
+                // Create Version.txt file
+                if (tool.CreateVerFile)
+                {
+                    var fileName = Path.Combine(GeneralConfig.BasePath, $"{tool.LocalPath}.ver");
+                    File.WriteAllText(fileName, version.Version);
+                }
 
                 // Set ZXBS Options
                 step = "Set ZX Basic Studio options";
@@ -1176,6 +1264,65 @@ namespace ZXBSInstaller.Log
                 step = "Deleting temp files";
                 UpdateStatus("Deleting temp files...", 90);
                 File.Delete(tempFile);
+
+                // hdfmonkey patch
+                if (tool.Id == "hdfmonkey")
+                {
+                    string dest = "";
+                    string source = "";
+                    string basePath = Path.Combine(GeneralConfig.BasePath, tool.Id);
+                    switch (CurrentOperatingSystem)
+                    {
+                        case OperatingSystems.Windows:
+                            dest = Path.Combine(basePath, "hdfmonkey.exe");
+                            source = Path.Combine(basePath, "windows-64", "hdfmonkey.exe");
+                            break;
+                        case OperatingSystems.Linux:
+                            dest = Path.Combine(basePath, "hdfmonkey");
+                            source = Path.Combine(basePath, "linux-musl", "hdfmonkey");
+                            break;
+                        case OperatingSystems.MacOS_x64:
+                            dest = Path.Combine(basePath, "hdfmonkey");
+                            source = Path.Combine(basePath, "macos-intel", "hdfmonkey");
+                            break;
+                        case OperatingSystems.MacOS_arm64:
+                            dest = Path.Combine(basePath, "hdfmonkey");
+                            source = Path.Combine(basePath, "macos-mn", "hdfmonkey");
+                            break;
+
+                    }
+                    if (File.Exists(dest))
+                    {
+                        File.Delete(dest);
+                    }
+                    File.Move(source, dest);
+                }
+
+                // Next SD Image patch
+                if(tool.Id == "nextsdimage")
+                {
+                    string dir = Path.Combine(GeneralConfig.BasePath, tool.Id,"2gb");
+                    string source = Path.Combine(dir, "cspect-next-2gb.img");
+                    string dest=Path.Combine(GeneralConfig.BasePath, tool.Id, "cspect-next-2gb.img");
+                    if (File.Exists(dest))
+                    {
+                        File.Delete(dest);
+                    }
+                    File.Move(source, dest);
+
+                    source= Path.Combine(dir, "version.txt");
+                    dest= Path.Combine(GeneralConfig.BasePath, tool.Id, "version.txt");
+                    if (File.Exists(dest))
+                    {
+                        File.Delete(dest);
+                    }
+                    File.Move(source, dest);
+                    try
+                    {
+                        Directory.Delete(dir);
+                    }
+                    catch { }
+                }
 
                 UpdateStatus($"{tool.Name} version {version.Version} installed successfully.", 100);
             }
@@ -1318,10 +1465,37 @@ cd ""$DEST_DIR"" || exit 1
                     // Extract .zip file
                     System.IO.Compression.ZipFile.ExtractToDirectory(archive, destination, true);
                 }
+                else if (archive.ToLower().EndsWith(".exe"))
+                {
+                    var psi = new ProcessStartInfo
+                    {
+                        FileName = archive,
+                        Arguments = $"-o\"{destination}\" -y",
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
+                    using var process = Process.Start(psi)!;
+
+                    string stdout = process.StandardOutput.ReadToEnd();
+                    string stderr = process.StandardError.ReadToEnd();
+
+                    process.WaitForExit();
+
+                    if (process.ExitCode != 0)
+                    {
+                        ShowMessage($"Error unpacking file {archive}\r\n{stderr}");
+                        return;
+                    }
+                }
                 else if (CurrentOperatingSystem != OperatingSystems.Windows)
                 {
                     // Extract .tar file on Linux and Mac
-                    Directory.CreateDirectory(destination);
+                    if (!Directory.Exists(destination))
+                    {
+                        Directory.CreateDirectory(destination);
+                    }
 
                     var psi = new ProcessStartInfo
                     {
@@ -1459,5 +1633,320 @@ cd ""$DEST_DIR"" || exit 1
                 return false;
             }
         }
+
+
+        #region MAME
+
+        private static ExternalTools_Version[] GetMAMEVersions()
+        {
+            var versions = new List<ExternalTools_Version>();
+
+            // Windows
+            versions.Add(new ExternalTools_Version()
+            {
+                BetaNumber = 0,
+                DownloadUrl = "https://github.com/mamedev/mame/releases/download/mame0285/mame0285b_x64.exe",
+                OperatingSystem = OperatingSystems.Windows,
+                Version = "0.285",
+                VersionNumber = 285
+            });
+            // Mac_x86
+            versions.Add(new ExternalTools_Version()
+            {
+                BetaNumber = 0,
+                DownloadUrl = "https://sdlmame.lngn.net/stable/mame0285-x86.zip",
+                OperatingSystem = OperatingSystems.MacOS_x64,
+                Version = "0.285",
+                VersionNumber = 285
+            });
+            // Mac_arm64
+            versions.Add(new ExternalTools_Version()
+            {
+                BetaNumber = 0,
+                DownloadUrl = "https://sdlmame.lngn.net/stable/mame0285-arm64.zip",
+                OperatingSystem = OperatingSystems.MacOS_arm64,
+                Version = "0.285",
+                VersionNumber = 285
+            });
+            // Mac_arm64
+            versions.Add(new ExternalTools_Version()
+            {
+                BetaNumber = 0,
+                DownloadUrl = "bash -c \"sudo apt install -y mame\"",
+                OperatingSystem = OperatingSystems.Linux,
+                Version = "0.285",
+                VersionNumber = 285
+            });
+            return versions.ToArray();
+        }
+
+
+        private static ExternalTools_Version GetMAMEVersion(string exePath)
+        {
+            try
+            {
+                // Windows fileName
+                var fileName = Path.Combine(exePath, "mame.exe");
+                if (!File.Exists(fileName))
+                {
+                    // If not exist, try Linux/Mac fileName
+                    fileName = Path.Combine(exePath, "mame");
+                }
+                if (!File.Exists(fileName))
+                {
+                    // Not found
+                    return null;
+                }
+
+                // Retrieve version executing with -version parameter
+                ProcessStartInfo psi = new ProcessStartInfo
+                {
+                    FileName = fileName,
+                    Arguments = "-version",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                };
+                using Process process = new Process { StartInfo = psi };
+                process.Start();
+                string output = process.StandardOutput.ReadToEnd();
+                string error = process.StandardError.ReadToEnd();
+                process.WaitForExit();
+
+                if (string.IsNullOrEmpty(output))
+                {
+                    return null;
+                }
+                var parts = output.Split(" ");
+                var version = parts[0];
+                int number = ToInteger(version.Replace("0.", ""));
+                int beta = 0;
+
+                return new ExternalTools_Version()
+                {
+                    DownloadUrl = "",
+                    BetaNumber = beta,
+                    OperatingSystem = OperatingSystems.All,
+                    Version = version,
+                    VersionNumber = number
+                };
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error getting local MAME version.\r\n{ex.Message}{ex.StackTrace}");
+                return null;
+            }
+        }
+
+        #endregion
+
+
+        #region Boot ROM Next - tbbluemame
+
+        private static ExternalTools_Version[] GetTBBLueMAMEVersions()
+        {
+            var versions = new List<ExternalTools_Version>();
+
+            // All versions
+            var v = new ExternalTools_Version()
+            {
+                DownloadUrl = "https://github.com/Threetwosevensixseven/NexCreator/raw/master/bootroms/tbblue.zip",
+                OperatingSystem = OperatingSystems.All,
+                Version = "3.02.03",
+            };
+            var vv = GetVersionNumber(v.Version);
+            v.VersionNumber = vv.Item1;
+            v.BetaNumber = vv.Item2;
+            versions.Add(v);
+            return versions.ToArray();
+        }
+
+
+        private static ExternalTools_Version GetTBBLueMAMEVersion(string exePath)
+        {
+            try
+            {
+                // Windows fileName
+                var fileName = exePath + ".ver";
+                if (!File.Exists(fileName))
+                {
+                    return null;
+                }
+                var version = File.ReadAllText(fileName).Trim();
+                // All versions
+                var v = new ExternalTools_Version()
+                {
+                    DownloadUrl = "https://github.com/Threetwosevensixseven/NexCreator/raw/master/bootroms/tbblue.zip",
+                    OperatingSystem = OperatingSystems.All,
+                    Version = "3.02.03",
+                };
+                var vv = GetVersionNumber(v.Version);
+                v.VersionNumber = vv.Item1;
+                v.BetaNumber = vv.Item2;
+                return v;
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error getting local Next boot ROM version.\r\n{ex.Message}{ex.StackTrace}");
+                return null;
+            }
+        }
+
+        #endregion
+
+
+        #region Version.txt based system
+
+        private static ExternalTools_Version[] GetDuefectuVersions(string url)
+        {
+            try
+            {
+                var versions = new List<ExternalTools_Version>();
+
+                // Download versions file
+                string data = "";
+                using (HttpClient client = new HttpClient())
+                {
+                    client.Timeout = TimeSpan.FromSeconds(20);
+                    data = client.GetStringAsync(url).GetAwaiter().GetResult();
+                }
+                if (string.IsNullOrEmpty(data))
+                {
+                    return null;
+                }
+
+                var lines = data.Split("\r\n");
+                foreach (var line in lines)
+                {
+                    var parts = line.Split(';');
+                    if (parts.Length == 2)
+                    {
+                        var v = new ExternalTools_Version()
+                        {
+                            DownloadUrl = parts[1],
+                            OperatingSystem = OperatingSystems.All,
+                            Version = parts[0],
+                        };
+                        var vv = GetVersionNumber(v.Version);
+                        v.VersionNumber = vv.Item1;
+                        v.BetaNumber = vv.Item2;
+                        versions.Add(v);
+                    }
+                }
+
+                return versions.ToArray();
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+
+        private static ExternalTools_Version GetDuefectuVersion(ExternalTool tool)
+        {
+            try
+            {
+                string exePath = "";
+                if (string.IsNullOrEmpty(tool.LocalPath))
+                {
+                    exePath = Path.Combine(GeneralConfig.BasePath, tool.Id);
+                }
+                else
+                {
+                    exePath = Path.Combine(GeneralConfig.BasePath, tool.LocalPath);
+                }
+                var fileName = Path.Combine(exePath, "Version.txt");
+                if (!File.Exists(fileName))
+                {
+                    return null;
+                }
+                var versiontxt = File.ReadAllText(fileName).Trim();
+                if (string.IsNullOrEmpty(versiontxt))
+                {
+                    return null;
+                }
+                var v = new ExternalTools_Version()
+                {
+                    DownloadUrl = "",
+                    OperatingSystem = OperatingSystems.All,
+                    Version = versiontxt,
+                };
+                var vv = GetVersionNumber(v.Version);
+                v.VersionNumber = vv.Item1;
+                v.BetaNumber = vv.Item2;
+                return v;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        #endregion
+
+
+        #region Next SD Image
+
+        private static ExternalTools_Version[] GetNextSDImageVersions()
+        {
+            try
+            {
+                var versions = new List<ExternalTools_Version>();
+
+                var v = new ExternalTools_Version()
+                {
+                    DownloadUrl = "https://zxnext.uk/hosted/index_files/hdfimages/cspect-next-2gb.zip",
+                    OperatingSystem = OperatingSystems.All,
+                    Version = "2026-02-27",
+                    VersionNumber = 20260227,
+                    BetaNumber = 0
+                };
+                versions.Add(v);
+
+                return versions.ToArray();
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+
+        private static ExternalTools_Version GetNextSDImageVersion(ExternalTool tool)
+        {
+            try
+            {
+                string fileName = Path.Combine(GeneralConfig.BasePath,tool.Id,"version.txt");                
+                if (!File.Exists(fileName))
+                {
+                    return null;
+                }
+                var versiontxt = File.ReadAllText(fileName).Trim();
+                if (string.IsNullOrEmpty(versiontxt))
+                {
+                    return null;
+                }
+                var parts = versiontxt.Split(" ");
+
+                var v = new ExternalTools_Version()
+                {
+                    DownloadUrl = "",
+                    OperatingSystem = OperatingSystems.All,
+                    Version = parts[0],
+                    BetaNumber = 0,
+                    VersionNumber = ToDecimal(parts[0].Replace("-",""))
+                };
+                return v;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        #endregion
+
     }
 }

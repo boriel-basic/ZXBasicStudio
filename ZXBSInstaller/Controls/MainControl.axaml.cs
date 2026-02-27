@@ -33,6 +33,8 @@ public partial class MainControl : UserControl
     /// </summary>
     private static Brush Yellow = new SolidColorBrush(Colors.Yellow);
 
+    private CheckBox chkNextGroup = null;
+
 
     /// <summary>
     /// Main constructor
@@ -164,14 +166,19 @@ public partial class MainControl : UserControl
             {
                 var groupTools = tools.Where(t => t.Group == "ZX Spectrum Next");
                 {
-                    mainTools.Children.Add(new CheckBox()
+                    if (chkNextGroup == null)
                     {
-                        Content = "ZX Spectrum Next",
-                        FontSize = 16,
-                        IsChecked = true,
-                        Margin = new Thickness(10, 10, 0, 0),
-                        Foreground = Yellow
-                    });
+                        chkNextGroup = new CheckBox()
+                        {
+                            Content = "ZX Spectrum Next",
+                            FontSize = 16,
+                            IsChecked = true,
+                            Margin = new Thickness(10, 10, 0, 0),
+                            Foreground = Yellow
+                        };
+                        chkNextGroup.IsCheckedChanged += ZXNextGropu_Changed;
+                    }
+                    mainTools.Children.Add(chkNextGroup);
                     mainTools.Children.Add(new Separator()
                     {
                         Margin = new Thickness(0),
@@ -189,15 +196,30 @@ public partial class MainControl : UserControl
     }
 
 
+    private void ZXNextGropu_Changed(object? sender, RoutedEventArgs e)
+    {
+        foreach(var ctrl in toolItemControls)
+        {
+            if (ctrl.ExternalTool.Group == "ZX Spectrum Next")
+            {
+                ctrl.IsSelected = chkNextGroup.IsChecked == true;
+            }
+        }
+    }
+
+
     private void ShowData_AddTools(WrapPanel panel, IEnumerable<ExternalTool> tools)
     {
-        foreach (var tool in tools)
+        Dispatcher.UIThread.Post(() =>
         {
-            // Create on ToolItemControl foreach tool
-            var control = new ToolItemControl(tool, Command_Received);
-            toolItemControls.Add(control);
-            panel.Children.Add(control);
-        }
+            foreach (var tool in tools)
+            {
+                // Create on ToolItemControl foreach tool
+                var control = new ToolItemControl(tool, Command_Received);
+                toolItemControls.Add(control);
+                panel.Children.Add(control);
+            }
+        });
     }
 
 

@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Threading;
 using System;
 using ZXBSInstaller.Log;
 using ZXBSInstaller.Log.Neg;
@@ -21,7 +22,20 @@ public partial class ToolItemControl : UserControl
     /// <summary>
     /// Tool selected for installation?
     /// </summary>
-    public bool IsSelected = false;
+    public bool IsSelected
+    {
+        get
+        {
+            return _IsSelected;
+        }
+        set
+        {
+            _IsSelected = value;
+            SetSelected(value);
+        }
+    }
+
+    private bool _IsSelected = false;
 
     // Colors
     public static SolidColorBrush colorRed = new SolidColorBrush(Colors.Red);
@@ -53,6 +67,7 @@ public partial class ToolItemControl : UserControl
         txtPath.Text = "Path: " + tool.LocalPath;
         txtLicense.Text = "Licence: " + tool.LicenseType;
         txtAuthor.Text = "Author(s): " + tool.Author;
+        
         // Set chkSelect status
         IsSelected = tool.UpdateNeeded;
         tool.IsSelected = IsSelected;
@@ -96,9 +111,7 @@ public partial class ToolItemControl : UserControl
     /// <param name="e"></param>
     private void chkSelect_IsCheckedChanged(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
-        IsSelected = chkSelect.IsChecked == true;
-        ExternalTool.IsSelected = IsSelected;
-        Command(ExternalTool.Id, "CHECKED");
+        SetSelected(chkSelect.IsChecked == true);
     }
 
 
@@ -115,5 +128,20 @@ public partial class ToolItemControl : UserControl
     private void btnViewSite_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
     {
         ServiceLayer.OpenUrlInBrowser(ExternalTool.SiteUrl);
+    }
+
+
+    private void SetSelected(bool selected)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            _IsSelected = selected;
+            ExternalTool.IsSelected = _IsSelected;
+            if (chkSelect.IsChecked != _IsSelected)
+            {
+                chkSelect.IsChecked = _IsSelected;
+            }
+            Command(ExternalTool.Id, "CHECKED");
+        });
     }
 }
