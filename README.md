@@ -24,6 +24,7 @@ Have fun!
   - AbenZaX
   - Pedro Tomás (Pere)
   - Jose Daniel Fernandez Santos (Fenix)
+  - Super@ado
 
 ## Credits
 - Icons from [SVG REPO](https://www.svgrepo.com/):
