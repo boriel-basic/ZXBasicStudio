@@ -11,15 +11,36 @@ Documentation will come in the near future, take a look at the book [Boriel Basi
 
 Have fun!
 
+## Projects in this solution
+
+This solution contains several projects that work together to provide the ZX Basic Studio experience:
+
+- **ZXBStudio**: The main cross-platform Integrated Development Environment (IDE) built with [Avalonia](https://avaloniaui.net/).
+- **CoreSpectrum**: The core ZX Spectrum emulation library, providing hardware simulation.
+- **Z80dotNet**: A Z80 processor simulator that serves as the heart of the emulator.
+- **HeadlessEmulator**: A command-line (CLI) version of the emulator for running Spectrum programs without a GUI.
+- **Bufdio**: An audio handling library using FFmpeg for sound and tape I/O support.
+- **Common**: Shared logic and UI components used across the different projects.
+- **ZXBSInstaller**: A cross-platform installer for the IDE, built with Avalonia.
+- **ZXBasicStudioSite**: The source for the ZX Basic Studio website, built with Blazor WebAssembly.
+- **RomReconstructor** & **Rom128Reconstructor**: Specialized tools for reconstructing ZX Spectrum 48K and 128K ROMs.
+- **MsBox.Avalonia**: A customized message box library for the Avalonia user interface.
+- **ZXBasicStudioTest** & **TestZ80**: Unit tests and testing tools for ensuring the stability and correctness of the IDE and emulator.
+
 ## ZX Basic Studio Team
-- Development team:
+
+### Development team:
+
   - El Dr. Gusman
   - Boriel
   - Duefectu
   - AdolFITO 
   - HashIron
   - SirRickster
-- Testers:
+
+
+### Testers:
+
   - AbenZaX
   - Pedro Tomás (Pere)
   - Jose Daniel Fernandez Santos (Fenix)
