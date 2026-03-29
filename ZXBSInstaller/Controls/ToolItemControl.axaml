@@ -3,7 +3,7 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:svg="using:Avalonia.Svg.Skia"
-			 Width="360" Height="180"
+			 Width="360" Height="170"
 			 x:Class="ZXBSInstaller.Controls.ToolItemControl"
 			 FontSize="12">
 	<Grid Margin="8"  Background="#242424">

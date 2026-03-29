@@ -1,0 +1,10 @@
+{
+    "plugin": {
+        "name": "zxbs",
+        "description": "ZX Basic Studio debugger plugin",
+        "version": "0.1",
+        "author": "DuefectuCorp",
+        "type": "plugin",
+        "start": "start"
+    }
+}

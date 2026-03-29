@@ -42,6 +42,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Installer", "Installer", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Emulator", "Emulator", "{6AB4C5D0-AB60-49F0-A349-E46971736749}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MAME-plugin", "MAME-plugin", "{1EFA610B-30F8-41E7-AED5-39CAB54C39A6}"
+	ProjectSection(SolutionItems) = preProject
+		MAME-plugin\init.lua = MAME-plugin\init.lua
+		MAME-plugin\plugin.json = MAME-plugin\plugin.json
+		MAME-plugin\Version.txt = MAME-plugin\Version.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

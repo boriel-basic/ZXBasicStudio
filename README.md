@@ -37,19 +37,17 @@ This solution contains several projects that work together to provide the ZX Bas
   - AdolFITO 
   - HashIron
   - SirRickster
-
-
-### Testers:
-
+  - Yoruguaman
+- Testers:
   - AbenZaX
   - Pedro Tomás (Pere)
   - Jose Daniel Fernandez Santos (Fenix)
-  - Yoruguaman
+  - Super@ado
 
 ## Credits
 - Icons from [SVG REPO](https://www.svgrepo.com/):
   - <a href="https://github.com/blivesta/flexicon?ref=svgrepo.com" target="_blank">Blivesta</a> in MIT License
-	- <a href="https://dazzleui.gumroad.com/l/dazzleiconsfree?ref=svgrepo.com" target="_blank">Dazzle Ui</a> in CC Attribution License
+  - <a href="https://dazzleui.gumroad.com/l/dazzleiconsfree?ref=svgrepo.com" target="_blank">Dazzle Ui</a> in CC Attribution License
   - <a href="https://github.com/KDE/krita?ref=svgrepo.com" target="_blank">Kde</a> in GPL License
   - <a href="https://www.figma.com/@thinkcly?ref=svgrepo.com" target="_blank">Konstantin Filatov</a> in CC Attribution
   - <a href="https://dribbble.com/Mohamed_Raouf?ref=svgrepo.com" target="_blank">Mohamed Raouf</a> in CC Attribution License
@@ -66,5 +64,5 @@ This solution contains several projects that work together to provide the ZX Bas
   - <a href="https://github.com/siemens/ix-icons?ref=svgrepo.com" target="_blank">Siemens</a> in MIT License
   - <a href="https://github.com/32pixelsCo/zest-icons/blob/master/packages/zest-free/LICENSE.md?ref=svgrepo.com" target="_blank">Zest</a> in MIT License
   - <a href="https://www.figma.com/community/file/1071678557813409125?ref=svgrepo.com" target="_blank">Ananthanath A X Kalaiism</a> in PD License
-
-
+  - <a href="https://github.com/siemens/ix-icons?ref=svgrepo.com" target="_blank">Siemens</a> in MIT License
+  - <a href="https://www.svgrepo.com" target="_blank">SVG Repo</a> CC0 License

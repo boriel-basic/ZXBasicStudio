@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using System;
 using System.IO;
 using ZXBasicStudio.Classes;
 using ZXBasicStudio.Extensions;
@@ -55,14 +56,14 @@ namespace ZXBasicStudio.Dialogs
 
         private async void BtnSelectZxbasm_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            var select = await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions 
-            { 
-                AllowMultiple = false, 
-                Title = "Select ZXBASM path...", 
-                FileTypeFilter = new[] 
-                { 
+            var select = await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions
+            {
+                AllowMultiple = false,
+                Title = "Select ZXBASM path...",
+                FileTypeFilter = new[]
+                {
                     new FilePickerFileType("ZXBASM executable") { Patterns = new[] { "*" } }
-                } 
+                }
             });
 
             if (select != null && select.Count > 0)
@@ -71,14 +72,14 @@ namespace ZXBasicStudio.Dialogs
 
         private async void BtnSelectZxbc_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            var select = await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions 
-            { 
-                AllowMultiple = false, 
-                Title = "Select ZXBC path...", 
-                FileTypeFilter = new[] 
-                { 
-                    new FilePickerFileType("ZXBC executable") { Patterns = new[] { "*" } } 
-                } 
+            var select = await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions
+            {
+                AllowMultiple = false,
+                Title = "Select ZXBC path...",
+                FileTypeFilter = new[]
+                {
+                    new FilePickerFileType("ZXBC executable") { Patterns = new[] { "*" } }
+                }
             });
 
             if (select != null && select.Count > 0)
@@ -88,16 +89,18 @@ namespace ZXBasicStudio.Dialogs
 
         private async void BtnSelectNextEmulator_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
+            FilePickerFileType[] filters = new[]
+            {
+                new FilePickerFileType("MAME") { Patterns = new[] { "mame.exe", "mame", "mame.AppImage" } },
+                new FilePickerFileType("CSpect") { Patterns = new[] { "CSpect.exe", "CSpect" } },
+                new FilePickerFileType("ZEsarUX") { Patterns = new[] { "zesarux.exe", "zesarux" } },
+                new FilePickerFileType("All files") { Patterns = new[] { "*", "*.*" } }
+            };
             var select = await StorageProvider.OpenFilePickerAsync(new Avalonia.Platform.Storage.FilePickerOpenOptions
             {
                 AllowMultiple = false,
                 Title = "Select Next emulator path...",
-                FileTypeFilter = new[]
-                {
-                    new FilePickerFileType("CSpect") { Patterns = new[] { "CSpect.exe" } },
-                    new FilePickerFileType("ZEsarUX") { Patterns = new[] { "zesarux.exe" } },
-                    new FilePickerFileType("All files") { Patterns = new[] { "*", "*.*" } }
-                }
+                FileTypeFilter = filters,
             });
 
             if (select != null && select.Count > 0)
@@ -127,7 +130,7 @@ namespace ZXBasicStudio.Dialogs
             }
 
             ZXOptions.Current.ZxbcPath = txtZxbc.Text;
-            ZXOptions.Current.ZxbasmPath= txtZxbasm.Text;
+            ZXOptions.Current.ZxbasmPath = txtZxbasm.Text;
             ZXOptions.Current.EditorFontSize = (double)(nudFontSize.Value ?? 16);
             ZXOptions.Current.AudioDisabled = ckDisableAudio.IsChecked ?? false;
             ZXOptions.Current.WordWrap = ckWordWrap.IsChecked ?? false;

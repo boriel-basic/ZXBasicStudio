@@ -11,8 +11,11 @@
 
 		<Grid Grid.Row="1" Grid.ColumnSpan="3" Background="Gray"></Grid>
 
-		<ScrollViewer x:Name="mainTools" Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+		<ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+			<StackPanel x:Name="mainTools" Orientation="Vertical"></StackPanel>
+			<!--
 			<WrapPanel x:Name="pnlTools"></WrapPanel>
+			-->
 		</ScrollViewer>
 
 		<ScrollViewer x:Name="mainVersions" Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" IsVisible="False">

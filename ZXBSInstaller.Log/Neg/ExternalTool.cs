@@ -53,7 +53,7 @@ namespace ZXBSInstaller.Log.Neg
         /// </summary>
         public string VersionsUrl { get; set; }
         /// <summary>
-        /// Local path where the tool will be installed without file name
+        /// If exists Local path where the tool will be installed without file name
         /// </summary>
         public string LocalPath { get; set; }
         /// <summary>
@@ -65,6 +65,14 @@ namespace ZXBSInstaller.Log.Neg
         /// </summary>
         public bool DirectUpdate { get; set; }
         /// <summary>
+        /// If true, tool will be downloaded as a zip file and unzipped in the local path, otherwise it will be downloaded as is
+        /// </summary>
+        public bool Unzip { get; set; }
+        /// <summary>
+        /// True, creates a version.txt file in the installation folder
+        /// </summary>
+        public bool CreateVerFile { get; set; }
+        /// <summary>
         /// Order in the list
         /// </summary>
         public int Order { get; set; }
@@ -72,7 +80,10 @@ namespace ZXBSInstaller.Log.Neg
         /// Recommended
         /// </summary>
         public bool Recommended { get; set; }
-
+        /// <summary>
+        /// Tools group
+        /// </summary>
+        public string Group { get; set; }
         /// <summary>
         /// Versions of the tool
         /// </summary>

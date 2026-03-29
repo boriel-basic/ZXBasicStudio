@@ -35,6 +35,7 @@ using System.Reflection.Metadata;
 using System.Resources;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics.Arm;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using ZXBasicStudio.BuildSystem;
@@ -1484,6 +1485,10 @@ namespace ZXBasicStudio
                         try
                         {
                             var emulatorName = Path.GetFileNameWithoutExtension(emulatorPath);
+                            if (emulatorName.ToLower()=="apprun")
+                            {
+                                emulatorName = "mame";
+                            }
                             var nextDrive = Path.Combine(project.ProjectPath, "nextdrive");
 
                             if (settings.ExternalEmulator)
@@ -1499,6 +1504,10 @@ namespace ZXBasicStudio
                                 {
                                     errorMsg = "Error executing custom emulator launcher.";
                                 }
+                            }
+                            else if (emulatorName.ToLower() == "mame")
+                            {
+                                errorMsg = BuildAndRun_MAME(emulatorPath, nextDrive, settings, project);
                             }
                             else if (emulatorName.ToLower() == "cspect")
                             {
@@ -1549,7 +1558,7 @@ namespace ZXBasicStudio
                             errorMsg = "Error executing emulator: " + ex.Message + ex.StackTrace;
                             if (ex.InnerException != null)
                             {
-                                var ex2= ex.InnerException;
+                                var ex2 = ex.InnerException;
                                 errorMsg += "\r\nInner Exception: " + ex.Message + ex.StackTrace;
                             }
                         }
@@ -2502,6 +2511,156 @@ namespace ZXBasicStudio
         private void MnuReportBug_Click(object? sender, RoutedEventArgs e)
         {
             OpenUrl("https://github.com/boriel-basic/ZXBasicStudio/issues");
+        }
+
+
+        #endregion
+
+
+        #region MAME
+
+        private string BuildAndRun_MAME(string emulatorPath, string nextDrive, ZXBuildSettings settings, ZXProjectManager project)
+        {
+            if (!File.Exists(emulatorPath))
+            {
+                return "Emulator not found on: " + emulatorPath;
+            }
+
+            //string emulatorPath_BAK = emulatorPath;
+            //if(emulatorPath.EndsWith("/AppDir/AppRun"))
+            //{
+            //    emulatorPath = emulatorPath.Replace("/AppRun", "");
+            //}
+
+            var basePath =Directory.GetParent(Directory.GetParent(emulatorPath).FullName).FullName;
+            var sdimagePath= Path.Combine(basePath, "nextsdimage", "cspect-next-2gb.img");
+
+            // Delete /nextzxos/autoexec.1st
+            Hdfmonkey($"rm \"{sdimagePath}\" /nextzxos/autoexec.1st", basePath);
+
+            // Create autoexec.bas
+            var nextPath =Path.GetFileNameWithoutExtension(project.GetMainFile());
+            string autoexec = $@"#autostart 10
+10 CD ""{nextPath}""
+20 .nexload {nextPath}.nex
+";
+            var bytes=Common.Txt2Bas.Txt2BasConverter.Text2Bas(autoexec);
+            var autoexecPath = Path.Combine(basePath, "hdfmonkey", "autoexec.bas");
+            File.WriteAllBytes(autoexecPath, bytes);
+
+            // Copy /nextzxos/autoexec.bas
+            if (!Hdfmonkey($"put \"{sdimagePath}\" \"{autoexecPath}\" /nextzxos/autoexec.bas", basePath))
+            {
+                return "Error copying autoexec.bas to the emulator image.";
+            }
+
+            // Empty /zxbsdev folder
+            // TODO: Sync!
+            Hdfmonkey($"rm \"{sdimagePath}\" /{nextPath}", basePath);
+            // Create /zxbsdev
+            Hdfmonkey($"mkdir \"{sdimagePath}\" /{nextPath}", basePath);
+            // Copy nextdrive to /zxbsdev
+            Hdfmonkey($"putdir \"{sdimagePath}\" \"{nextDrive}\" /{nextPath}/", basePath);
+
+            // Launch mame
+            {
+                outLog.Writer.WriteLine("Launching MAME...");
+                var workingFolder = Directory.GetParent(emulatorPath).FullName;
+                var parameters = $"-ui_active -nounevenstretch -aspect 2:1 -video bgfx  -bgfx_screen_chains unfiltered -window -skip_gameinfo -mouse_device none -confirm_quit tbblue -hard1 {sdimagePath} -plugin zxbs -debug -debugger none -console";
+                if (OperatingSystem.IsLinux())
+                {
+                    parameters = parameters + $" -rompath ./roms -pluginspath ./plugins -homepath .";
+                }
+                var psi = new ProcessStartInfo()
+                {
+                    FileName = emulatorPath,
+                    Arguments = parameters,
+                    WorkingDirectory = workingFolder,
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                };
+                var process = new Process()
+                {
+                    StartInfo = psi
+                };
+
+                outLog.Writer.WriteLine($">mame {parameters}");
+
+                process.OutputDataReceived += MAME_DataReceived;
+                process.ErrorDataReceived += MAME_ErrorReceived;
+
+                process.Start();
+
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+
+                process.WaitForExit();
+
+                process.OutputDataReceived -= MAME_DataReceived;
+                process.ErrorDataReceived -= MAME_ErrorReceived;
+            }
+            return "";
+        }
+
+        private bool Hdfmonkey(string parameters, string basePath)
+        {
+            var hdfPath = Path.Combine(basePath, "hdfmonkey");
+
+            string hdfmonkeyExe = "hdfmonkey.exe";
+            if (!OperatingSystem.IsWindows())
+            {
+                hdfmonkeyExe = "hdfmonkey";
+            }
+
+            outLog.Writer.WriteLine($"> hdfmonkey {parameters}");
+            var psi = new ProcessStartInfo()
+            {
+                FileName = Path.Combine(hdfPath, hdfmonkeyExe),
+                Arguments = parameters,
+                WorkingDirectory = hdfPath,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            };
+            var process = new Process()
+            {
+                StartInfo = psi
+            };
+            process.Start();
+            var output = process.StandardOutput.ReadToEnd();
+            var error = process.StandardError.ReadToEnd();
+            process.WaitForExit();
+
+            if (!string.IsNullOrEmpty(error))
+            {
+                outLog.Writer.WriteLine("hdfmonkey ERROR> " + error);
+            }
+            if (!string.IsNullOrEmpty(output))
+            {
+                outLog.Writer.WriteLine("hdfmonkey> " + error);
+            }
+
+            return string.IsNullOrEmpty(error);
+        }
+
+        private void MAME_ErrorReceived(object sender, DataReceivedEventArgs e)
+        {
+            if (e.Data != null)
+            {
+                outLog.Writer.WriteLine("MAME ERROR> " + e.Data.ToStringNoNull());
+            }
+        }
+
+
+        private void MAME_DataReceived(object sender, DataReceivedEventArgs e)
+        {
+            if (e.Data != null)
+            {
+                outLog.Writer.WriteLine("MAME> " + e.Data.ToStringNoNull());
+            }
         }
 
 
