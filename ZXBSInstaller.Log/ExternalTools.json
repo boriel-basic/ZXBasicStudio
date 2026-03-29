@@ -85,7 +85,7 @@
     "VersionsUrl": "https://github.com/mamedev/mame/releases",
     "LocalPath": "",
     "Unzip": true,
-    "CreateVerFile": false,
+    "CreateVerFile": true,
     "FullLocalPath": null,
     "DirectUpdate": true,
     "Group": "ZX Spectrum Next",

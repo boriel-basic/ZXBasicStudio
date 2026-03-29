@@ -460,7 +460,12 @@ namespace ZXBSInstaller.Log
                     {
                         tool.LocalPath = Path.Combine(GeneralConfig.BasePath, tool.LocalPath);
                     }
+                    if (CurrentOperatingSystem != OperatingSystems.Windows)
+                    {
+                        tool.LocalPath = tool.LocalPath.Replace("\\\\", "/").Replace("\\", "/");
+                    }
                 }
+
 
                 // order tools by order property
                 ExternalTools = tools.OrderBy(d => d.Order).ToArray();
@@ -917,7 +922,10 @@ namespace ZXBSInstaller.Log
                     case "mame":
                         return GetMAMEVersion(dir);
                     case "tbbluemame":
-                        return GetTBBLueMAMEVersion(Path.Combine(GeneralConfig.BasePath, tool.LocalPath));
+                        {
+                            var fileName = Path.Combine(GeneralConfig.BasePath, tool.LocalPath).Replace("\\\\", "/").Replace("\\", "/");
+                            return GetTBBLueMAMEVersion(fileName);
+                        }
                     case "zxbsmame":
                     case "hdfmonkey":
                         return GetDuefectuVersion(tool);
@@ -1174,11 +1182,20 @@ namespace ZXBSInstaller.Log
                     ShowStatusPanel($"After installing or updating ZXBSInstaller, run this program from {tool.LocalPath}.");
                 }
 
+                string tempFile = "";
+                string installationPath = "";
+
                 ShowStatusPanel($"Downloading {tool.Name} version {version.Version}...");
+
+                if (tool.Id == "mame" && CurrentOperatingSystem == OperatingSystems.Linux)
+                {
+                    version.DownloadUrl = "https://github.com/pkgforge-dev/MAME-AppImage/releases/download/0.286-2%402026-03-22_1774176335/MAME-0.286-2-anylinux-x86_64.AppImage";
+                    tool.Unzip = false;
+                }
 
                 // Download path
                 step = "Creating download path";
-                var tempFile = Path.Combine(GeneralConfig.BasePath, "downloads");
+                tempFile = Path.Combine(GeneralConfig.BasePath, "downloads");
                 if (!Directory.Exists(tempFile))
                 {
                     step = $"Creating download path [{tempFile}]";
@@ -1189,7 +1206,6 @@ namespace ZXBSInstaller.Log
 
                 // Get installation path
                 step = "Creating installation path";
-                string installationPath = "";
                 if (string.IsNullOrEmpty(tool.LocalPath))
                 {
                     installationPath = Path.Combine(GeneralConfig.BasePath, tool.Id);
@@ -1198,6 +1214,7 @@ namespace ZXBSInstaller.Log
                 {
                     installationPath = Path.Combine(GeneralConfig.BasePath, tool.LocalPath);
                 }
+
                 // Patch for Boriel Basic
                 if (tool.Id == "zxbasic")
                 {
@@ -1236,22 +1253,54 @@ namespace ZXBSInstaller.Log
                 {
                     step = $"Installing {tool.Name}";
                     UpdateStatus($"Installing {tool.Name} version {version.Version}...", 50);
+                    var destDir = Path.GetDirectoryName(installationPath);
+                    if (!Directory.Exists(destDir))
+                    {
+                        Directory.CreateDirectory(destDir);
+                    }
                     ExtractFile(tempFile, installationPath);
                 }
                 else
                 {
-                    var dest = Path.Combine(GeneralConfig.BasePath, tool.LocalPath);
-                    if (File.Exists(dest))
+                    if (tool.Id == "mame" && CurrentOperatingSystem == OperatingSystems.Linux)
                     {
-                        File.Delete(dest);
+                        var dest = Path.Combine(GeneralConfig.BasePath, tool.LocalPath, "mame.AppImage");
+                        var destDir = Path.GetDirectoryName(dest);
+                        if (!Directory.Exists(destDir))
+                        {
+                            Directory.CreateDirectory(destDir);
+                        }
+                        if (File.Exists(dest))
+                        {
+                            File.Delete(dest);
+                        }
+                        File.Move(tempFile, dest);
                     }
-                    File.Move(tempFile, installationPath);
+                    else
+                    {
+                        var dest = Path.Combine(GeneralConfig.BasePath, tool.LocalPath);
+                        var destDir = Path.GetDirectoryName(dest);
+                        if (!Directory.Exists(destDir))
+                        {
+                            Directory.CreateDirectory(destDir);
+                        }
+                        if (File.Exists(dest))
+                        {
+                            File.Delete(dest);
+                        }
+                        File.Move(tempFile, dest);
+                    }
                 }
+
 
                 // Create Version.txt file
                 if (tool.CreateVerFile)
                 {
                     var fileName = Path.Combine(GeneralConfig.BasePath, $"{tool.LocalPath}.ver");
+                    if (tool.Id == "mame" && CurrentOperatingSystem != OperatingSystems.Windows)
+                    {
+                        fileName = Path.Combine(GeneralConfig.BasePath, $"{tool.LocalPath}/mame.ver");
+                    }
                     File.WriteAllText(fileName, version.Version);
                 }
 
@@ -1299,19 +1348,19 @@ namespace ZXBSInstaller.Log
                 }
 
                 // Next SD Image patch
-                if(tool.Id == "nextsdimage")
+                if (tool.Id == "nextsdimage")
                 {
-                    string dir = Path.Combine(GeneralConfig.BasePath, tool.Id,"2gb");
+                    string dir = Path.Combine(GeneralConfig.BasePath, tool.Id, "2gb");
                     string source = Path.Combine(dir, "cspect-next-2gb.img");
-                    string dest=Path.Combine(GeneralConfig.BasePath, tool.Id, "cspect-next-2gb.img");
+                    string dest = Path.Combine(GeneralConfig.BasePath, tool.Id, "cspect-next-2gb.img");
                     if (File.Exists(dest))
                     {
                         File.Delete(dest);
                     }
                     File.Move(source, dest);
 
-                    source= Path.Combine(dir, "version.txt");
-                    dest= Path.Combine(GeneralConfig.BasePath, tool.Id, "version.txt");
+                    source = Path.Combine(dir, "version.txt");
+                    dest = Path.Combine(GeneralConfig.BasePath, tool.Id, "version.txt");
                     if (File.Exists(dest))
                     {
                         File.Delete(dest);
@@ -1367,7 +1416,7 @@ start ZXBSInstaller.exe";
                     // Linux and Mac
                     bashFile = Path.Combine(GeneralConfig.BasePath, "downloads", "zxbsinstall.sh");
                     bash = @"
-# !/bin/bash
+#!/bin/bash
 set -e
 
 echo ""Updating installer...""
@@ -1397,6 +1446,7 @@ cd ""$DEST_DIR"" || exit 1
 # Ejecutar sin esperar
 ./ZXBSInstaller &
 ";
+                    bash = bash.Replace("\r\n", "\n");
                 }
                 bash = bash.Replace("{tempFile}", tempFile).Replace("{installationPath}", installationPath);
                 File.WriteAllText(bashFile, bash);
@@ -1421,10 +1471,14 @@ cd ""$DEST_DIR"" || exit 1
                         FileName = "bash",
                         Arguments = bashFile,
                         WorkingDirectory = Path.Combine(GeneralConfig.BasePath, "downloads"),
-                        UseShellExecute = true,
+                        RedirectStandardOutput = false,
+                        RedirectStandardError = false,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
                     };
                     var p = new Process { StartInfo = psi };
                     p.Start();
+                    Thread.Sleep(1000);
                 }
                 else
                 {
@@ -1687,6 +1741,12 @@ cd ""$DEST_DIR"" || exit 1
             {
                 // Windows fileName
                 var fileName = Path.Combine(exePath, "mame.exe");
+                // Linux fileName
+                if(CurrentOperatingSystem == OperatingSystems.Linux)
+                {
+                    fileName = Path.Combine(exePath, "mame.AppImage");
+                }
+
                 if (!File.Exists(fileName))
                 {
                     // If not exist, try Linux/Mac fileName
@@ -1856,6 +1916,10 @@ cd ""$DEST_DIR"" || exit 1
                 else
                 {
                     exePath = Path.Combine(GeneralConfig.BasePath, tool.LocalPath);
+                    if (CurrentOperatingSystem != OperatingSystems.Windows)
+                    {
+                        exePath = exePath.Replace("\\\\", "/").Replace("\\", "/");
+                    }
                 }
                 var fileName = Path.Combine(exePath, "Version.txt");
                 if (!File.Exists(fileName))
@@ -1918,7 +1982,7 @@ cd ""$DEST_DIR"" || exit 1
         {
             try
             {
-                string fileName = Path.Combine(GeneralConfig.BasePath,tool.Id,"version.txt");                
+                string fileName = Path.Combine(GeneralConfig.BasePath, tool.Id, "version.txt");
                 if (!File.Exists(fileName))
                 {
                     return null;
@@ -1936,7 +2000,7 @@ cd ""$DEST_DIR"" || exit 1
                     OperatingSystem = OperatingSystems.All,
                     Version = parts[0],
                     BetaNumber = 0,
-                    VersionNumber = ToDecimal(parts[0].Replace("-",""))
+                    VersionNumber = ToDecimal(parts[0].Replace("-", ""))
                 };
                 return v;
             }

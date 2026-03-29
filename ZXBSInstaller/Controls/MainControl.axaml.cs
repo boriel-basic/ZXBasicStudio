@@ -33,6 +33,7 @@ public partial class MainControl : UserControl
     /// </summary>
     private static Brush Yellow = new SolidColorBrush(Colors.Yellow);
 
+    private CheckBox chkBorielGroup = null;
     private CheckBox chkNextGroup = null;
 
 
@@ -143,14 +144,19 @@ public partial class MainControl : UserControl
             {
                 var groupTools = tools.Where(t => t.Group == "ZX Basic Studio");
                 {
-                    mainTools.Children.Add(new CheckBox()
+                    if(chkBorielGroup == null)
                     {
-                        Content = "ZX Basic Studio",
-                        FontSize = 16,
-                        IsChecked = true,
-                        Margin = new Thickness(10, 10, 0, 0),
-                        Foreground = Yellow
-                    });
+                        chkBorielGroup = new CheckBox()
+                        {
+                            Content = "ZX Basic Studio",
+                            FontSize = 16,
+                            IsChecked = true,
+                            Margin = new Thickness(10, 10, 0, 0),
+                            Foreground = Yellow
+                        };
+                        chkBorielGroup.IsCheckedChanged += ZXBorielGropu_Changed;
+                    }
+                    mainTools.Children.Add(chkBorielGroup);
                     mainTools.Children.Add(new Separator()
                     {
                         Margin = new Thickness(0),
@@ -193,6 +199,18 @@ public partial class MainControl : UserControl
             // Update summary area
             UpdateSummary();
         });
+    }
+
+
+    private void ZXBorielGropu_Changed(object? sender, RoutedEventArgs e)
+    {
+        foreach (var ctrl in toolItemControls)
+        {
+            if (ctrl.ExternalTool.Group == "ZX Basic Studio")
+            {
+                ctrl.IsSelected = chkBorielGroup.IsChecked == true;
+            }
+        }
     }
 
 
