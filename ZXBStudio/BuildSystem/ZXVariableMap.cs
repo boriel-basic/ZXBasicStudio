@@ -42,7 +42,7 @@ namespace ZXBasicStudio.BuildSystem
         }
 
 
-        private void ProcessGlobalVariables(string icContent, string mapContent, ZXBasicMap BasicMap)
+        internal void ProcessGlobalVariables(string icContent, string mapContent, ZXBasicMap BasicMap)
         {
             int splitIndex = icContent.IndexOf("--- end of user code ---");
 
@@ -144,7 +144,7 @@ namespace ZXBasicStudio.BuildSystem
             }
         }
 
-        private void ProcessLocalVariables(string icContent, string mapContent, ZXBasicMap BasicMap)
+        internal void ProcessLocalVariables(string icContent, string mapContent, ZXBasicMap BasicMap)
         {
             int splitIndex = icContent.IndexOf("--- end of user code ---");
 

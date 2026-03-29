@@ -15,6 +15,10 @@
     <Deterministic>False</Deterministic>
     <Version>1.7.0.0</Version>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ZXBasicStudioTest" />
+  </ItemGroup>
   <ItemGroup>
     <AvaloniaXaml Remove="LanguageDefinitions\**" />
     <Compile Remove="LanguageDefinitions\**" />
