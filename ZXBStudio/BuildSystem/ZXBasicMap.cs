@@ -179,7 +179,7 @@ namespace ZXBasicStudio.BuildSystem
                             ParseInputParameters(funcMatch.Groups[5].Value, currentFunction.InputParameters);
 
                         if (funcMatch.Groups[7].Success)
-                            currentFunction.ReturnType = StorageFromString(funcMatch.Groups[5].Value, currentFunction.Name);
+                            currentFunction.ReturnType = StorageFromString(funcMatch.Groups[7].Value, currentFunction.Name);
                         else
                             currentFunction.ReturnType = ZXVariableStorage.F;
 
@@ -202,8 +202,7 @@ namespace ZXBasicStudio.BuildSystem
                         if (varNameDef.Contains("(")) //array
                         {
                             string varName = varNameDef.Substring(0, varNameDef.IndexOf("(")).Trim();
-
-                            if (!jointLines.Skip(buc + 1).Any(l => Regex.IsMatch(l, $"(^|[^a-zA-Z0-9_]){varName}($|[^a-zA-Z0-9_])", RegexOptions.Multiline)))
+                            if (!jointLines.Skip(buc + 1).Any(l => Regex.IsMatch(l, $"(^|[^a-zA-Z0-9_$]){Regex.Escape(varName)}($|[^a-zA-Z0-9_$])", RegexOptions.Multiline)))
                                 continue;
 
                             string[] dims = varNameDef.Substring(varNameDef.IndexOf("(") + 1).Replace(")", "").Split(",", StringSplitOptions.RemoveEmptyEntries);
@@ -219,8 +218,7 @@ namespace ZXBasicStudio.BuildSystem
                             foreach (var vName in varNames)
                             {
                                 string varName = vName.Trim();
-
-                                if (!jointLines.Skip(buc + 1).Any(l => Regex.IsMatch(l, $"(^|[^a-zA-Z0-9_]){varName}($|[^a-zA-Z0-9_])", RegexOptions.Multiline)))
+                                if (!jointLines.Skip(buc + 1).Any(l => Regex.IsMatch(l, $"(^|[^a-zA-Z0-9_$]){Regex.Escape(varName)}($|[^a-zA-Z0-9_$])", RegexOptions.Multiline)))
                                     continue;
 
                                 var storage = StorageFromString(dimMatch.Groups[5].Value, varName);
@@ -291,15 +289,15 @@ namespace ZXBasicStudio.BuildSystem
                 //Search for the var in the sub/function that the location points to
                 if (location.LocationType == ZXBasicLocationType.Sub)
                 {
-                    var sub = subs.Where(s => s.Name == location.Name).FirstOrDefault();
+                    var sub = subs.FirstOrDefault(s => string.Equals(s.Name, location.Name, StringComparison.OrdinalIgnoreCase));
                     if(sub != null)
-                        foundVar = sub.LocalVariables.Where(v => v.Name == varName).FirstOrDefault();
+                        foundVar = sub.LocalVariables.FirstOrDefault(v => string.Equals(v.Name, varName, StringComparison.OrdinalIgnoreCase));
                 }
                 else
                 {
-                    var func = functions.Where(f => f.Name == location.Name).FirstOrDefault();
+                    var func = functions.FirstOrDefault(f => string.Equals(f.Name, location.Name, StringComparison.OrdinalIgnoreCase));
                     if (func != null)
-                        foundVar = func.LocalVariables.Where(v => v.Name == varName).FirstOrDefault();
+                        foundVar = func.LocalVariables.FirstOrDefault(v => string.Equals(v.Name, varName, StringComparison.OrdinalIgnoreCase));
                 }
             }
 
@@ -322,15 +320,15 @@ namespace ZXBasicStudio.BuildSystem
                 //(to avoid the very unprobable case where the same var is defined in different files in locations that match the same range)
                 if (possibleLocation.LocationType == ZXBasicLocationType.Sub)
                 {
-                    var sub = subs.Where(s => s.Name == possibleLocation.Name).FirstOrDefault();
+                    var sub = subs.FirstOrDefault(s => string.Equals(s.Name, possibleLocation.Name, StringComparison.OrdinalIgnoreCase));
                     if (sub != null)
-                        foundVar = sub.LocalVariables.Where(v => v.Name == varName && !v.Unused).FirstOrDefault();
+                        foundVar = sub.LocalVariables.FirstOrDefault(v => string.Equals(v.Name, varName, StringComparison.OrdinalIgnoreCase) && !v.Unused);
                 }
                 else
                 {
-                    var func = functions.Where(f => f.Name == possibleLocation.Name).FirstOrDefault();
+                    var func = functions.FirstOrDefault(f => string.Equals(f.Name, possibleLocation.Name, StringComparison.OrdinalIgnoreCase));
                     if (func != null)
-                        foundVar = func.LocalVariables.Where(v => v.Name == varName && !v.Unused).FirstOrDefault();
+                        foundVar = func.LocalVariables.FirstOrDefault(v => string.Equals(v.Name, varName, StringComparison.OrdinalIgnoreCase) && !v.Unused);
                 }
                 
                 //If the criteria finds a var, return it
@@ -359,11 +357,7 @@ namespace ZXBasicStudio.BuildSystem
                     if (varNameDef.Contains("(")) //array
                     {
                         string varName = varNameDef.Substring(0, varNameDef.IndexOf("(")).Trim();
-
-                        //Ignore unused vars (vars that are found only on its dim line, there may be the improbable
-                        //case where a var is defined and used in the same line using a colon and not used
-                        //anywhere else, but that would be an awful code :) )
-                        if (!Lines.Skip(buc+1).Any(l => Regex.IsMatch(l, $"(^|[^a-zA-Z0-9_]){varName}($|[^a-zA-Z0-9_])", RegexOptions.Multiline)))
+                        if (!Lines.Skip(buc+1).Any(l => Regex.IsMatch(l, $"(^|[^a-zA-Z0-9_$]){Regex.Escape(varName)}($|[^a-zA-Z0-9_$])", RegexOptions.Multiline)))
                             continue;
 
                         string[] dims = varNameDef.Substring(varNameDef.IndexOf("(") + 1).Replace(")", "").Split(",", StringSplitOptions.RemoveEmptyEntries);
@@ -379,9 +373,7 @@ namespace ZXBasicStudio.BuildSystem
                         foreach (var vName in varNames)
                         {
                             string varName = vName.Trim();
-
-                            //Ignore unused vars
-                            if (!Lines.Skip(buc+1).Any(l => Regex.IsMatch(l, $"(^|[^a-zA-Z0-9_]){varName}($|[^a-zA-Z0-9_])", RegexOptions.Multiline)))
+                            if (!Lines.Skip(buc+1).Any(l => Regex.IsMatch(l, $"(^|[^a-zA-Z0-9_$]){Regex.Escape(varName)}($|[^a-zA-Z0-9_$])", RegexOptions.Multiline)))
                                 continue;
 
                             var storage = StorageFromString(dimMatch.Groups[5].Value, varName);
@@ -415,7 +407,7 @@ namespace ZXBasicStudio.BuildSystem
 
                     if (subMatch != null && subMatch.Success)
                     {
-                        loc = new ZXBasicLocation { Name = subMatch.Groups[2].Value.Trim(), LocationType = ZXBasicLocationType.Sub, FirstLine = buc, File = Path.Combine(CodeFile.Directory, CodeFile.TempFileName) };
+                        loc = new ZXBasicLocation { Name = subMatch.Groups[4].Value.Trim(), LocationType = ZXBasicLocationType.Sub, FirstLine = buc, File = Path.Combine(CodeFile.Directory, CodeFile.TempFileName) };
                         continue;
                     }
 
@@ -423,7 +415,7 @@ namespace ZXBasicStudio.BuildSystem
 
                     if (funcMatch != null && funcMatch.Success)
                     {
-                        loc = new ZXBasicLocation { Name = funcMatch.Groups[2].Value.Trim(), LocationType = ZXBasicLocationType.Function, FirstLine = buc, File = Path.Combine(CodeFile.Directory, CodeFile.TempFileName) };
+                        loc = new ZXBasicLocation { Name = funcMatch.Groups[4].Value.Trim(), LocationType = ZXBasicLocationType.Function, FirstLine = buc, File = Path.Combine(CodeFile.Directory, CodeFile.TempFileName) };
                         continue;
                     }
                 }
@@ -465,7 +457,7 @@ namespace ZXBasicStudio.BuildSystem
             if (LineNumber >= lines.Length)
                 return false;
 
-            return Regex.IsMatch(lines[LineNumber], $"(\\s|,){VarName}(\\s|,|\\(|$)", RegexOptions.Multiline);
+            return Regex.IsMatch(lines[LineNumber], $"(\\s|,){Regex.Escape(VarName)}(\\s|,|\\(|$)", RegexOptions.Multiline);
         }
 
         private static void ParseInputParameters(string ParameterString, List<ZXBasicParameter> Storage)
