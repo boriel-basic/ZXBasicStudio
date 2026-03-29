@@ -29,6 +29,9 @@ jobs:
     
       - name: Build project
         run: dotnet build ZXBasicStudio.sln --configuration Release --no-restore
+        
+      - name: Run tests
+        run: dotnet test
     
       - name: Publish for Linux
         run: |

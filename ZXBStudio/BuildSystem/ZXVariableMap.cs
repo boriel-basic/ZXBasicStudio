@@ -42,7 +42,7 @@ namespace ZXBasicStudio.BuildSystem
         }
 
 
-        private void ProcessGlobalVariables(string icContent, string mapContent, ZXBasicMap BasicMap)
+        internal void ProcessGlobalVariables(string icContent, string mapContent, ZXBasicMap BasicMap)
         {
             int splitIndex = icContent.IndexOf("--- end of user code ---");
 
@@ -60,7 +60,7 @@ namespace ZXBasicStudio.BuildSystem
                 string varName = m.Groups[1].Value;
                 string bVarName = varName.Substring(1);
 
-                var basicVar = BasicMap.GlobalVariables.FirstOrDefault(v => v.Name == bVarName);
+                var basicVar = BasicMap.GlobalVariables.FirstOrDefault(v => string.Equals(v.Name.TrimEnd('$'), bVarName.TrimEnd('$'), StringComparison.OrdinalIgnoreCase));
 
                 if (basicVar == null)
                     continue;
@@ -78,7 +78,7 @@ namespace ZXBasicStudio.BuildSystem
 
                 ZXVariable newVar = new ZXVariable
                 {
-                    Name = bVarName,
+                    Name = basicVar.Name,
                     Address = new ZXVariableAddress { AddressType = ZXVariableAddressType.Absolute, AddressValue = addr },
                     Scope = ZXVariableScope.GlobalScope,
                     VariableType = ZXVariableType.Flat,
@@ -98,7 +98,7 @@ namespace ZXBasicStudio.BuildSystem
 
                 string bVarName = varName.Substring(1);
 
-                var basicVar = BasicMap.GlobalVariables.FirstOrDefault(v => v.Name == bVarName);
+                var basicVar = BasicMap.GlobalVariables.FirstOrDefault(v => string.Equals(v.Name.TrimEnd('$'), bVarName.TrimEnd('$'), StringComparison.OrdinalIgnoreCase));
 
                 if (basicVar == null)
                     continue;
@@ -133,7 +133,7 @@ namespace ZXBasicStudio.BuildSystem
 
                 ZXVariable newVar = new ZXVariable
                 {
-                    Name = bVarName,
+                    Name = basicVar.Name,
                     Address = new ZXVariableAddress { AddressType = ZXVariableAddressType.Absolute, AddressValue = addr },
                     Scope = ZXVariableScope.GlobalScope,
                     VariableType = ZXVariableType.Array,
@@ -144,7 +144,7 @@ namespace ZXBasicStudio.BuildSystem
             }
         }
 
-        private void ProcessLocalVariables(string icContent, string mapContent, ZXBasicMap BasicMap)
+        internal void ProcessLocalVariables(string icContent, string mapContent, ZXBasicMap BasicMap)
         {
             int splitIndex = icContent.IndexOf("--- end of user code ---");
 
@@ -179,10 +179,9 @@ namespace ZXBasicStudio.BuildSystem
 
                 ZXVariableScope currentScope = new ZXVariableScope { ScopeName = locName, StartAddress = startAddr, EndAddress = endAddr };
 
-                ZXBasicSub? sub = BasicMap.Subs.Where(m => m.Name == locName).FirstOrDefault();
-
+                ZXBasicSub? sub = BasicMap.Subs.FirstOrDefault(m => string.Equals(m.Name.TrimEnd('$'), locName.TrimEnd('$'), StringComparison.OrdinalIgnoreCase));
                 if (sub == null)
-                    sub = BasicMap.Functions.Where(m => m.Name == locName).FirstOrDefault();
+                    sub = BasicMap.Functions.FirstOrDefault(m => string.Equals(m.Name.TrimEnd('$'), locName.TrimEnd('$'), StringComparison.OrdinalIgnoreCase));
 
                 //Function params
                 if (sub != null)
