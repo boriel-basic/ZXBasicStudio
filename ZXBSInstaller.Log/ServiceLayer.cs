@@ -1228,7 +1228,7 @@ namespace ZXBSInstaller.Log
 
                 // Download file
                 step = $"Downloading file {version.DownloadUrl}";
-                UpdateStatus($"Downloading {version.DownloadUrl}", 50);
+                UpdateStatus($"Downloading {version.DownloadUrl}", 33);
                 using (var httpClient = new HttpClient())
                 {
                     using (var response = httpClient.GetAsync(version.DownloadUrl).GetAwaiter().GetResult())
@@ -1241,6 +1241,8 @@ namespace ZXBSInstaller.Log
                     }
                 }
 
+                UpdateStatus($"Installing {tool.Name} version {version.Version}...", 66);
+
                 // ZXBSInstaller auto install
                 if (tool.Id == "zxbsinstaller")
                 {
@@ -1252,7 +1254,6 @@ namespace ZXBSInstaller.Log
                 if (tool.Unzip)
                 {
                     step = $"Installing {tool.Name}";
-                    UpdateStatus($"Installing {tool.Name} version {version.Version}...", 50);
                     var destDir = Path.GetDirectoryName(installationPath);
                     if (!Directory.Exists(destDir))
                     {
@@ -1264,17 +1265,7 @@ namespace ZXBSInstaller.Log
                 {
                     if (tool.Id == "mame" && CurrentOperatingSystem == OperatingSystems.Linux)
                     {
-                        var dest = Path.Combine(GeneralConfig.BasePath, tool.LocalPath, "mame.AppImage");
-                        var destDir = Path.GetDirectoryName(dest);
-                        if (!Directory.Exists(destDir))
-                        {
-                            Directory.CreateDirectory(destDir);
-                        }
-                        if (File.Exists(dest))
-                        {
-                            File.Delete(dest);
-                        }
-                        File.Move(tempFile, dest);
+                        InstallMameLinux(tool,tempFile);
                     }
                     else
                     {
@@ -1302,6 +1293,12 @@ namespace ZXBSInstaller.Log
                         fileName = Path.Combine(GeneralConfig.BasePath, $"{tool.LocalPath}/mame.ver");
                     }
                     File.WriteAllText(fileName, version.Version);
+                }
+
+                if (tool.Id == "mame")
+                {
+                    tool.InstalledVersion = new ExternalTools_Version();
+                    tool.InstalledVersion.Version = version.Version;
                 }
 
                 // Set ZXBS Options
@@ -1379,6 +1376,80 @@ namespace ZXBSInstaller.Log
             {
                 HideStatusPanel();
                 ShowMessage($"Error installing {tool.Name}\r\n{step}\r\n{ex.Message}\r\n{ex.StackTrace}");
+            }
+        }
+
+
+        private static void InstallMameLinux(ExternalTool tool,string tempFile)
+        {
+            try
+            {
+                // Move mame to dest folder
+                var dest = Path.Combine(GeneralConfig.BasePath, tool.LocalPath, "mame.AppImage");
+                var destDir = Path.GetDirectoryName(dest);
+                if (!Directory.Exists(destDir))
+                {
+                    Directory.CreateDirectory(destDir);
+                }
+                if (File.Exists(dest))
+                {
+                    File.Delete(dest);
+                }
+                File.Move(tempFile, dest);
+                // Set execute attr
+                {
+                    var psi = new ProcessStartInfo
+                    {
+                        FileName = "chmod",
+                        ArgumentList = { "+x", dest },
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
+                    var p = new Process { StartInfo = psi };
+                    p.Start();
+                    p.WaitForExit();
+                }
+                if (CurrentOperatingSystem == OperatingSystems.Linux)
+                {
+                    DownloadMamePlugins(destDir);
+                }
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error installing MAME on Linux.\r\n{ex.Message}\r\n{ex.StackTrace}");
+            }
+        }
+
+
+        private static void DownloadMamePlugins(string destDir)
+        {
+            // Download plugins for MAME on Linux
+            try
+            {
+                // Download file
+                var tempFile = Path.Combine(GeneralConfig.BasePath, "downloads", "mame-plugins.zip");
+                UpdateStatus($"Downloading MAME plugins for Linux...", 33);
+                using (var httpClient = new HttpClient())
+                {
+                    using (var response = httpClient.GetAsync("https://www.duefectucorp.com/descargas/mame-plugins/mame-plugins.zip").GetAwaiter().GetResult())
+                    {
+                        response.EnsureSuccessStatusCode();
+                        using (var fs = new FileStream(tempFile, FileMode.Create, FileAccess.Write, FileShare.None))
+                        {
+                            response.Content.CopyToAsync(fs).GetAwaiter().GetResult();
+                        }
+                    }
+                }
+                // Unzip file
+                UpdateStatus($"Installing MAME plugins for Linux...", 66);
+                var dest = Path.Combine(GeneralConfig.BasePath, "mame");
+                ExtractFile(tempFile, dest);
+            }
+            catch (Exception ex)
+            {
+                ShowMessage($"Error installing MAME plugins on Linux.\r\n{ex.Message}\r\n{ex.StackTrace}");
             }
         }
 
@@ -1638,6 +1709,29 @@ cd ""$DEST_DIR"" || exit 1
                         }
                         var dir = Path.Combine(GeneralConfig.BasePath, "zxbasic", exe).Replace("\\", "\\\\");
                         line = $"  \"ZxbcPath\": \"{dir}\",";
+                    }
+                    else if (line.Contains("NextEmulatorPath"))
+                    {
+                        var mameTool = ExternalTools.FirstOrDefault(d => d.Id == "mame");
+                        if(mameTool!=null && 
+                            mameTool.InstalledVersion!=null &&
+                            mameTool.InstalledVersion.VersionNumber > 0)
+                        {
+                            string dir = "";
+                            if (CurrentOperatingSystem == OperatingSystems.Linux)
+                            {
+                                dir = Path.Combine(GeneralConfig.BasePath, "mame", "mame.AppImage").Replace("\\", "\\\\");
+                            }
+                            else if(CurrentOperatingSystem==OperatingSystems.Windows)
+                            {
+                                dir = Path.Combine(GeneralConfig.BasePath, "mame", "mame.exe").Replace("\\", "\\\\");
+                            }
+                            else
+                            {
+                                dir = Path.Combine(GeneralConfig.BasePath, "mame", "mame").Replace("\\", "\\\\");
+                            }
+                            line = $"  \"NextEmulatorPath\": \"{dir}\",";
+                        }
                     }
                     sb.AppendLine(line);
                 }

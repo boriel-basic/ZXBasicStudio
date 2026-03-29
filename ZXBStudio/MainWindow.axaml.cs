@@ -1485,6 +1485,10 @@ namespace ZXBasicStudio
                         try
                         {
                             var emulatorName = Path.GetFileNameWithoutExtension(emulatorPath);
+                            if (emulatorName.ToLower()=="apprun")
+                            {
+                                emulatorName = "mame";
+                            }
                             var nextDrive = Path.Combine(project.ProjectPath, "nextdrive");
 
                             if (settings.ExternalEmulator)
@@ -2522,6 +2526,12 @@ namespace ZXBasicStudio
                 return "Emulator not found on: " + emulatorPath;
             }
 
+            //string emulatorPath_BAK = emulatorPath;
+            //if(emulatorPath.EndsWith("/AppDir/AppRun"))
+            //{
+            //    emulatorPath = emulatorPath.Replace("/AppRun", "");
+            //}
+
             var basePath =Directory.GetParent(Directory.GetParent(emulatorPath).FullName).FullName;
             var sdimagePath= Path.Combine(basePath, "nextsdimage", "cspect-next-2gb.img");
 
@@ -2555,12 +2565,17 @@ namespace ZXBasicStudio
             // Launch mame
             {
                 outLog.Writer.WriteLine("Launching MAME...");
+                var workingFolder = Directory.GetParent(emulatorPath).FullName;
                 var parameters = $"-ui_active -nounevenstretch -aspect 2:1 -video bgfx  -bgfx_screen_chains unfiltered -window -skip_gameinfo -mouse_device none -confirm_quit tbblue -hard1 {sdimagePath} -plugin zxbs -debug -debugger none -console";
+                if (OperatingSystem.IsLinux())
+                {
+                    parameters = parameters + $" -rompath ./roms -pluginspath ./plugins -homepath .";
+                }
                 var psi = new ProcessStartInfo()
                 {
                     FileName = emulatorPath,
                     Arguments = parameters,
-                    WorkingDirectory = Directory.GetParent(emulatorPath).FullName,
+                    WorkingDirectory = workingFolder,
                     UseShellExecute = false,
                     CreateNoWindow = true,
                     RedirectStandardOutput = true,
@@ -2593,10 +2608,16 @@ namespace ZXBasicStudio
         {
             var hdfPath = Path.Combine(basePath, "hdfmonkey");
 
+            string hdfmonkeyExe = "hdfmonkey.exe";
+            if (!OperatingSystem.IsWindows())
+            {
+                hdfmonkeyExe = "hdfmonkey";
+            }
+
             outLog.Writer.WriteLine($"> hdfmonkey {parameters}");
             var psi = new ProcessStartInfo()
             {
-                FileName = Path.Combine(hdfPath, "hdfmonkey.exe"),
+                FileName = Path.Combine(hdfPath, hdfmonkeyExe),
                 Arguments = parameters,
                 WorkingDirectory = hdfPath,
                 UseShellExecute = false,

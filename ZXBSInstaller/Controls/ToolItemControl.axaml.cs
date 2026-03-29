@@ -52,7 +52,7 @@ public partial class ToolItemControl : UserControl
     /// </summary>
     /// <param name="tool">External tool to display</param>
     /// <param name="callBackCommand">Command delagate</param>
-    public ToolItemControl(ExternalTool tool, Action<string, string> callBackCommand)
+    public ToolItemControl(ExternalTool tool, Action<string, string> callBackCommand, bool chkGroup)
     {
         InitializeComponent();
 
@@ -67,9 +67,16 @@ public partial class ToolItemControl : UserControl
         txtPath.Text = "Path: " + tool.LocalPath;
         txtLicense.Text = "Licence: " + tool.LicenseType;
         txtAuthor.Text = "Author(s): " + tool.Author;
-        
+
         // Set chkSelect status
-        IsSelected = tool.UpdateNeeded;
+        if (chkGroup)
+        {
+            IsSelected = false;
+        }
+        else
+        {
+            IsSelected = tool.UpdateNeeded;
+        }
         tool.IsSelected = IsSelected;
         chkSelect.IsChecked = IsSelected;
 

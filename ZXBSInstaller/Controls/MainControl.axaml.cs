@@ -144,7 +144,7 @@ public partial class MainControl : UserControl
             {
                 var groupTools = tools.Where(t => t.Group == "ZX Basic Studio");
                 {
-                    if(chkBorielGroup == null)
+                    if (chkBorielGroup == null)
                     {
                         chkBorielGroup = new CheckBox()
                         {
@@ -164,8 +164,8 @@ public partial class MainControl : UserControl
                     });
                 }
                 var pnlTools = new WrapPanel();
-                mainTools.Children.Add(pnlTools);
-                ShowData_AddTools(pnlTools, groupTools);
+                mainTools.Children.Add(pnlTools);                
+                ShowData_AddTools(pnlTools, groupTools,"ZX Basic Studio", chkBorielGroup.IsChecked == true);
             }
 
             // Next
@@ -178,7 +178,7 @@ public partial class MainControl : UserControl
                         {
                             Content = "ZX Spectrum Next",
                             FontSize = 16,
-                            IsChecked = true,
+                            IsChecked = false,
                             Margin = new Thickness(10, 10, 0, 0),
                             Foreground = Yellow
                         };
@@ -193,7 +193,7 @@ public partial class MainControl : UserControl
                 }
                 var pnlTools = new WrapPanel();
                 mainTools.Children.Add(pnlTools);
-                ShowData_AddTools(pnlTools, groupTools);
+                ShowData_AddTools(pnlTools, groupTools,"ZX Spectrum Next", chkNextGroup.IsChecked == true);
             }
 
             // Update summary area
@@ -204,39 +204,47 @@ public partial class MainControl : UserControl
 
     private void ZXBorielGropu_Changed(object? sender, RoutedEventArgs e)
     {
-        foreach (var ctrl in toolItemControls)
-        {
-            if (ctrl.ExternalTool.Group == "ZX Basic Studio")
-            {
-                ctrl.IsSelected = chkBorielGroup.IsChecked == true;
-            }
-        }
+        FixSelections("ZX Basic Studio", chkBorielGroup.IsChecked == true);
     }
 
 
     private void ZXNextGropu_Changed(object? sender, RoutedEventArgs e)
     {
-        foreach(var ctrl in toolItemControls)
+        FixSelections("ZX Spectrum Next", chkNextGroup.IsChecked == true);
+    }
+
+
+    private void FixSelections(string groupname, bool chkChecked)
+    {
+        foreach (var ctrl in toolItemControls)
         {
-            if (ctrl.ExternalTool.Group == "ZX Spectrum Next")
+            if (ctrl.ExternalTool.Group == groupname)
             {
-                ctrl.IsSelected = chkNextGroup.IsChecked == true;
+                if (chkChecked)
+                {
+                    ctrl.IsSelected = ctrl.ExternalTool.UpdateNeeded;
+                }
+                else
+                {
+                    ctrl.IsSelected = false;
+                }
             }
         }
     }
 
 
-    private void ShowData_AddTools(WrapPanel panel, IEnumerable<ExternalTool> tools)
+    private void ShowData_AddTools(WrapPanel panel, IEnumerable<ExternalTool> tools, string groupName, bool chkGroup)
     {
         Dispatcher.UIThread.Post(() =>
         {
             foreach (var tool in tools)
             {
                 // Create on ToolItemControl foreach tool
-                var control = new ToolItemControl(tool, Command_Received);
+                var control = new ToolItemControl(tool, Command_Received, chkGroup);
                 toolItemControls.Add(control);
                 panel.Children.Add(control);
             }
+            FixSelections(groupName, chkGroup);
         });
     }
 

@@ -73,7 +73,7 @@
     "Enabled": true,
     "Name": "M.A.M.E.",
     "Author": "MAME Development Team",
-    "Description": "MAME (Multi Arcade Machione Emulator) is a multi-purpose emulation framework.",
+    "Description": "MAME (Multi Arcade Machione Emulator) is a multi-purpose emulation framework.\nLinux version AppImage by @Samueru-sama from https://github.com/pkgforge-dev/MAME-AppImage",
     "SupportedOperatingSystems": [
       1,
       2,
