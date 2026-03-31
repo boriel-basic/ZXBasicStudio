@@ -56,6 +56,13 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 Image = "/Svg/Seal.svg",
                 Name = "PutChars"
             });
+            ExportTypesList.Add(new ExportTypeDescrioptionItem()
+            {
+                Description = "Conrado Badenas MaskedSprites library.",
+                ExportType = ExportTypes.MaskedSprites,
+                Image = "/Svg/Mask.svg",
+                Name = "MaskedSprites"
+            });
             /*
             ExportTypesList.Add(new ExportTypeDescrioptionItem()
             {
@@ -73,7 +80,6 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             });
             */
             lstOptions.ItemsSource = ExportTypesList;
-
             lstOptions.SelectionChanged += LstOptions_SelectionChanged;
 
             return true;

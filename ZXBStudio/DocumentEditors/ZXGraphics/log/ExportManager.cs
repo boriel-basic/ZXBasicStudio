@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using ZXBasicStudio.BuildSystem;
 using ZXBasicStudio.Classes;
 using ZXBasicStudio.Common;
+using ZXBasicStudio.Common.TAPTools;
 using ZXBasicStudio.DocumentEditors.ZXGraphics.neg;
 using ZXBasicStudio.DocumentModel.Enums;
 using ZXBasicStudio.DocumentModel.Interfaces;
@@ -439,6 +440,10 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
                     exportedData = Export_Sprite_PutChars(exportConfig, sprites);
                     createTextFile = true;
                     break;
+                case ExportTypes.MaskedSprites:
+                    exportedData = Export_Sprite_MaskedSprites(exportConfig, sprites);
+                    createTextFile = true;
+                    break;
                 default:
                     return true;
             }
@@ -457,6 +462,8 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
             return true;
         }
 
+
+        #region PutChars
 
         /// <summary>
         /// Generate the export data for PutChars Sprites
@@ -483,6 +490,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
 
 
         #region DIM
+
         public static string Export_Sprite_PutChars_DIM(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
         {
             int min = 0;
@@ -1024,7 +1032,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
 
         private static byte[] Export_Sprite_PutChars_GetBinaryData(IEnumerable<Sprite> sprites)
         {
-            var binData=new List<byte>();
+            var binData = new List<byte>();
 
             foreach (var sprite in sprites)
             {
@@ -1042,6 +1050,266 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         }
 
         #endregion
+
+
+        #endregion
+
+
+        #region MaskedSprites
+
+        /// <summary>
+        /// Generate the export data for Masked Sprites
+        /// </summary>
+        /// <param name="exportConfig">ExportConfig information</param>
+        /// <param name="sprites">Sprites to convert</param>
+        /// <returns>string with the conversion commands for the export dialog samble textbox</returns>
+        public static string Export_Sprite_MaskedSprites(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        {
+            switch (exportConfig.ExportDataType)
+            {
+                case ExportDataTypes.DIM:
+                    return Export_Sprite_MaskedSprites_DIM(exportConfig, sprites);
+                case ExportDataTypes.ASM:
+                    return Export_Sprite_MaskedSprites_ASM(exportConfig, sprites);
+                case ExportDataTypes.BIN:
+                    return Export_Sprite_MaskedSprites_BIN(exportConfig, sprites);
+                case ExportDataTypes.TAP:
+                    return Export_Sprite_MaskedSprites_TAP(exportConfig, sprites);
+                default:
+                    return "ERROR: Not implemented!";
+            }
+        }
+
+
+        private static byte[] Export_Sprite_MaskedSprites_GenerateData(ExportConfig exportConfig, Sprite sprite)
+        {
+            try
+            {
+                var lst = new List<byte>();
+                for (int n = 0; n < sprite.Frames; n += 2)
+                {
+                    var data = ServiceLayer.Files_CreateBinDataUpDown(sprite.Patterns[n], sprite.Width, sprite.Height);
+                    var mask = ServiceLayer.Files_CreateBinDataUpDown(sprite.Patterns[n + 1], sprite.Width, sprite.Height);
+                    for (int row = 0; row < 16; row++)
+                    {
+                        for (int col = 0; col < 2; col++)
+                        {
+                            int i = row;
+                            if (col == 1)
+                            {
+                                i += 16;
+                            }
+                            lst.Add(mask[i]);
+                            lst.Add(data[i]);
+                        }
+                    }
+                }
+                return lst.ToArray();
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+
+        #region DIM
+
+
+        public static string Export_Sprite_MaskedSprites_DIM(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("'- Sprite definitions --------------------------------------");
+
+            // All sprites
+            foreach (var sprite in sprites)
+            {
+                if (sprite == null || !sprite.Export)
+                {
+                    continue;
+                }
+
+                if (sprite.Frames == 0)
+                {
+                    continue;
+                }
+
+                // Header
+                if (sprite.Frames == 2)
+                {
+                    sb.AppendLine(
+                        $"DIM {exportConfig.LabelName}{sprite.Name.Replace(" ", "_")}(63) AS UByte => {{ _");
+                }
+                else
+                {
+                    sb.AppendLine(
+                        $"DIM {exportConfig.LabelName}{sprite.Name.Replace(" ", "_")}({(sprite.Frames/2)-1},63) AS UByte => {{ _");
+                }
+                var rawData = Export_Sprite_MaskedSprites_GenerateData(exportConfig, sprite);
+                int i = 0;
+                for (int idFrame = 0; idFrame < sprite.Frames; idFrame += 2)
+                {
+                    if (sprite.Frames != 2)
+                    {
+                        sb.AppendLine("\t{ _");
+                    }
+                    for (int n = 0; n < 63; n += 4)
+                    {
+                        sb.Append("\t");
+                        if (sprite.Frames != 2)
+                        {
+                            sb.Append("\t");
+                        }
+                        for (int m = 0; m < 4; m++)
+                        {
+                            var b = Convert.ToString(rawData[i++], 2).PadLeft(8, '0');
+                            sb.Append($"%{b}");
+                            if (m < 3)
+                            {
+                                sb.Append(",");
+                            }
+                        }
+                        if (n >= 59)
+                        {
+                            sb.AppendLine(" _");
+                        }
+                        else
+                        {
+                            sb.AppendLine(", _");
+                        }
+                    }
+                    if (sprite.Frames != 2)
+                    {
+                        if (idFrame >= sprite.Frames - 2)
+                        {
+                            sb.AppendLine("\t} _");
+                        }
+                        else
+                        {
+                            sb.AppendLine("\t}, _");
+                        }
+                    }
+                }
+                sb.AppendLine("}");
+                sb.AppendLine("");
+            }
+
+            return sb.ToString();
+        }
+
+        #endregion
+
+
+        #region ASM
+
+        public static string Export_Sprite_MaskedSprites_ASM(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("'- Sprite definitions --------------------------------------");
+
+            // All sprites
+            foreach (var sprite in sprites)
+            {
+                if (sprite == null || !sprite.Export)
+                {
+                    continue;
+                }
+
+                if (sprite.Frames == 0)
+                {
+                    continue;
+                }
+
+                // Header
+                sb.AppendLine(string.Format(
+                    "{0}{1}:",
+                    exportConfig.LabelName,
+                    sprite.Name.Replace(" ", "_")));
+                sb.AppendLine("ASM");
+
+                var rawData = Export_Sprite_MaskedSprites_GenerateData(exportConfig, sprite);
+                int i = 0;
+                for (int idFrame = 0; idFrame < sprite.Frames; idFrame += 2)
+                {
+                    if (idFrame > 0)
+                    {
+                        sb.AppendLine("");
+                    }
+                    for (int n = 0; n < 63; n += 4)
+                    {
+                        sb.Append("\tDB ");
+                        for (int m = 0; m < 4; m++)
+                        {
+                            var b = Convert.ToString(rawData[i++], 2).PadLeft(8, '0');
+                            sb.Append($"%{b}");
+                            if (m < 3)
+                            {
+                                sb.Append(",");
+                            }
+                        }
+                        sb.AppendLine("");
+                    }
+                }
+                sb.AppendLine("END ASM");
+                sb.AppendLine("");
+            }
+
+            return sb.ToString();
+        }
+
+        #endregion
+
+
+        #region TAP and BIN
+
+
+        public static string Export_Sprite_MaskedSprites_BIN(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        {
+            var binData = new List<byte>();
+            foreach (var sprite in sprites)
+            {
+                if (sprite == null || !sprite.Export)
+                {
+                    continue;
+                }
+                if (sprite.Frames == 0)
+                {
+                    continue;
+                }
+                var data = Export_Sprite_MaskedSprites_GenerateData(exportConfig, sprite);
+                binData.AddRange(data);
+            }
+            ServiceLayer.Files_SaveFileData(exportConfig.ExportFilePath, binData.ToArray());
+            return "";
+        }
+
+
+        public static string Export_Sprite_MaskedSprites_TAP(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        {
+            var binData = new List<byte>();
+            foreach (var sprite in sprites)
+            {
+                if (sprite == null || !sprite.Export)
+                {
+                    continue;
+                }
+                if (sprite.Frames == 0)
+                {
+                    continue;
+                }
+                var data = Export_Sprite_MaskedSprites_GenerateData(exportConfig, sprite);
+                binData.AddRange(data);
+            }
+            var tapData = ServiceLayer.Bin2Tap(exportConfig.ZXFileName, exportConfig.ZXAddress, binData.ToArray());
+            ServiceLayer.Files_SaveFileData(exportConfig.ExportFilePath, tapData);
+            return "";
+        }
+
+
+        #endregion
+
+        #endregion
+
 
         #endregion
     }

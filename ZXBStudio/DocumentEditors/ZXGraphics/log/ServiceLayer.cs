@@ -241,7 +241,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
 
 
         /// <summary>
-        /// Creates the binary data for a file of type sprite or tile de arriba hacia abajo
+        /// Creates the binary data for a file of type sprite or tile from up to down
         /// </summary>
         /// <param name="fileType">File information</param>
         /// <param name="sprite">Sprite or tile data</param>
