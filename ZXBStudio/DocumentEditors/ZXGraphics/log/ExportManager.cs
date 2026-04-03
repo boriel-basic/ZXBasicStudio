@@ -28,6 +28,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         public Guid[]? DependsOn => null;
 
         private FileTypes fileType = FileTypes.Undefined;
+        private static TextWriter OutputLog = null;
 
         public bool Initialize(FileTypes fileType)
         {
@@ -38,6 +39,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
 
         public bool Build(string BuildPath, ZXBuildStage Stage, ZXBuildType BuildType, ZXProgram? program, TextWriter OutputLog)
         {
+            ExportManager.OutputLog = OutputLog;
             if (!ServiceLayer.Initialized)
             {
                 ServiceLayer.Initialize();
@@ -80,7 +82,10 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
                     case FileTypes.Sprite:
                         {
                             var sprites = CreateSprites(fileData);
-                            ExportSprites(exportConfig, sprites);
+                            if(!ExportSprites(exportConfig, sprites))
+                            {
+                                return false;
+                            }                           
                         }
                         break;
 
@@ -442,6 +447,10 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
                     break;
                 case ExportTypes.MaskedSprites:
                     exportedData = Export_Sprite_MaskedSprites(exportConfig, sprites);
+                    if(exportedData.StartsWith("ERROR:"))
+                    {
+                        return false;
+                    }
                     createTextFile = true;
                     break;
                 default:
@@ -1065,6 +1074,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         /// <returns>string with the conversion commands for the export dialog samble textbox</returns>
         public static string Export_Sprite_MaskedSprites(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
         {
+            var res= Export_Sprite_MaskedSprites_Check(exportConfig, sprites);
+            if(res.StartsWith("ERROR:"))
+            {               
+                return res;
+            }
             switch (exportConfig.ExportDataType)
             {
                 case ExportDataTypes.DIM:
@@ -1078,6 +1092,51 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
                 default:
                     return "ERROR: Not implemented!";
             }
+        }
+
+
+        /// <summary>
+        /// Validates a collection of sprites to ensure that each sprite marked for export meets the required criteria
+        /// for masked sprite export.
+        /// </summary>
+        /// <remarks>A sprite is considered valid for masked export if it is masked, has an even number of
+        /// frames, and its dimensions are exactly 16x16 pixels. Only sprites with the export flag set are validated.
+        /// The method returns immediately upon finding the first invalid sprite.</remarks>
+        /// <param name="exportConfig">The export configuration settings that may influence validation requirements for the sprites.</param>
+        /// <param name="sprites">An enumerable collection of sprites to be validated for export readiness. Each sprite is checked for
+        /// masking, frame count, and dimensions if it is marked for export.</param>
+        /// <returns>A string indicating the result of the validation. Returns "OK" if all sprites are valid for export;
+        /// otherwise, returns an error message describing the first encountered issue.</returns>
+        private static string Export_Sprite_MaskedSprites_Check(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        {
+            string txt = "";
+            foreach(var sprite in sprites)
+            {
+                if (sprite != null && sprite.Export)
+                {
+                    if (!sprite.Masked)
+                    {
+                        txt=$"ERROR: Sprite {sprite.Name} is not masked.";
+                    }
+                    if (sprite.Frames % 2 != 0)
+                    {
+                        txt=$"ERROR: Sprite {sprite.Name} has an odd number of frames.";
+                    }
+                    if(sprite.Width!=16 || sprite.Height != 16)
+                    {
+                        txt=$"ERROR: Sprite {sprite.Name} has a size different than 16x16.";
+                    }
+                    if (!string.IsNullOrEmpty(txt))
+                    {
+                        if(OutputLog != null)
+                        {
+                            OutputLog.WriteLine(txt);
+                        }                        
+                        return txt;
+                    }
+                }
+            }
+            return "OK";
         }
 
 

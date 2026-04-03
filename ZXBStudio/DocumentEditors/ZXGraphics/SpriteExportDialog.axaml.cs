@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using MsBox.Avalonia;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -279,12 +280,21 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 txtCode.Text = "";
             }
 
+            var sprite = sprites.ElementAt(0);
+            var exportData = ExportManager.Export_Sprite_MaskedSprites(exportConfig, sprites);
+            if (exportData.StartsWith("ERROR:"))
+            {
+                txtError.Text = exportData;
+                txtError.IsVisible = true;
+                return;
+            }
+            txtError.IsVisible = false;
+
             var sb = new StringBuilder();
             switch (exportConfig.ExportDataType)
             {
                 case ExportDataTypes.DIM:
                     {
-                        var sprite = sprites.ElementAt(0);
                         sb.AppendLine("'- Includes -----------------------------------------------");
                         sb.AppendLine("#INCLUDE <retrace.bas>");
                         sb.AppendLine("#INCLUDE \"maskedsprites.bas\"");
@@ -292,7 +302,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                         sb.AppendLine("'- Sprites definition -------------------------------------");
                         sb.AppendLine(string.Format("' Can use: #INCLUDE \"{0}\"",
                             Path.GetFileName(exportConfig.ExportFilePath)));
-                        sb.AppendLine(ExportManager.Export_Sprite_MaskedSprites(exportConfig, sprites));
+                        sb.AppendLine(exportData);
                         sb.AppendLine("' - Init vars ---------------------------------------------");
                         sb.AppendLine("#define NumberofMaskedSprites   1");
                         sb.AppendLine("DIM sprDir, sprBackDir AS UInteger");
@@ -324,7 +334,6 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
                 case ExportDataTypes.ASM:
                     {
-                        var sprite = sprites.ElementAt(0);
                         sb.AppendLine("'- Includes -----------------------------------------------");
                         sb.AppendLine("#INCLUDE <retrace.bas>");
                         sb.AppendLine("#INCLUDE \"maskedsprites.bas\"");
@@ -358,7 +367,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                         sb.AppendLine("' - This section must not be executed --------------------");
                         sb.AppendLine(string.Format("' Can use: #INCLUDE \"{0}\"",
                             Path.GetFileName(exportConfig.ExportFilePath)));
-                        sb.AppendLine(ExportManager.Export_Sprite_MaskedSprites(exportConfig, sprites));
+                        sb.AppendLine(exportData);
                     }
                     break;
 
@@ -368,7 +377,6 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                         sb.AppendLine("#INCLUDE <putchars.bas>");
                         sb.AppendLine("");
                         sb.AppendLine("'- Draw sprite --------------------------------------------");
-                        var sprite = sprites.ElementAt(0);
                         sb.AppendLine(string.Format(
                             "putChars(10,5,{0},{1},@{2})",
                             sprite.Width / 8,
@@ -395,7 +403,6 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                         sb.AppendLine("LOAD \"\" CODE");
                         sb.AppendLine("");
                         sb.AppendLine("'- Draw sprite --------------------------------------------");
-                        var sprite = sprites.ElementAt(0);
                         sb.AppendLine(string.Format(
                             "putChars(10,5,{0},{1},@{2})",
                             sprite.Width / 8,
@@ -431,7 +438,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             GetConfigFromUI();
             ServiceLayer.Export_SetConfigFile(fileName + ".zbs", exportConfig);
             Export();
-            this.Close();
+            //this.Close();
         }
 
         private async void BtnOutputFile_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)

@@ -342,6 +342,8 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             btnInk.Tapped += BtnInk_Tapped;
             UpdateColorPanel();
 
+            InitializeShortcuts();
+
             this.AddHandler(KeyDownEvent, Keyboard_Down, handledEventsToo: true);
             this.Focus();
             grdProcesando.IsVisible = false;
