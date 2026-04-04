@@ -82,10 +82,10 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
                     case FileTypes.Sprite:
                         {
                             var sprites = CreateSprites(fileData);
-                            if(!ExportSprites(exportConfig, sprites))
+                            if (!ExportSprites(exportConfig, sprites))
                             {
                                 return false;
-                            }                           
+                            }
                         }
                         break;
 
@@ -447,7 +447,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
                     break;
                 case ExportTypes.MaskedSprites:
                     exportedData = Export_Sprite_MaskedSprites(exportConfig, sprites);
-                    if(exportedData.StartsWith("ERROR:"))
+                    if (exportedData.StartsWith("ERROR:"))
                     {
                         return false;
                     }
@@ -482,6 +482,15 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         /// <returns>string with the conversion commands for the export dialog samble textbox</returns>
         public static string Export_Sprite_PutChars(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
         {
+            string res = Export_Sprite_PutChars_Check(exportConfig, sprites);
+            if (res.StartsWith("ERROR:"))
+            {
+                if (OutputLog != null)
+                {
+                    OutputLog.WriteLine(res);
+                }
+                return res;
+            }
             switch (exportConfig.ExportDataType)
             {
                 case ExportDataTypes.DIM:
@@ -495,6 +504,26 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
                 default:
                     return "ERROR: Not implemented!";
             }
+        }
+
+        private static string Export_Sprite_PutChars_Check(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        {
+            foreach (var sprite in sprites)
+            {
+                if (sprite == null)
+                {
+                    continue;
+                }
+                if (sprite.Masked)
+                {
+                    if ((sprite.Patterns.Count % 2) != 0)
+                    {
+                        var name = sprite.Name.Replace(' ', '_');
+                        return $"ERROR: The number of frames in the sprite \"{name}\" must be even if it has a mask.";
+                    }
+                }
+            }
+            return "OK";
         }
 
 
@@ -674,19 +703,31 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
                     }
                     else
                     {
-                        // Mulriple sprites attributes
+                        // Multiple sprites attributes
                         // Header
+                        int fr = sprite.Masked ? (sprite.Frames / 2) : (sprite.Frames - 1);
                         sb.AppendLine(string.Format(
                             "DIM {0}{1}_Attr({2},{3}) AS UByte => {{ _",
                             exportConfig.LabelName,
                             sprite.Name.Replace(" ", "_"),
-                            sprite.Frames - 1 + min,
+                            fr - 1 + min,
                             ((sprite.Width / 8) * (sprite.Height / 8)) - 1 + min));
                         // Data
-                        for (int n = 0; n < sprite.Patterns.Count; n++)
+                        if (sprite.Masked)
                         {
-                            var data = Export_Sprite_PutChars_Attribute(sprite, n, exportConfig, 0);
-                            sb.Append(data);
+                            for (int n = 0; n < sprite.Patterns.Count; n += 2)
+                            {
+                                var data = Export_Sprite_PutChars_Attribute(sprite, n, exportConfig, 0);
+                                sb.Append(data);
+                            }
+                        }
+                        else
+                        {
+                            for (int n = 0; n < sprite.Patterns.Count; n++)
+                            {
+                                var data = Export_Sprite_PutChars_Attribute(sprite, n, exportConfig, 0);
+                                sb.Append(data);
+                            }
                         }
                         // Footer
                         sb.Append(" _\r\n}");
@@ -775,19 +816,37 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
                 return "";
             }
 
-            if (sprite.Frames > 1)
+            if (sprite.Masked)
             {
-                if (n > firstItem)
+                if (sprite.Frames > 2)
                 {
-                    sb.AppendLine(", _");
+                    if (n > firstItem)
+                    {
+                        sb.AppendLine(", _");
+                    }
+                    sb.AppendLine("\t{ _");
                 }
-                sb.AppendLine("\t{ _");
             }
+            else
+                if (sprite.Frames > 1)
+                {
+                    if (n > firstItem)
+                    {
+                        sb.AppendLine(", _");
+                    }
+                    sb.AppendLine("\t{ _");
+                }
 
             int col = 0;
             int row = 0;
+            int max = (sprite.Width / 8) * (sprite.Height / 8);
+            int idx = 0;
             foreach (var d in pattern.Attributes)
             {
+                if (idx++ >= max)
+                {
+                    break;
+                }
                 if (col == 0)
                 {
                     if (row == 0)
@@ -984,8 +1043,14 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
 
             int col = 0;
             int row = 0;
+            int max = (sprite.Width / 8) * (sprite.Height / 8);
+            int idx = 0;
             foreach (var d in pattern.Attributes)
             {
+                if (idx++ >= max)
+                {
+                    break;
+                }
                 if (col == 0)
                 {
                     if (row == 0)
@@ -1074,9 +1139,9 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         /// <returns>string with the conversion commands for the export dialog samble textbox</returns>
         public static string Export_Sprite_MaskedSprites(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
         {
-            var res= Export_Sprite_MaskedSprites_Check(exportConfig, sprites);
-            if(res.StartsWith("ERROR:"))
-            {               
+            var res = Export_Sprite_MaskedSprites_Check(exportConfig, sprites);
+            if (res.StartsWith("ERROR:"))
+            {
                 return res;
             }
             switch (exportConfig.ExportDataType)
@@ -1110,28 +1175,28 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         private static string Export_Sprite_MaskedSprites_Check(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
         {
             string txt = "";
-            foreach(var sprite in sprites)
+            foreach (var sprite in sprites)
             {
                 if (sprite != null && sprite.Export)
                 {
                     if (!sprite.Masked)
                     {
-                        txt=$"ERROR: Sprite {sprite.Name} is not masked.";
+                        txt = $"ERROR: Sprite {sprite.Name} is not masked.";
                     }
                     if (sprite.Frames % 2 != 0)
                     {
-                        txt=$"ERROR: Sprite {sprite.Name} has an odd number of frames.";
+                        txt = $"ERROR: Sprite {sprite.Name} has an odd number of frames.";
                     }
-                    if(sprite.Width!=16 || sprite.Height != 16)
+                    if (sprite.Width != 16 || sprite.Height != 16)
                     {
-                        txt=$"ERROR: Sprite {sprite.Name} has a size different than 16x16.";
+                        txt = $"ERROR: Sprite {sprite.Name} has a size different than 16x16.";
                     }
                     if (!string.IsNullOrEmpty(txt))
                     {
-                        if(OutputLog != null)
+                        if (OutputLog != null)
                         {
                             OutputLog.WriteLine(txt);
-                        }                        
+                        }
                         return txt;
                     }
                 }
@@ -1202,7 +1267,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
                 else
                 {
                     sb.AppendLine(
-                        $"DIM {exportConfig.LabelName}{sprite.Name.Replace(" ", "_")}({(sprite.Frames/2)-1},63) AS UByte => {{ _");
+                        $"DIM {exportConfig.LabelName}{sprite.Name.Replace(" ", "_")}({(sprite.Frames / 2) - 1},63) AS UByte => {{ _");
                 }
                 var rawData = Export_Sprite_MaskedSprites_GenerateData(exportConfig, sprite);
                 int i = 0;
