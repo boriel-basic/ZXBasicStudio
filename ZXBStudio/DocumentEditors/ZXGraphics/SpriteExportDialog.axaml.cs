@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
+using MsBox.Avalonia;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -117,6 +118,13 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                     if (canExport)
                     {
                         CreateExample_PutChars();
+                    }
+                    break;
+                case ExportTypes.MaskedSprites:
+                    CreateExportPath(".bas");
+                    if (canExport)
+                    {
+                        CreateExample_MaskedSprites();
                     }
                     break;
                 default:
@@ -264,6 +272,149 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             txtCode.Text = sb.ToString();
         }
 
+
+        private void CreateExample_MaskedSprites()
+        {
+            if (sprites == null || sprites.Count() == 0)
+            {
+                txtCode.Text = "";
+            }
+
+            var sprite = sprites.ElementAt(0);
+            var exportData = ExportManager.Export_Sprite_MaskedSprites(exportConfig, sprites);
+            if (exportData.StartsWith("ERROR:"))
+            {
+                txtError.Text = exportData;
+                txtError.IsVisible = true;
+                return;
+            }
+            txtError.IsVisible = false;
+
+            var sb = new StringBuilder();
+            switch (exportConfig.ExportDataType)
+            {
+                case ExportDataTypes.DIM:
+                    {
+                        sb.AppendLine("'- Includes -----------------------------------------------");
+                        sb.AppendLine("#INCLUDE <retrace.bas>");
+                        sb.AppendLine("#INCLUDE \"maskedsprites.bas\"");
+                        sb.AppendLine("");
+                        sb.AppendLine("'- Sprites definition -------------------------------------");
+                        sb.AppendLine(string.Format("' Can use: #INCLUDE \"{0}\"",
+                            Path.GetFileName(exportConfig.ExportFilePath)));
+                        sb.AppendLine(exportData);
+                        sb.AppendLine("' - Init vars ---------------------------------------------");
+                        sb.AppendLine("#define NumberofMaskedSprites   1");
+                        sb.AppendLine("DIM sprDir, sprBackDir AS UInteger");
+                        sb.AppendLine("");
+                        sb.AppendLine("'- Initialise the sprite engine ---------------------------");
+                        sb.AppendLine("InitMaskedSpritesFileSystem()");
+                        sb.AppendLine("' Create sprite");
+                        sb.AppendLine($"sprDir = RegisterSpriteImageInMSFS(@{exportConfig.LabelName}{sprite.Name.Replace(" ", "_")}(0))");
+                        sb.AppendLine("' Save background for first time");
+                        sb.AppendLine("sprBackDir = MaskedSpritesBackground(0)");
+                        sb.AppendLine("");
+                        sb.AppendLine("'- Draw sprite --------------------------------------------");
+                        sb.AppendLine("DIM n AS UByte");
+                        sb.AppendLine("DO");
+                        sb.AppendLine("    ' Sync with raytrace");
+                        sb.AppendLine("    waitretrace");
+                        sb.AppendLine("    ' Restore background");
+                        sb.AppendLine("    RestoreBackground(100,52,sprBackDir)");
+                        sb.AppendLine("    ");
+                        sb.AppendLine("    ' Print a number");
+                        sb.AppendLine("    PRINT AT 7,12;n;");
+                        sb.AppendLine("    n = n + 1");
+                        sb.AppendLine("    ' Draw sprite");
+                        sb.AppendLine("    SaveBackgroundAndDrawSpriteRegisteredInMSFS(100,52,sprBackDir,sprDir)   ");
+                        sb.AppendLine("LOOP");
+                        sb.AppendLine("");
+                    }
+                    break;
+
+                case ExportDataTypes.ASM:
+                    {
+                        sb.AppendLine("'- Includes -----------------------------------------------");
+                        sb.AppendLine("#INCLUDE <retrace.bas>");
+                        sb.AppendLine("#INCLUDE \"maskedsprites.bas\"");
+                        sb.AppendLine("");
+                        sb.AppendLine("' - Init vars ---------------------------------------------");
+                        sb.AppendLine("#define NumberofMaskedSprites   1");
+                        sb.AppendLine("DIM sprDir, sprBackDir AS UInteger");
+                        sb.AppendLine("");
+                        sb.AppendLine("'- Initialise the sprite engine ---------------------------");
+                        sb.AppendLine("InitMaskedSpritesFileSystem()");
+                        sb.AppendLine("' Create sprite");
+                        sb.AppendLine($"sprDir = RegisterSpriteImageInMSFS(@{exportConfig.LabelName}_{sprite.Name.Replace(" ", "_")})");
+                        sb.AppendLine("' Save background for first time");
+                        sb.AppendLine("sprBackDir = MaskedSpritesBackground(0)");
+                        sb.AppendLine("");
+                        sb.AppendLine("'- Draw sprite --------------------------------------------");
+                        sb.AppendLine("DIM n AS UByte");
+                        sb.AppendLine("DO");
+                        sb.AppendLine("    ' Sync with raytrace");
+                        sb.AppendLine("    waitretrace");
+                        sb.AppendLine("    ' Restore background");
+                        sb.AppendLine("    RestoreBackground(100,52,sprBackDir)");
+                        sb.AppendLine("    ");
+                        sb.AppendLine("    ' Print a number");
+                        sb.AppendLine("    PRINT AT 7,12;n;");
+                        sb.AppendLine("    n = n + 1");
+                        sb.AppendLine("    ' Draw sprite");
+                        sb.AppendLine("    SaveBackgroundAndDrawSpriteRegisteredInMSFS(100,52,sprBackDir,sprDir)   ");
+                        sb.AppendLine("LOOP");
+                        sb.AppendLine("");
+                        sb.AppendLine("' - This section must not be executed --------------------");
+                        sb.AppendLine(string.Format("' Can use: #INCLUDE \"{0}\"",
+                            Path.GetFileName(exportConfig.ExportFilePath)));
+                        sb.AppendLine(exportData);
+                    }
+                    break;
+
+                case ExportDataTypes.BIN:
+                    {
+                        sb.AppendLine("'- Includes -----------------------------------------------");
+                        sb.AppendLine("#INCLUDE <putchars.bas>");
+                        sb.AppendLine("");
+                        sb.AppendLine("'- Draw sprite --------------------------------------------");
+                        sb.AppendLine(string.Format(
+                            "putChars(10,5,{0},{1},@{2})",
+                            sprite.Width / 8,
+                            sprite.Height / 8,
+                            exportConfig.LabelName));
+                        sb.AppendLine("");
+                        sb.AppendLine("' This section must not be executed");
+                        sb.AppendLine(string.Format(
+                            "{0}:",
+                            exportConfig.LabelName));
+                        sb.AppendLine("ASM");
+                        sb.AppendLine(string.Format("\tINCBIN \"{0}\"",
+                            Path.GetFileName(exportConfig.ExportFilePath)));
+                        sb.AppendLine("END ASM");
+                    }
+                    break;
+
+                case ExportDataTypes.TAP:
+                    {
+                        sb.AppendLine("'- Includes -----------------------------------------------");
+                        sb.AppendLine("#INCLUDE <putchars.bas>");
+                        sb.AppendLine("");
+                        sb.AppendLine("' Load .tap data ------------------------------------------");
+                        sb.AppendLine("LOAD \"\" CODE");
+                        sb.AppendLine("");
+                        sb.AppendLine("'- Draw sprite --------------------------------------------");
+                        sb.AppendLine(string.Format(
+                            "putChars(10,5,{0},{1},@{2})",
+                            sprite.Width / 8,
+                            sprite.Height / 8,
+                            exportConfig.LabelName));
+                        sb.AppendLine("");
+                    }
+                    break;
+            }
+
+            txtCode.Text = sb.ToString();
+        }
         #endregion
 
 
@@ -287,7 +438,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             GetConfigFromUI();
             ServiceLayer.Export_SetConfigFile(fileName + ".zbs", exportConfig);
             Export();
-            this.Close();
+            //this.Close();
         }
 
         private async void BtnOutputFile_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)

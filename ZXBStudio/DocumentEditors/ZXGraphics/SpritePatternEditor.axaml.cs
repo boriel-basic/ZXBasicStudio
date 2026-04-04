@@ -475,6 +475,10 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         private AttributeColor GetAttribute(Pattern pattern, int x, int y)
         {
+            if(pattern.Attributes == null)
+            {
+                pattern.Attributes = new AttributeColor[(SpriteData.Width / 8) * (SpriteData.Height / 8)];
+            }
             int cW = SpriteData.Width / 8;
             int cX = x / 8;
             int cY = y / 8;
@@ -1163,6 +1167,10 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             var inkBak = PrimaryColorIndex;
             var paperBak = SecondaryColorIndex;
             var attr=GetAttribute(SpriteData.Patterns[SpriteData.CurrentFrame], x, y);
+            if (attr == null)
+            {
+                return;
+            }
             PrimaryColorIndex = attr.Paper;
             SecondaryColorIndex = attr.Ink;
             SetAttribute(SpriteData.Patterns[SpriteData.CurrentFrame], x, y);

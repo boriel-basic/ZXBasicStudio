@@ -421,7 +421,9 @@ namespace ZXBasicStudio.DocumentEditors.ZXTextEditor.Controls
             var commandId = ZXKeybMapper.GetCommandId(_docTypeId, e.Key, e.KeyModifiers);
 
             if (commandId != null && _keybCommands.ContainsKey(commandId.Value))
+            {
                 _keybCommands[commandId.Value]();
+            }
         }
 
         #endregion

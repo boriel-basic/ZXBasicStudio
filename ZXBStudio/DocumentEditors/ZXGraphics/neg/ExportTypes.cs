@@ -22,6 +22,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.neg
 
         // Sprites
         PutChars,
+        MaskedSprites,
         GUSprite,
         FourSprites
     }
