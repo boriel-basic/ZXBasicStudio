@@ -178,6 +178,19 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 txtCode.Text = "";
             }
 
+            var sprite = sprites.ElementAt(0);
+            var res = ExportManager.Export_Sprite_PutChars(exportConfig, sprites);
+            if (res.StartsWith("ERROR:"))
+            {
+                txtError.Text = res;
+                txtError.IsVisible = true;
+                return;
+            }
+            else
+            {
+                txtError.IsVisible = false;
+            }
+
             var sb = new StringBuilder();
             switch (exportConfig.ExportDataType)
             {
@@ -188,11 +201,10 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                         sb.AppendLine("");
                         sb.AppendLine(string.Format("' Can use: #INCLUDE \"{0}\"",
                             Path.GetFileName(exportConfig.ExportFilePath)));
-                        sb.AppendLine(ExportManager.Export_Sprite_PutChars(exportConfig, sprites));
+                        sb.AppendLine(res);
                         sb.AppendLine("");
                         sb.AppendLine("'- Draw sprite --------------------------------------------");
 
-                        var sprite = sprites.ElementAt(0);
                         sb.AppendLine(string.Format(
                             "putChars(10,5,{0},{1},@{2}{3}({4}))",
                             sprite.Width / 8,
@@ -210,7 +222,6 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                         sb.AppendLine("#INCLUDE <putchars.bas>");
                         sb.AppendLine("");
                         sb.AppendLine("'- Draw sprite --------------------------------------------");
-                        var sprite = sprites.ElementAt(0);
                         sb.AppendLine(string.Format(
                             "putChars(10,5,{0},{1},@{2}{3})",
                             sprite.Width / 8,
@@ -221,7 +232,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                         sb.AppendLine("' This section must not be executed");
                         sb.AppendLine(string.Format("' Can use: #INCLUDE \"{0}\"",
                             Path.GetFileName(exportConfig.ExportFilePath)));
-                        sb.AppendLine(ExportManager.Export_Sprite_PutChars(exportConfig, sprites));
+                        sb.AppendLine(res);
                     }
                     break;
 
@@ -231,7 +242,6 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                         sb.AppendLine("#INCLUDE <putchars.bas>");
                         sb.AppendLine("");
                         sb.AppendLine("'- Draw sprite --------------------------------------------");
-                        var sprite = sprites.ElementAt(0);
                         sb.AppendLine(string.Format(
                             "putChars(10,5,{0},{1},@{2})",
                             sprite.Width / 8,
@@ -258,7 +268,6 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                         sb.AppendLine("LOAD \"\" CODE");
                         sb.AppendLine("");
                         sb.AppendLine("'- Draw sprite --------------------------------------------");
-                        var sprite = sprites.ElementAt(0);
                         sb.AppendLine(string.Format(
                             "putChars(10,5,{0},{1},@{2})",
                             sprite.Width / 8,
