@@ -18,7 +18,7 @@ namespace ZXBasicStudio.IntegratedDocumentTypes.ZXGraphics
 {
     public class SpriteDocument : IZXDocumentType
     {
-        static readonly string[] _docExtensions = { ".spr" };
+        static readonly string[] _docExtensions = { ".spr", ".til" };
         static readonly string _docName = "Sprites file";
         static readonly string _docDesc = "Sprite files allow you to create and modify graphics of different sizes and formats. Once created, they can be built in multiple formats.";
         static readonly string _docCat = "Graphics";

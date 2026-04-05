@@ -365,6 +365,7 @@
     <AvaloniaResource Include="Fonts\FiraCode-Regular.ttf" />
     <AvaloniaResource Include="Svg\circle-info-solid.svg" />
     <AvaloniaResource Include="Svg\circle-question-solid.svg" />
+    <AvaloniaResource Include="Svg\Documents\file-blank.svg" />
     <AvaloniaResource Include="Svg\Documents\file-zxramdisk.svg" />
     <AvaloniaResource Include="Svg\github.svg" />
     <AvaloniaResource Include="Svg\hide.svg" />
@@ -631,6 +632,9 @@
     </Compile>
     <Compile Update="DocumentEditors\ZXGraphics\ZXGridImageView.axaml.cs">
       <DependentUpon>ZXGridImageView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="DocumentEditors\ZXMaps\ZXMapsEditor.axaml.cs">
+      <DependentUpon>ZXMapsEditor.axaml</DependentUpon>
     </Compile>
     <Compile Update="Emulator\Controls\ZXKeyView.axaml.cs">
       <DependentUpon>ZXKeyView.axaml</DependentUpon>

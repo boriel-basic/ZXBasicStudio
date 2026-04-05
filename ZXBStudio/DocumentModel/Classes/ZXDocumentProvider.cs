@@ -13,6 +13,7 @@ using ZXBasicStudio.IntegratedDocumentTypes.ZXGraphics;
 using ZXBasicStudio.IntegratedDocumentTypes.NextDows;
 using ZXBasicStudio.IntegratedDocumentTypes.TapeDocuments.ZXTapeBuilder;
 using ZXBasicStudio.IntegratedDocumentTypes.Resources.ZXRamDisk;
+using ZXBasicStudio.IntegratedDocumentTypes.ZXMaps;
 
 namespace ZXBasicStudio.DocumentModel.Classes
 {
@@ -36,6 +37,7 @@ namespace ZXBasicStudio.DocumentModel.Classes
             _docTypes.Add(new UDGDocument());
             _docTypes.Add(new FontDocument());
             _docTypes.Add(new SpriteDocument());
+            _docTypes.Add(new ZXMapsDocument());
             // NextDows
             //_docTypes.Add(new ZXFormsDocument());
             //TODO: Load external document types
