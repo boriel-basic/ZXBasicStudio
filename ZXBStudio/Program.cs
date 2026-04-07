@@ -97,6 +97,10 @@ namespace ZXBasicStudio
 
             return AppBuilder.Configure<App>()
                 .UsePlatformDetect()
+                .With(new X11PlatformOptions
+                {
+                    EnableIme = true,
+                })
                 .LogToTrace();
         }
     }
