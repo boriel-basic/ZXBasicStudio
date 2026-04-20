@@ -3,29 +3,28 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ZXBasicStudio.DocumentEditors.ZXGraphics.neg;
 
-namespace ZXBasicStudio.DocumentEditors.ZXMaps.Neg
+namespace ZXBasicStudio.DocumentEditors.ZXGraphics.neg
 {
     /// <summary>
-    /// Represents an tile with his properties
+    /// Represents an sprite with his properties
     /// </summary>
-    public class Tile
+    public class ZXMapsTile
     {
         /// <summary>
-        /// Id of the tile
+        /// Id of the sprite
         /// </summary>
         public int Id { get; set; }
         /// <summary>
-        /// Name of the tile
+        /// Name of the sprite
         /// </summary>
         public string Name { get; set; }
         /// <summary>
-        /// Graphics mode of the tile
+        /// Graphics mode of the sprite
         /// </summary>
         public GraphicsModes GraphicMode { get; set; }
         /// <summary>
-        /// Width of the tile in pixels
+        /// Width of the sprite in pixels
         /// </summary>
         public int Width { get; set; }
         /// <summary>
@@ -33,11 +32,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps.Neg
         /// </summary>
         public int Height { get; set; }
         /// <summary>
-        /// True if the tile is masked (not suported in all modes)
+        /// True if the sprite is masked (not suported in all modes)
         /// </summary>
         public bool Masked { get; set; }
         /// <summary>
-        /// Number of frames for the tile
+        /// Number of frames for the sprite
         /// </summary>
         public byte Frames { get; set; }
         /// <summary>
@@ -45,7 +44,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps.Neg
         /// </summary>
         public byte CurrentFrame { get; set; }
         /// <summary>
-        /// Patterns for the tile (one pattern for frame)
+        /// Patterns for the sprite (one pattern for frame)
         /// </summary>
         public List<Pattern> Patterns { get; set; }
         /// <summary>
@@ -53,11 +52,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps.Neg
         /// </summary>
         public byte DefaultColor { get; set; }
         /// <summary>
-        /// Palete color for the tile
+        /// Palete color for the sprite
         /// </summary>
         public PaletteColor[] Palette { get; set; }
         /// <summary>
-        /// True when the tile was auto-exported
+        /// True when the sprite was auto-exported
         /// </summary>
         public bool Export { get; set; }
     }

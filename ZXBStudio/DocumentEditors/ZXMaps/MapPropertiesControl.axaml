@@ -1,0 +1,109 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:svg="using:Avalonia.Svg.Skia"
+			 mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="200"
+			 Focusable="True"
+			 Background="#ff202020"
+			 x:Class="ZXBasicStudio.DocumentEditors.ZXMaps.MapPropertiesControl">
+	<Grid Name="grdMain">
+		<TabControl Name="tabControl" TabStripPlacement="Bottom" TabControl.CornerRadius="0">
+
+			<TabItem Header="Map">
+				<Grid Grid.RowDefinitions="Auto,1,*">
+					<TextBlock Text="Map properties" FontSize="16" Margin="8,8,8,2"/>
+					<Grid Grid.Row="1" Background="Gray"></Grid>
+					<ScrollViewer Grid.Row="2">
+						<Grid Margin="8" ColumnDefinitions="Auto,*" Grid.RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+							<TextBlock Grid.Row="0" Classes="dialog" VerticalAlignment="Center" HorizontalAlignment="Right">Map type:</TextBlock>
+							<ComboBox Grid.Row="0" Grid.Column="1" Name="cmbMapType" Classes="dialog" HorizontalAlignment="Stretch" Margin="5,8,5,2">
+								<ComboBoxItem>Rooms</ComboBoxItem>
+								<ComboBoxItem>Horizontal scroll</ComboBoxItem>
+								<ComboBoxItem>Vertical scroll</ComboBoxItem>
+								<ComboBoxItem>Multidirectional scroll</ComboBoxItem>
+							</ComboBox>
+
+							<TextBlock Grid.Row="1" Classes="dialog" VerticalAlignment="Center" HorizontalAlignment="Right">Map width:</TextBlock>
+							<Border Grid.Row="1" Grid.Column="1" Classes="numericborder">
+								<NumericUpDown Classes="dialog" Name="txtMapWidth" Minimum="1" Increment="1" Maximum="65535" Value="16" VerticalAlignment="Center"/>
+							</Border>
+
+							<TextBlock Grid.Row="2" Classes="dialog" VerticalAlignment="Center" HorizontalAlignment="Right">Map height:</TextBlock>
+							<Border Grid.Row="2" Grid.Column="1" Classes="numericborder">
+								<NumericUpDown Classes="dialog" Name="txtMapHeight" Minimum="1" Increment="1" Maximum="65535" Value="12" VerticalAlignment="Center"/>
+							</Border>
+
+							<TextBlock Grid.Row="3" Classes="dialog" VerticalAlignment="Center" HorizontalAlignment="Right">Tile width:</TextBlock>
+							<Border Grid.Row="3" Grid.Column="1" Classes="numericborder">
+								<NumericUpDown Classes="dialog" Name="txtMapTileWidth" Minimum="8" Increment="8" Maximum="256" Value="16" VerticalAlignment="Center"/>
+							</Border>
+
+							<TextBlock Grid.Row="4" Classes="dialog" VerticalAlignment="Center" HorizontalAlignment="Right">Tile height:</TextBlock>
+							<Border Grid.Row="4" Grid.Column="1" Classes="numericborder">
+								<NumericUpDown Classes="dialog" Name="txtMapTileHeight" Minimum="8" Increment="8" Maximum="256" Value="16" VerticalAlignment="Center"/>
+							</Border>
+
+							<TextBlock Grid.Row="5" Classes="dialog" VerticalAlignment="Center" HorizontalAlignment="Right">Mapping type:</TextBlock>
+							<ComboBox Grid.Row="5" Grid.Column="1" Name="cmbMappingType" Classes="dialog" HorizontalAlignment="Stretch" Margin="5,0,5,2">
+								<ComboBoxItem>Sequential</ComboBoxItem>
+								<ComboBoxItem>Coordinates</ComboBoxItem>
+								<ComboBoxItem>Blocks</ComboBoxItem>
+							</ComboBox>
+						</Grid>
+					</ScrollViewer>
+				</Grid>
+			</TabItem>
+
+			<TabItem Header="Layer">
+				<Grid Grid.RowDefinitions="Auto,1,*">
+					<TextBlock Text="Layer properties" FontSize="16" Margin="8,8,8,2"/>
+					<Grid Grid.Row="1" Background="Gray"></Grid>
+					<ScrollViewer Grid.Row="2">
+						<Grid Margin="8" ColumnDefinitions="Auto,*" Grid.RowDefinitions="Auto,Auto">
+							<TextBlock Grid.Row="0" Classes="dialog" VerticalAlignment="Center" HorizontalAlignment="Right">Name:</TextBlock>
+							<TextBox Grid.Row="0" Grid.Column="1" Name="txtLayerName" Classes="dialog" MaxWidth="Infinity"></TextBox>
+
+							<TextBlock Grid.Row="1" Classes="dialog" VerticalAlignment="Center" HorizontalAlignment="Right">Layer type:</TextBlock>
+							<ComboBox Grid.Row="1" Grid.Column="1" Name="cmbLayerType" Classes="dialog" HorizontalAlignment="Stretch" Margin="5,0,5,2">
+								<ComboBoxItem>Tiles</ComboBoxItem>
+								<ComboBoxItem>Masks</ComboBoxItem>
+								<ComboBoxItem>Sprites</ComboBoxItem>
+							</ComboBox>
+
+						</Grid>
+					</ScrollViewer>
+				</Grid>
+			</TabItem>
+
+			<TabItem Header="Room">
+				<Grid Grid.RowDefinitions="Auto,1,*">
+					<TextBlock Text="Room properties" FontSize="16" Margin="8,8,8,2"/>
+					<Grid Grid.Row="1" Background="Gray"></Grid>
+					<ScrollViewer Grid.Row="2">
+						<Grid Margin="8" ColumnDefinitions="Auto,*" Grid.RowDefinitions="Auto,Auto">
+							<TextBlock Grid.Row="0" Classes="dialog" VerticalAlignment="Center" HorizontalAlignment="Right">Name:</TextBlock>
+							<TextBox Grid.Row="0" Grid.Column="1" Name="txtRoomName" Classes="dialog" MaxWidth="Infinity"></TextBox>
+						</Grid>
+					</ScrollViewer>
+				</Grid>
+			</TabItem>
+
+			<TabItem Header="Tile">
+				<Grid Grid.RowDefinitions="Auto,1,*">
+					<TextBlock Text="Tile properties" FontSize="16" Margin="8,8,8,2"/>
+					<Grid Grid.Row="1" Background="Gray"></Grid>
+					<ScrollViewer Grid.Row="2">
+						<Grid Margin="8" ColumnDefinitions="Auto,*" Grid.RowDefinitions="Auto,Auto">
+							<TextBlock Grid.Row="0" Classes="dialog" VerticalAlignment="Center" HorizontalAlignment="Right">Tile id:</TextBlock>
+							<Border Grid.Row="0" Grid.Column="1" Classes="numericborder">
+								<NumericUpDown Classes="dialog" Name="txtTileId" Minimum="8" Increment="8" Maximum="256" Value="16" VerticalAlignment="Center"/>
+							</Border>
+						</Grid>
+					</ScrollViewer>
+				</Grid>
+			</TabItem>
+
+		</TabControl>
+	</Grid>
+</UserControl>

@@ -24,7 +24,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
     public partial class SpriteExportDialog : Window
     {
         private string fileName = "";
-        private IEnumerable<Sprite> sprites = null;
+        private IEnumerable<ZXMapsTile> sprites = null;
 
 
         private FileTypeConfig fileType = null;
@@ -47,7 +47,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         }
 
 
-        public bool Initialize(string fileName, IEnumerable<Sprite> spritesData)
+        public bool Initialize(string fileName, IEnumerable<ZXMapsTile> spritesData)
         {
             this.fileName = fileName;
             this.sprites = spritesData;

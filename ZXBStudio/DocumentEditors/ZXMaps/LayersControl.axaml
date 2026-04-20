@@ -1,0 +1,38 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:svg="using:Avalonia.Svg.Skia"
+			 mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="52"
+			 Focusable="True"
+			 Background="#ff202020"
+			 x:Class="ZXBasicStudio.DocumentEditors.ZXMaps.LayersControl">
+	<Grid Name="grdMain" RowDefinitions="*,1,Auto">
+		<Grid Margin="2">
+			<ScrollViewer>
+				<StackPanel Name="pnlLayers" Orientation="Vertical"></StackPanel>
+			</ScrollViewer>
+		</Grid>
+
+		<Grid Grid.Row="1" Background="Gray"></Grid>
+
+		<StackPanel Orientation="Horizontal" Grid.Row="2" Margin="0,4,0,4" Background="#202020">
+			<Button Classes="toolbar" Name="btnAddLayer" ToolTip.Tip="Add new layer">
+				<svg:Svg Path="/Svg/add.svg"></svg:Svg>
+			</Button>
+			<Button Name="btnRemoveLayer" Classes="toolbar" ToolTip.Tip="Remove current layer">
+				<svg:Svg Path="/Svg/Cancel.svg"></svg:Svg>
+			</Button>
+			<Button Name="btnHideLayer" Classes="toolbar" ToolTip.Tip="Hide layer">
+				<svg:Svg Path="/Svg/hide.svg"></svg:Svg>
+			</Button>
+			<Button Name="btnShowLayer" Classes="toolbar" ToolTip.Tip="Show layer" IsVisible="False">
+				<svg:Svg Path="/Svg/show.svg"></svg:Svg>
+			</Button>
+
+			<Button Name="btnMoveUpLayer" Classes="toolbar" ToolTip.Tip="Clone current layer">
+				<svg:Svg Path="/Svg/Copy.svg"></svg:Svg>
+			</Button>
+		</StackPanel>
+	</Grid>
+</UserControl>

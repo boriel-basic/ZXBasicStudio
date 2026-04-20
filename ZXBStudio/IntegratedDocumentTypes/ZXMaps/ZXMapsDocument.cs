@@ -48,7 +48,7 @@ namespace ZXBasicStudio.IntegratedDocumentTypes.ZXMaps
             {
                 if (_icon == null)
                 {
-                    _icon = new Bitmap(AssetLoader.Open(new Uri("avares://ZXBasicStudio/Assets/zxGraphics_map.png")));
+                    _icon = new Bitmap(AssetLoader.Open(new Uri("avares://ZXBasicStudio/Assets/zxmaps_map.png")));
                 }
 
                 return _icon;

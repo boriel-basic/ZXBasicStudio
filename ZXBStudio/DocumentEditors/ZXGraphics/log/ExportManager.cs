@@ -389,12 +389,12 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         #region Sprites
 
 
-        private Sprite[] CreateSprites(byte[] fileData)
+        private ZXMapsTile[] CreateSprites(byte[] fileData)
         {
             try
             {
                 var dataS = Encoding.UTF8.GetString(fileData);
-                var sprites = dataS.Deserializar<Sprite[]>();
+                var sprites = dataS.Deserializar<ZXMapsTile[]>();
 
                 // Check attributes for ZX Spectrum mode
                 foreach (var sprite in sprites)
@@ -433,7 +433,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         /// <param name="exportConfig">ExportConfig of the file</param>
         /// <param name="sprites">Sprites to convert</param>
         /// <returns></returns>
-        public bool ExportSprites(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        public bool ExportSprites(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             // Export depending on the type
             string exportedData = "";
@@ -480,7 +480,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         /// <param name="exportConfig">ExportConfig information</param>
         /// <param name="sprites">Sprites to convert</param>
         /// <returns>string with the conversion commands for the export dialog samble textbox</returns>
-        public static string Export_Sprite_PutChars(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        public static string Export_Sprite_PutChars(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             string res = Export_Sprite_PutChars_Check(exportConfig, sprites);
             if (res.StartsWith("ERROR:"))
@@ -506,7 +506,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
             }
         }
 
-        private static string Export_Sprite_PutChars_Check(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        private static string Export_Sprite_PutChars_Check(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             foreach (var sprite in sprites)
             {
@@ -529,7 +529,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
 
         #region DIM
 
-        public static string Export_Sprite_PutChars_DIM(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        public static string Export_Sprite_PutChars_DIM(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             int min = 0;
             switch (exportConfig.ArrayBase)
@@ -740,7 +740,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         }
 
 
-        private static string Export_Sprite_PutChars_Pattern(Sprite sprite, int n, ExportConfig exportConfig, int firstItem)
+        private static string Export_Sprite_PutChars_Pattern(ZXMapsTile sprite, int n, ExportConfig exportConfig, int firstItem)
         {
             var sb = new StringBuilder();
 
@@ -805,7 +805,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         }
 
 
-        private static string Export_Sprite_PutChars_Attribute(Sprite sprite, int n, ExportConfig exportConfig, int firstItem)
+        private static string Export_Sprite_PutChars_Attribute(ZXMapsTile sprite, int n, ExportConfig exportConfig, int firstItem)
         {
             var sb = new StringBuilder();
 
@@ -896,7 +896,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         #region ASM
 
 
-        public static string Export_Sprite_PutChars_ASM(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        public static string Export_Sprite_PutChars_ASM(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             int min = 0;
 
@@ -988,7 +988,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         }
 
 
-        private static string Export_Sprite_PutChars_Pattern_ASM(Sprite sprite, int n, ExportConfig exportConfig)
+        private static string Export_Sprite_PutChars_Pattern_ASM(ZXMapsTile sprite, int n, ExportConfig exportConfig)
         {
             var sb = new StringBuilder();
 
@@ -1030,7 +1030,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         }
 
 
-        private static string Export_Sprite_PutChars_Attribute_ASM(Sprite sprite, int n, ExportConfig exportConfig)
+        private static string Export_Sprite_PutChars_Attribute_ASM(ZXMapsTile sprite, int n, ExportConfig exportConfig)
         {
             var sb = new StringBuilder();
 
@@ -1087,7 +1087,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         #region TAP and BIN
 
 
-        public static string Export_Sprite_PutChars_BIN(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        public static string Export_Sprite_PutChars_BIN(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             var binData = Export_Sprite_PutChars_GetBinaryData(sprites);
             ServiceLayer.Files_SaveFileData(exportConfig.ExportFilePath, binData);
@@ -1095,7 +1095,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         }
 
 
-        public static string Export_Sprite_PutChars_TAP(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        public static string Export_Sprite_PutChars_TAP(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             var binData = Export_Sprite_PutChars_GetBinaryData(sprites);
             binData = ServiceLayer.Bin2Tap(exportConfig.ZXFileName, exportConfig.ZXAddress, binData);
@@ -1104,7 +1104,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         }
 
 
-        private static byte[] Export_Sprite_PutChars_GetBinaryData(IEnumerable<Sprite> sprites)
+        private static byte[] Export_Sprite_PutChars_GetBinaryData(IEnumerable<ZXMapsTile> sprites)
         {
             var binData = new List<byte>();
 
@@ -1137,7 +1137,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         /// <param name="exportConfig">ExportConfig information</param>
         /// <param name="sprites">Sprites to convert</param>
         /// <returns>string with the conversion commands for the export dialog samble textbox</returns>
-        public static string Export_Sprite_MaskedSprites(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        public static string Export_Sprite_MaskedSprites(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             var res = Export_Sprite_MaskedSprites_Check(exportConfig, sprites);
             if (res.StartsWith("ERROR:"))
@@ -1172,7 +1172,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         /// masking, frame count, and dimensions if it is marked for export.</param>
         /// <returns>A string indicating the result of the validation. Returns "OK" if all sprites are valid for export;
         /// otherwise, returns an error message describing the first encountered issue.</returns>
-        private static string Export_Sprite_MaskedSprites_Check(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        private static string Export_Sprite_MaskedSprites_Check(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             string txt = "";
             foreach (var sprite in sprites)
@@ -1205,7 +1205,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         }
 
 
-        private static byte[] Export_Sprite_MaskedSprites_GenerateData(ExportConfig exportConfig, Sprite sprite)
+        private static byte[] Export_Sprite_MaskedSprites_GenerateData(ExportConfig exportConfig, ZXMapsTile sprite)
         {
             try
             {
@@ -1240,7 +1240,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         #region DIM
 
 
-        public static string Export_Sprite_MaskedSprites_DIM(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        public static string Export_Sprite_MaskedSprites_DIM(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             var sb = new StringBuilder();
             sb.AppendLine("'- Sprite definitions --------------------------------------");
@@ -1326,7 +1326,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
 
         #region ASM
 
-        public static string Export_Sprite_MaskedSprites_ASM(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        public static string Export_Sprite_MaskedSprites_ASM(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             var sb = new StringBuilder();
             sb.AppendLine("'- Sprite definitions --------------------------------------");
@@ -1387,7 +1387,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         #region TAP and BIN
 
 
-        public static string Export_Sprite_MaskedSprites_BIN(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        public static string Export_Sprite_MaskedSprites_BIN(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             var binData = new List<byte>();
             foreach (var sprite in sprites)
@@ -1408,7 +1408,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         }
 
 
-        public static string Export_Sprite_MaskedSprites_TAP(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        public static string Export_Sprite_MaskedSprites_TAP(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             var binData = new List<byte>();
             foreach (var sprite in sprites)

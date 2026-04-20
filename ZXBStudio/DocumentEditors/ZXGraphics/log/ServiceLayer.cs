@@ -615,7 +615,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         /// <param name="oldWidth">Old Width of the sprite, the new must set in sprite parameter</param>
         /// <param name="oldHeight">Old Height of the spritye, the new must set in sprite parameter</param>
         /// <returns>True if OK or False if error</returns>
-        public static bool SpriteData_Resize(ref Sprite sprite, int oldWidth, int oldHeight)
+        public static bool SpriteData_Resize(ref ZXMapsTile sprite, int oldWidth, int oldHeight)
         {
             for (int p = 0; p < sprite.Patterns.Count; p++)
             {
@@ -653,7 +653,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         /// <param name="sprite">Old sprite with new graphic mode property set to target. Patterns will be updated.</param>
         /// <param name="oldMode">Old graphic mode, the new must set in sprite parameter</param>
         /// <returns>True if OK or False if error</returns>
-        public static bool SpriteData_ChangeMode(ref Sprite sprite, GraphicsModes oldMode)
+        public static bool SpriteData_ChangeMode(ref ZXMapsTile sprite, GraphicsModes oldMode)
         {
             // TODO: Do it!!!
             return true;
@@ -666,7 +666,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         /// <param name="sprite">Old sprite with new mask status property set to target. Patterns will be updated.</param>
         /// <param name="oldMasked">Old mask value, the new must set in sprite parameter</param>
         /// <returns>True if OK or False if error</returns>
-        public static bool SpriteData_ChangeMasked(ref Sprite sprite, bool oldMasked)
+        public static bool SpriteData_ChangeMasked(ref ZXMapsTile sprite, bool oldMasked)
         {
             // TODO: Do it!!!
             return true;
@@ -679,7 +679,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         /// <param name="sprite">Old sprite with new Frames property set to target. Patterns will be updated.</param>
         /// <param name="oldFrames">Old Frames value, the new must set in sprite parameter</param>
         /// <returns>True if OK or False if error</returns>
-        public static bool SpriteData_ChangeFrames(ref Sprite sprite, byte oldFrames)
+        public static bool SpriteData_ChangeFrames(ref ZXMapsTile sprite, byte oldFrames)
         {
             // TODO: Do it!!!
             return true;

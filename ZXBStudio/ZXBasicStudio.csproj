@@ -68,8 +68,8 @@
     <None Remove="Assets\zxGraphics_fnt.png" />
     <None Remove="Assets\zxGraphics_map.png" />
     <None Remove="Assets\zxGraphics_spr.png" />
-    <None Remove="Assets\zxGraphics_til.png" />
     <None Remove="Assets\zxGraphics_udg.png" />
+    <None Remove="Assets\zxmaps_til.png" />
     <None Remove="Assets\zxtFile.png" />
     <None Remove="DocumentEditors\NextDows\images\Box32.png" />
     <None Remove="DocumentEditors\NextDows\images\Button32.png" />
@@ -121,6 +121,7 @@
     <None Remove="Fonts\NimbusSanL-Reg.ttf" />
     <None Remove="Fonts\NimbusSanL-RegIta.ttf" />
     <None Remove="Resources\sysvars.inc" />
+    <None Remove="Svg\add.svg" />
     <None Remove="Svg\backward-solid.svg" />
     <None Remove="Svg\backward-step-solid.svg" />
     <None Remove="Svg\Binary.svg" />
@@ -202,6 +203,7 @@
     <None Remove="Svg\scissors-solid.svg" />
     <None Remove="Svg\Seal.svg" />
     <None Remove="Svg\select.svg" />
+    <None Remove="Svg\show.svg" />
     <None Remove="Svg\square-minus-solid.svg" />
     <None Remove="Svg\square-plus-solid.svg" />
     <None Remove="Svg\stop-solid.svg" />
@@ -316,7 +318,8 @@
     <AvaloniaResource Include="Assets\zxGraphics_udg.png" />
     <AvaloniaResource Include="Assets\zxGraphics_map.png" />
     <AvaloniaResource Include="Assets\zxGraphics_spr.png" />
-    <AvaloniaResource Include="Assets\zxGraphics_til.png" />
+    <AvaloniaResource Include="Assets\zxmaps_map.png" />
+    <AvaloniaResource Include="Assets\zxmaps_til.png" />
     <AvaloniaResource Include="Assets\zxtFile.png" />
     <AvaloniaResource Include="DocumentEditors\NextDows\images\Box32.png" />
     <AvaloniaResource Include="DocumentEditors\NextDows\images\Button32.png" />
@@ -363,6 +366,7 @@
     <AvaloniaResource Include="Fonts\ConsolaMono.ttf" />
     <AvaloniaResource Include="Fonts\DroidSansMono.ttf" />
     <AvaloniaResource Include="Fonts\FiraCode-Regular.ttf" />
+    <AvaloniaResource Include="Svg\add.svg" />
     <AvaloniaResource Include="Svg\circle-info-solid.svg" />
     <AvaloniaResource Include="Svg\circle-question-solid.svg" />
     <AvaloniaResource Include="Svg\Documents\file-blank.svg" />
@@ -371,8 +375,10 @@
     <AvaloniaResource Include="Svg\hide.svg" />
     <AvaloniaResource Include="Svg\picker.svg" />
     <AvaloniaResource Include="Svg\select.svg" />
+    <AvaloniaResource Include="Svg\show.svg" />
     <AvaloniaResource Include="Svg\White\book.svg" />
     <AvaloniaResource Include="Svg\White\chat.svg" />
+    <AvaloniaResource Include="Svg\White\check.svg" />
     <AvaloniaResource Include="Svg\White\discord.svg" />
     <AvaloniaResource Include="Svg\White\download.svg" />
     <AvaloniaResource Include="Svg\White\error.svg" />
@@ -632,6 +638,30 @@
     </Compile>
     <Compile Update="DocumentEditors\ZXGraphics\ZXGridImageView.axaml.cs">
       <DependentUpon>ZXGridImageView.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="DocumentEditors\ZXMaps\LayerItemControl.axaml.cs">
+      <DependentUpon>LayerItemControl.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="DocumentEditors\ZXMaps\MapPropertiesControl.axaml.cs">
+      <DependentUpon>MapPropertiesControl.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="DocumentEditors\ZXMaps\LayersControl.axaml.cs">
+      <DependentUpon>LayersControl.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="DocumentEditors\ZXMaps\TilePropertiesControl.axaml.cs">
+      <DependentUpon>TilePropertiesControl.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="DocumentEditors\ZXMaps\TilePreviewControl.axaml.cs">
+      <DependentUpon>TilePreviewControl.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="DocumentEditors\ZXMaps\TilePatternControl.axaml.cs">
+      <DependentUpon>TilePatternControl.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="DocumentEditors\ZXMaps\TilePatternEditor.axaml.cs">
+      <DependentUpon>TilePatternEditor.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="DocumentEditors\ZXMaps\TileEditor.axaml.cs">
+      <DependentUpon>TileEditor.axaml</DependentUpon>
     </Compile>
     <Compile Update="DocumentEditors\ZXMaps\ZXMapsEditor.axaml.cs">
       <DependentUpon>ZXMapsEditor.axaml</DependentUpon>

@@ -44,9 +44,9 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         private ExportConfig exportConfig = null;
         */
 
-        private Action<Sprite, string> CallBackCommand = null;
-        private IEnumerable<Sprite> sprites = null;
-        private Sprite sprite = null;
+        private Action<ZXMapsTile, string> CallBackCommand = null;
+        private IEnumerable<ZXMapsTile> sprites = null;
+        private ZXMapsTile sprite = null;
 
         private string spriteName = "";
         private GraphicsModes spriteMode = GraphicsModes.Monochrome;
@@ -80,7 +80,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             btnImport.Tapped += BtnImport_Tapped;
         }
 
-        public bool Initialize(string fileName, IEnumerable<Sprite> sprites, Action<Sprite, string> callBackCommand)
+        public bool Initialize(string fileName, IEnumerable<ZXMapsTile> sprites, Action<ZXMapsTile, string> callBackCommand)
         {
             this.CallBackCommand = callBackCommand;
             this.sprites = sprites;
@@ -247,7 +247,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
                 GetProperties();
 
-                var s = new Sprite();
+                var s = new ZXMapsTile();
                 s.CurrentFrame = 0;
                 s.DefaultColor = 7;
                 s.Export = true;
@@ -622,7 +622,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
                     for (int n = 0; n < sprite.Patterns.Count(); n++)
                     {
-                        var spr = sprite.Clonar<Sprite>();
+                        var spr = sprite.Clonar<ZXMapsTile>();
                         spr.Patterns = spr.Patterns.Skip(n).Take(1).ToList();
                         spr.Frames = 1;
                         spr.Name = sprName + "_" + n.ToString();

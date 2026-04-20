@@ -10,7 +10,7 @@
 			 Background="#ff202020"
 			 x:Class="ZXBasicStudio.DocumentEditors.ZXMaps.ZXMapsEditor">
 	<Grid Name="grdMain" RowDefinitions="*,Auto">
-		<Grid Name="grdEditor" Grid.RowSpan="2" ColumnDefinitions="180,4,*,4,200" Margin="0,8,0,0">
+		<Grid Name="grdEditor" Grid.RowSpan="2" ColumnDefinitions="180,4,*,4,300" Margin="0,8,0,0">
 			<zxd:ZXDockingContainer Name="dockLeft" DockingGroup="Tiles" RowDefinitions="*">
 				<zxd:ZXDockingControl Name="dockPatterns" Title="Tile list" DockingGroup="Tiles" DesiredFloatingSize="">
 					<zxd:ZXDockingControl.DockedControl>
@@ -119,31 +119,34 @@
 
 			<GridSplitter ResizeDirection="Columns" Grid.Column="3" Classes="vertical"></GridSplitter>
 
-			<ScrollViewer Grid.Column="4">
-				<StackPanel Orientation="Vertical">
-					<zxd:ZXDockingContainer Name="dockRight1" DockingGroup="Properties" Grid.Column="4" RowDefinitions="*">
-						<zxd:ZXDockingControl Name="dockPreview" Title="Preview" DockingGroup="Properties" DesiredFloatingSize="200,400">
-							<zxd:ZXDockingControl.DockedControl>
-								<!--
-								<local:PreviewControl Name="ctrlPreview"></local:PreviewControl>
-								-->
-							</zxd:ZXDockingControl.DockedControl>
-						</zxd:ZXDockingControl>
-					</zxd:ZXDockingContainer>
+			<zxd:ZXDockingContainer Name="dockRight" DockingGroup="ZXGraphics" Grid.Column="4" RowDefinitions="Auto,4,Auto,4,*" Background="Red">
+				<zxd:ZXDockingControl Grid.Row="0" Name="dockPreview" Title="Preview" DockingGroup="ZXGraphics" DesiredFloatingSize="200,400">
+					<zxd:ZXDockingControl.DockedControl>
+						<Grid Height="200" Background="#282828">
+							<TextBlock Name="txtPreview" HorizontalAlignment="Center" VerticalAlignment="Center">Preview</TextBlock>
+						<!--<local:SpritePreviewControl Name="ctrlPreview"></local:SpritePreviewControl>-->
+						</Grid>
+					</zxd:ZXDockingControl.DockedControl>
+				</zxd:ZXDockingControl>
 
-					<GridSplitter ResizeDirection="Rows" Grid.Column="3" Classes="horizontal"></GridSplitter>
+				<GridSplitter ResizeDirection="Rows" Grid.Row="1" Classes="horizontal"></GridSplitter>
 
-					<zxd:ZXDockingContainer Name="dockRight2" DockingGroup="Properties" Grid.Column="4" RowDefinitions="*">
-						<zxd:ZXDockingControl Name="dockProperties" Title="Properties" DockingGroup="Properties" DesiredFloatingSize="200,400">
-							<zxd:ZXDockingControl.DockedControl>
-								<!--
-								<local:PreviewControl Name="ctrlPreview"></local:PreviewControl>
-								-->
-							</zxd:ZXDockingControl.DockedControl>
-						</zxd:ZXDockingControl>
-					</zxd:ZXDockingContainer>
-				</StackPanel>
-			</ScrollViewer>
+				<zxd:ZXDockingControl Grid.Row="2" Name="dockLayers" Title="Layers" DockingGroup="ZXGraphics" DesiredFloatingSize="200,400">
+					<zxd:ZXDockingControl.DockedControl>
+						<local:LayersControl Name="ctrlLayers" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"></local:LayersControl>
+					</zxd:ZXDockingControl.DockedControl>
+				</zxd:ZXDockingControl>
+
+				<GridSplitter ResizeDirection="Rows" Grid.Row="3" Classes="horizontal"></GridSplitter>
+
+				<zxd:ZXDockingControl Grid.Row="4" Name="dockProperties" Title="Properties" DockingGroup="ZXGraphics" DesiredFloatingSize="200,400">
+					<zxd:ZXDockingControl.DockedControl>
+						<local:MapPropertiesControl Name="ctrlProperties"></local:MapPropertiesControl>
+					</zxd:ZXDockingControl.DockedControl>
+				</zxd:ZXDockingControl>
+
+			</zxd:ZXDockingContainer>
+
 		</Grid>
 	</Grid>
 </UserControl>

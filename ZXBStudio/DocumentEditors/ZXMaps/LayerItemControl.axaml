@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:svg="using:Avalonia.Svg.Skia"
+			 mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="52"
+			 Focusable="True"
+			 Background="#ff202020"
+			 x:Class="ZXBasicStudio.DocumentEditors.ZXMaps.LayerItemControl">
+	<Grid Name="grdMain" ColumnDefinitions="32,*,Auto">
+		<svg:Svg Grid.Column="0" Name="svgSelected" Path="/Svg/White/check.svg"></svg:Svg>
+
+		<TextBox Grid.Column="1" Name="txtLayerName" Margin="4,0,4,0"  Background="#ff202020" BorderBrush="#ff404040" Foreground="White" FontSize="14" VerticalContentAlignment="Center" HorizontalAlignment="Stretch" IsReadOnly="True"/>
+
+		<Button Grid.Column="2" Name="btnHideLayer" Classes="toolbar" ToolTip.Tip="Hide layer">
+			<svg:Svg Path="/Svg/hide.svg"></svg:Svg>
+		</Button>
+		<Button Grid.Column="2" Name="btnShowLayer" Classes="toolbar" ToolTip.Tip="Show layer" IsVisible="False">
+			<svg:Svg Path="/Svg/show.svg"></svg:Svg>
+		</Button>
+</Grid>
+</UserControl>

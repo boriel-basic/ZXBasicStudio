@@ -3,21 +3,47 @@
 			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			 xmlns:svg="using:Avalonia.Svg.Skia"
-			 xmlns:local="using:ZXBasicStudio.DocumentEditors.ZXGraphics"
+			 xmlns:local="using:ZXBasicStudio.DocumentEditors.ZXMaps"
+			 xmlns:zxgraphics="using:ZXBasicStudio.DocumentEditors.ZXGraphics"
 			 xmlns:zxd="using:ZXBasicStudio.Controls.DockSystem"
 			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			 Focusable="True"
 			 Background="#ff202020"
-			 x:Class="ZXBasicStudio.DocumentEditors.ZXGraphics.SpriteEditor">
+			 x:Class="ZXBasicStudio.DocumentEditors.ZXMaps.TileEditor">
 	<Grid Name="grdMain" RowDefinitions="*,Auto">
 		<Grid Name="grdEditor" Grid.RowSpan="2" ColumnDefinitions="180,4,*,4,200" Margin="0,8,0,0">
 
 			<zxd:ZXDockingContainer Name="dockLeft" DockingGroup="ZXGraphics" RowDefinitions="*">
-				<zxd:ZXDockingControl Name="dockPatterns" Title="Sprite list" DockingGroup="ZXGraphics" DesiredFloatingSize="">
+				<zxd:ZXDockingControl Name="dockPatterns" Title="Tile list" DockingGroup="ZXGraphics">
 					<zxd:ZXDockingControl.DockedControl>
-						<ScrollViewer VerticalScrollBarVisibility="Auto">
-							<StackPanel Orientation="Vertical" Name="wpSpriteList" Height="NaN" MinWidth="40" Background="#282828"/>
-						</ScrollViewer>
+						<Grid RowDefinitions="Auto,Auto,*">
+
+							
+
+							<WrapPanel Grid.Row="1" Orientation="Horizontal" MinWidth="40" Background="#282828" Margin="2">
+								<Button Classes="toolbar" Name="btnTileMoveLeft" ToolTip.Tip="Move actual tile to the left">
+									<svg:Svg Path="/Svg/backward-solid.svg"></svg:Svg>
+								</Button>
+								<Button Classes="toolbar" Name="btnTileMoveRight" ToolTip.Tip="Move actual tile to the right">
+									<svg:Svg Path="/Svg/forward-solid.svg"></svg:Svg>
+								</Button>
+								<Line StartPoint="0,0" EndPoint="0,26" Stroke="White" Margin="5,0,5,0"></Line>
+								<Button Classes="toolbar" Name="btnTileInfoShow" ToolTip.Tip="Show tile number">
+									<svg:Svg Path="/Svg/circle-info-solid.svg"></svg:Svg>
+								</Button>
+								<Button Classes="toolbar" Name="btnTileInfoHide" ToolTip.Tip="Move actual tile to the right" IsVisible="False">
+									<svg:Svg Path="/Svg/comment-slash-solid.svg"></svg:Svg>
+								</Button>
+								<Line StartPoint="0,0" EndPoint="0,26" Stroke="White" Margin="5,0,5,0"></Line>
+								<Button Classes="toolbar" Name="btnTileDelete" ToolTip.Tip="Delete actual Tile" >
+									<svg:Svg Path="/Svg/Cancel.svg"></svg:Svg>
+								</Button>
+							</WrapPanel>
+
+							<ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Visible" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+								<WrapPanel Orientation="Horizontal" Name="wpTileList" VerticalAlignment="Top" Background="#282828" />
+							</ScrollViewer>
+						</Grid>
 					</zxd:ZXDockingControl.DockedControl>
 				</zxd:ZXDockingControl>
 			</zxd:ZXDockingContainer>
@@ -127,13 +153,14 @@
 					</Button>
 				</WrapPanel>
 
-				<local:SpritePatternEditor Name="ctrlEditor" Grid.Row="1" Background="#303030"/>
+				<local:TilePatternEditor Name="ctrlEditor" Grid.Row="1" Background="#303030"/>
 
 				<WrapPanel Orientation="Horizontal" Background="#ff202020" Grid.Row="2" Margin="10,5,10,5" Height="NaN">
 					<TextBlock Name="txtZoom" Classes="dialog" Width="54">Zoom 24x</TextBlock>
 					<Slider Name="sldZoom" Width="100" Minimum="1" Maximum="9" Value="6" VerticalAlignment="Center"/>
-					<TextBlock Name="lblFrame" Classes="dialog" Width="55" Margin="16,8,0,0">Frame</TextBlock>
-					<Border Classes="numericborder" Margin="-10,0,0,0">
+
+					<TextBlock Name="lblFrame" Classes="dialog" Width="55" Margin="16,8,0,0" IsVisible="False">Frame</TextBlock>
+					<Border Classes="numericborder" Margin="-10,0,0,0" IsVisible="False">
 						<NumericUpDown Classes="dialog" Name="txtFrame" Minimum="0" Increment="1" Maximum="255" Value="0" VerticalAlignment="Center"/>
 					</Border>
 
@@ -168,7 +195,7 @@
 			<zxd:ZXDockingContainer Name="dockRight" DockingGroup="ZXGraphics" Grid.Column="4" RowDefinitions="*,4,4*" Background="Red">
 				<zxd:ZXDockingControl Grid.Row="0" Name="dockPreview" Title="Preview" DockingGroup="ZXGraphics" DesiredFloatingSize="200,400">
 					<zxd:ZXDockingControl.DockedControl>
-						<local:SpritePreviewControl Name="ctrlPreview"></local:SpritePreviewControl>
+						<local:TilePreviewControl Name="ctrlPreview"></local:TilePreviewControl>
 					</zxd:ZXDockingControl.DockedControl>
 				</zxd:ZXDockingControl>
 
@@ -176,14 +203,14 @@
 
 				<zxd:ZXDockingControl Grid.Row="2" Name="dockProperties" Title="Properties" DockingGroup="ZXGraphics" DesiredFloatingSize="200,400">
 					<zxd:ZXDockingControl.DockedControl>
-						<local:SpritePropertiesControl Name="ctrlProperties"/>
+						<local:TilePropertiesControl Name="ctrlProperties"/>
 					</zxd:ZXDockingControl.DockedControl>
 				</zxd:ZXDockingControl>
 			</zxd:ZXDockingContainer>
 
 		</Grid>
 
-		<local:ColorPickerControl Name="ctrlColorPicker" Grid.Row="1" IsVisible="false"/>
+		<zxgraphics:ColorPickerControl Name="ctrlColorPicker" Grid.Row="1" IsVisible="false"/>
 
 		<Grid Name="grdProcesando" Grid.RowSpan="2">
 			<ProgressBar IsIndeterminate="True"/>

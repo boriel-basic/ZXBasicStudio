@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using System.Diagnostics;
 using ZXBasicStudio.DocumentEditors.ZXGraphics.log;
 using ZXBasicStudio.DocumentEditors.ZXGraphics.neg;
+using ZXBasicStudio.DocumentEditors.ZXMaps.Neg;
 using System;
 using System.Linq;
 using ZXBasicStudio.Common;
@@ -23,12 +24,12 @@ using System.Reflection;
 using FFmpeg.AutoGen;
 using Avalonia.Media;
 
-namespace ZXBasicStudio.DocumentEditors.ZXGraphics
+namespace ZXBasicStudio.DocumentEditors.ZXMaps
 {
     /// <summary>
     /// Editor for GDUs and Fonts
     /// </summary>
-    public partial class SpriteEditor : ZXDocumentEditorBase, IObserver<AvaloniaPropertyChangedEventArgs>
+    public partial class TileEditor : ZXDocumentEditorBase, IObserver<AvaloniaPropertyChangedEventArgs>
     {
         #region Events
 
@@ -58,6 +59,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 return Path.GetFullPath(FileName);
             }
         }
+
 
         public override bool Modified
         {
@@ -100,10 +102,14 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         private string FileName = "";
 
+        private ZXMapsTiles TileMain = null;
+        private int tileWidth = 16;
+        private int tileHeight = 16;
+
         /// <summary>
-        /// List of sprites patterns controls in the set
+        /// List of Tiles patterns controls in the set
         /// </summary>
-        private List<SpritePatternControl> SpritePatternsList = null;
+        private List<TilePatternControl> TilePatternsList = null;
 
         /// <summary>
         /// last zoom value
@@ -132,11 +138,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         {
             try
             {
-                var masterList = SpritePatternsList.Select(d => d.SpriteData).ToArray();
+                var masterList = TilePatternsList.Select(d => d.TileData).ToArray();
                 var sprList = new List<ZXMapsTile>();
                 foreach (var spr in masterList)
                 {
-                    sprList.Add(spr); //.Clonar<Sprite>());
+                    sprList.Add(spr); //.Clonar<Tile>());
                 }
                 foreach (ZXMapsTile spr in sprList)
                 {
@@ -150,12 +156,13 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                         spr.Patterns = spr.Patterns.Take(spr.Frames).ToList();
                     }
                 }
-
-                var dataJSon = sprList.Serializar();
+                TileMain.Tiles = sprList;
+                var dataJSon = TileMain.Serializar();
                 if (!ServiceLayer.Files_SaveFileString(FileName, dataJSon))
                 {
                     return false;
-                };
+                }
+                ;
 
                 _Modified = false;
                 DocumentSaved?.Invoke(this, EventArgs.Empty);
@@ -204,13 +211,10 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         #endregion
 
 
-
-
-
         /// <summary>
         /// Constructor, without parameters is mandatory to cal Initialize
         /// </summary>
-        public SpriteEditor()
+        public TileEditor()
         {
             InitializeComponent();
         }
@@ -220,9 +224,8 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// Constructor
         /// </summary>
         /// <param name="fileName">Name of the file</param>
-        public SpriteEditor(string fileName, Guid documentTypeId)
+        public TileEditor(string fileName)
         {
-            this.documentTypeId = documentTypeId;
             InitializeComponent();
             new Thread(() => Initialize(fileName)).Start();
         }
@@ -251,23 +254,37 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
             FileName = fileName;
 
-            SpritePatternsList = new List<SpritePatternControl>();
+            TilePatternsList = new List<TilePatternControl>();
 
             var data = ServiceLayer.GetFileData(fileName);
+            if (data == null || data.Length == 0)
+            {
+                TileMain = new ZXMapsTiles()
+                {
+                    GraphicMode = GraphicsModes.Monochrome,
+                    Height = 16,
+                    Width = 16,
+                    Name = Path.GetFileName(fileName).ToStringNoNull().Replace(".til", "").Replace(".zxtil", ""),
+                    Tiles = new List<ZXMapsTile>()
+                };
+            }
             if (data != null)
             {
                 var dataS = Encoding.UTF8.GetString(data);
                 if (!string.IsNullOrEmpty(dataS))
                 {
-                    ZXMapsTile[] sprites = dataS.Deserializar<ZXMapsTile[]>();
+                    TileMain = dataS.Deserializar<ZXMapsTiles>();
 
-                    foreach (var sprite in sprites)
-                    {                        
+                    wpTileList.ItemWidth = (TileMain.Width * 4) + 4;
+                    wpTileList.ItemHeight = (TileMain.Height * 4) + 4;
+
+                    foreach (var Tile in TileMain.Tiles)
+                    {
                         // Check attributes for ZX Spectrum mode
-                        if (sprite != null && sprite.Patterns != null)
+                        if (Tile != null && Tile.Patterns != null)
                         {
-                            var al = (sprite.Width / 8) * (sprite.Height / 8);
-                            foreach (var pattern in sprite.Patterns)
+                            var al = (Tile.Width / 8) * (Tile.Height / 8);
+                            foreach (var pattern in Tile.Patterns)
                             {
                                 if (pattern.Attributes != null)
                                 {
@@ -277,26 +294,27 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                         }
 
                         // Create pattern list
-                        var spc = new SpritePatternControl();
-                        spc.Initialize(sprite, SpriteList_Command);
-                        SpritePatternsList.Add(spc);
-                        wpSpriteList.Children.Add(spc);
+                        var tpc = new TilePatternControl();
+                        tpc.Initialize(Tile, TileList_Command, TileMain.Width, TileMain.Height);
+                        TilePatternsList.Add(tpc);
+                        wpTileList.Children.Add(tpc);
+                        wpTileList.InvalidateMeasure();
                     }
                 }
             }
 
-            if (SpritePatternsList.Count == 0)
+            if (TilePatternsList.Count == 0)
             {
-                SpriteList_AddSprite(null);
+                TileList_AddTile(null);
                 ctrlEditor.Initialize(Editor_Command);
                 ctrlPreview.Initialize(null);
-                ctrlProperties.Initialize(null, SpriteProperties_Command);
+                ctrlProperties.Initialize(TileMain, TileProperties_Command);
             }
             else
             {
                 ctrlEditor.Initialize(Editor_Command);
-                ctrlPreview.Initialize(SpritePatternsList[0].SpriteData);
-                ctrlProperties.Initialize(SpritePatternsList[0].SpriteData, SpriteProperties_Command);
+                ctrlPreview.Initialize(TilePatternsList[0].TileData);
+                ctrlProperties.Initialize(TileMain, TileProperties_Command);
             }
 
             sldZoom.PropertyChanged += SldZoom_PropertyChanged;
@@ -329,13 +347,16 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             btnViewAttributes.Tapped += BtnViewAttributes_Tapped;
             btnColorPicker.Tapped += BtnColorPicker_Tapped;
             btnInvertColorsCell.Tapped += BtnInvertColorsCell_Tapped;
-            btnInvertPixelsCell.Tapped += BtnInvertPixelsCell_Tapped;            
+            btnInvertPixelsCell.Tapped += BtnInvertPixelsCell_Tapped;
+
+            btnTileInfoHide.Tapped += BtnTileInfoHide_Tapped;
+            btnTileInfoShow.Tapped += BtnTileInfoShow_Tapped;
 
             Refresh();
 
-            if (SpritePatternsList.Count > 1)
+            if (TilePatternsList.Count > 1)
             {
-                SpriteList_Command(SpritePatternsList.ElementAt(0), "SELECTED");
+                TileList_Command(TilePatternsList.ElementAt(0), "SELECTED");
             }
 
             btnPaper.Tapped += BtnPaper_Click;
@@ -348,6 +369,15 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             this.Focus();
             grdProcesando.IsVisible = false;
             _Modified = false;
+
+            // Calcular altura inicial del WrapPanel
+            CalculateWrapPanelHeight();
+
+            // Suscribirse a cambios de tamaño para recalcular la altura
+            wpTileList.SizeChanged += (s, e) => CalculateWrapPanelHeight();
+
+            tileWidth = TileMain.Width;
+            tileHeight = TileMain.Height;
         }
 
 
@@ -360,13 +390,13 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 ctrlColorPicker.IsVisible = false;
                 return;
             }
-            var sprite = ctrlEditor.SpriteData;
-            if (sprite.GraphicMode == GraphicsModes.Monochrome)
+            var Tile = ctrlEditor.TileData;
+            if (Tile.GraphicMode == GraphicsModes.Monochrome)
             {
                 return;
             }
             ctrlColorPicker.IsVisible = true;
-            ctrlColorPicker.Inicialize(sprite.GraphicMode, sprite.Palette, ctrlEditor.SecondaryColorIndex, ColorPickerPaper_Action);
+            ctrlColorPicker.Inicialize(Tile.GraphicMode, Tile.Palette, ctrlEditor.SecondaryColorIndex, ColorPickerPaper_Action);
         }
 
 
@@ -377,29 +407,29 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 ctrlColorPicker.IsVisible = false;
                 return;
             }
-            var sprite = ctrlEditor.SpriteData;
-            if (sprite.GraphicMode == GraphicsModes.Monochrome)
+            var Tile = ctrlEditor.TileData;
+            if (Tile.GraphicMode == GraphicsModes.Monochrome)
             {
                 return;
             }
             ctrlColorPicker.IsVisible = true;
-            ctrlColorPicker.Inicialize(sprite.GraphicMode, sprite.Palette, ctrlEditor.PrimaryColorIndex, ColorPickerInk_Action);
+            ctrlColorPicker.Inicialize(Tile.GraphicMode, Tile.Palette, ctrlEditor.PrimaryColorIndex, ColorPickerInk_Action);
         }
 
 
         private void UpdateColorPanel()
         {
-            var sprite = ctrlEditor.SpriteData;
-            if (sprite == null)
+            var Tile = ctrlEditor.TileData;
+            if (Tile == null)
             {
                 return;
             }
-            switch (sprite.GraphicMode)
+            switch (Tile.GraphicMode)
             {
                 case GraphicsModes.Monochrome:
                     {
-                        var ink = sprite.Palette[1];
-                        var paper = sprite.Palette[0];
+                        var ink = Tile.Palette[1];
+                        var paper = Tile.Palette[0];
                         grdPaper.Background = new SolidColorBrush(Color.FromRgb(paper.Red, paper.Green, paper.Blue));
                         txtPaper.Foreground = new SolidColorBrush(Color.FromRgb(ink.Red, ink.Green, ink.Blue));
                         txtPaper.Text = "0";
@@ -412,8 +442,8 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 case GraphicsModes.ZXSpectrum:
                 case GraphicsModes.Next:
                     {
-                        var ink = sprite.Palette[ctrlEditor.PrimaryColorIndex];
-                        var paper = sprite.Palette[ctrlEditor.SecondaryColorIndex];
+                        var ink = Tile.Palette[ctrlEditor.PrimaryColorIndex];
+                        var paper = Tile.Palette[ctrlEditor.SecondaryColorIndex];
                         grdPaper.Background = new SolidColorBrush(Color.FromRgb(paper.Red, paper.Green, paper.Blue));
                         txtPaper.Foreground = new SolidColorBrush(Color.FromRgb(ink.Red, ink.Green, ink.Blue));
                         txtPaper.Text = ctrlEditor.SecondaryColorIndex.ToString();
@@ -443,108 +473,148 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         #endregion
 
 
-        #region SpriteList
+        #region TileList
 
-        private void SpriteList_Command(SpritePatternControl sender, string command)
+        private void TileList_Command(TilePatternControl sender, string command)
         {
             switch (command)
             {
                 case "ADD":
-                    SpriteList_AddSprite(null);
-                    ctrlEditor.SpriteData = sender.SpriteData;
-                    ctrlPreview.SpriteData = sender.SpriteData;
+                    TileList_AddTile(null);
+                    ctrlEditor.TileData = sender.TileData;
+                    ctrlPreview.TileData = sender.TileData;
                     ctrlPreview.Refresh();
-                    ctrlProperties.SpriteData = sender.SpriteData;
-                    SpriteList_Modified(sender.SpriteData);
+                    TileList_Modified(sender.TileData);
                     break;
                 case "SELECTED":
-                    SpriteList_Unselect(sender);
-                    ctrlEditor.SpriteData = sender.SpriteData;
-                    ctrlPreview.SpriteData = sender.SpriteData;
+                    TileList_Unselect(sender);
+                    ctrlEditor.TileData = sender.TileData;
+                    ctrlPreview.TileData = sender.TileData;
                     ctrlPreview.Refresh();
-                    ctrlProperties.SpriteData = sender.SpriteData;
-                    ctrlProperties.Refresh();
-                    SpriteProperties_FrameUpdate(ctrlProperties, command);
+                    TileProperties_FrameUpdate(ctrlProperties, command);
                     txtFrame.Text = "0";
                     break;
             }
         }
 
 
-        private void SpritePreview_Command(SpritePreviewControl sender, string command)
+        private void TilePreview_Command(TilePreviewControl sender, string command)
         {
 
         }
 
 
-        private void SpriteProperties_Command(SpritePropertiesControl sender, string command)
+        private void TileProperties_Command(TilePropertiesControl sender, string command)
         {
-            switch (command)
+            try
             {
-                case "DELETE":
-                    {
-                        var sprite = SpritePatternsList.FirstOrDefault(d => d.SpriteData != null && d.SpriteData.Id == sender.SpriteData.Id);
-                        if (sprite != null)
+                var selectedTile = TilePatternsList.FirstOrDefault(d => d.IsSelected)?.TileData;
+
+                switch (command)
+                {
+                    case "MODE":
                         {
-                            SpriteList_Delete(sprite);
-                            SpriteList_Modified(sender.SpriteData);
+                            switch (sender.TileData.GraphicMode)
+                            {
+                                case GraphicsModes.Monochrome:
+                                    ctrlEditor.PrimaryColorIndex = 1;
+                                    ctrlEditor.SecondaryColorIndex = 0;
+                                    break;
+                                case GraphicsModes.ZXSpectrum:
+                                    ctrlEditor.PrimaryColorIndex = 0;
+                                    ctrlEditor.SecondaryColorIndex = 7;
+                                    break;
+                            }
+                            ctrlEditor.TileData = selectedTile;
+                            TileList_Modified(selectedTile);
+                            UpdateColorPanel();
                         }
-                    }
-                    break;
-                case "INSERT":
-                    SpriteList_Insert(sender.SpriteData);
-                    SpriteList_Modified(sender.SpriteData);
-                    break;
-                case "CLONE":
-                    SpriteList_Clone(sender.SpriteData);
-                    SpriteList_Modified(sender.SpriteData);
-                    break;
-                case "FRAMEUPDATE":
-                    SpriteProperties_FrameUpdate(sender, command);
-                    break;
-                case "REFRESH":
-                    ctrlEditor.SpriteData = sender.SpriteData;
-                    SpriteList_Modified(sender.SpriteData);
-                    if (ctrlEditor.SpriteData.CurrentFrame != actualFrame)
-                    {
-                        txtFrame.Value = actualFrame;
-                        if (txtFrame.Maximum < actualFrame)
-                        {
-                            txtFrame.Maximum = actualFrame;
-                        }
-                        txtFrame.Value = actualFrame;
-                        Refresh();
-                    }
-                    UpdateColorPanel();
-                    break;
-                case "CHANGEMODE":
-                    switch (sender.SpriteData.GraphicMode)
-                    {
-                        case GraphicsModes.Monochrome:
-                            ctrlEditor.PrimaryColorIndex = 1;
-                            ctrlEditor.SecondaryColorIndex = 0;
-                            break;
-                        case GraphicsModes.ZXSpectrum:
-                            ctrlEditor.PrimaryColorIndex = 0;
-                            ctrlEditor.SecondaryColorIndex = 7;
-                            break;
-                    }
-                    ctrlEditor.SpriteData = sender.SpriteData;
-                    SpriteList_Modified(sender.SpriteData);
-                    UpdateColorPanel();
-                    break;
+                        break;
+                    case "NAME":
+                        break;
+                    case "SIZE":
+                        ResizePatterns();
+                        break;
+                }
             }
+            catch { }
         }
 
 
-        private void SpriteProperties_FrameUpdate(SpritePropertiesControl sender, string command)
+        private void ResizePatterns()
         {
-            if (sender.SpriteData == null)
+            for (int n = 0; n < TilePatternsList.Count; n++)
+            {
+                var pattern = TilePatternsList[n];
+                if (pattern != null && pattern.TileData != null)
+                {
+                    if (pattern.TileData.Patterns != null && pattern.TileData.Patterns.Count > 0)
+                    {
+                        pattern.TileData.Patterns[0] = ResizePattern(pattern.TileData.Patterns[0]);
+                    }
+                    pattern.TileData.Width = TileMain.Width;
+                    pattern.TileData.Height = TileMain.Height;
+                    pattern.Refresh();
+                }
+            }
+            tileWidth = TileMain.Width;
+            tileHeight = TileMain.Height;
+
+            ctrlPreview.TileData.Width = TileMain.Width;
+            ctrlPreview.TileData.Height = TileMain.Height;
+            ctrlPreview.Refresh();
+            ctrlEditor.TileData.Width = TileMain.Width;
+            ctrlEditor.TileData.Height = TileMain.Height;
+            ctrlEditor.Refresh();
+        }
+
+
+        private Pattern ResizePattern(Pattern pattern)
+        {
+            var pat = new Pattern()
+            {
+                Id = pattern.Id,
+                Name = pattern.Name,
+                Number = pattern.Number,
+                RawData = new int[TileMain.Width * TileMain.Height],
+                Attributes = new AttributeColor[(TileMain.Width / 8) * (TileMain.Height / 8)]
+            };
+            for (int n = 0; n < pat.Attributes.Length; n++)
+            {
+                pat.Attributes[n] = new AttributeColor()
+                {
+                    Paper = ctrlEditor.SecondaryColorIndex,
+                    Ink = ctrlEditor.PrimaryColorIndex
+                };
+            }
+
+            for (int y = 0; y < TileMain.Height; y++)
+            {
+                for (int x = 0; x < TileMain.Width; x++)
+                {
+                    int colorIndex = 0;
+                    if (x < tileWidth && y < tileHeight)
+                    {
+                        colorIndex = pattern.RawData[(y * tileWidth) + x];
+                    }
+
+                    pat.RawData[(y * TileMain.Width) + x] = colorIndex;
+                }
+            }
+            return pat;
+        }
+
+
+        private void TileProperties_FrameUpdate(TilePropertiesControl sender, string command)
+        {
+            if (sender.TileData == null)
             {
                 return;
             }
 
-            int f = sender.SpriteData.Frames - 1;
+            // TODO: Multiple frames per tile?
+            /*
+            int f = sender.TileData.Frames - 1;
             if (f < 0)
             {
                 f = 0;
@@ -556,57 +626,62 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             txtFrame.Maximum = f;
             txtFrame.Text = f.ToString();
             txtFrame.UpdateLayout();
-            SpriteProperties_Command(sender, "REFRESH");
+            */
+            TileProperties_Command(sender, "REFRESH");
         }
 
 
-        private void SpriteList_AddSprite(ZXMapsTile spriteData)
+        private void TileList_AddTile(ZXMapsTile TileData)
         {
-            SpritePatternControl selectedSprite = null;
+            TileMain.Tiles.Add(TileData);
+
+            TilePatternControl selectedTile = null;
             int id = 0;
-            if (SpritePatternsList.Count > 0)
+            if (TilePatternsList.Count > 0)
             {
-                var sds = SpritePatternsList.Where(d => d.SpriteData != null);
+                var sds = TilePatternsList.Where(d => d.TileData != null);
                 if (sds.Any())
                 {
-                    id = sds.Max(d => d.SpriteData.Id) + 1;
+                    id = sds.Max(d => d.TileData.Id) + 1;
                 }
             }
-            for (int n = 0; n < SpritePatternsList.Count; n++)
+            for (int n = 0; n < TilePatternsList.Count; n++)
             {
-                var spc = SpritePatternsList[n];
-                if (spc.SpriteData != null && spc.SpriteData.Id < 0)
+                var spc = TilePatternsList[n];
+                if (spc.TileData != null && spc.TileData.Id < 0)
                 {
-                    spc.SpriteData.Id = id;
-                    if (string.IsNullOrEmpty(spc.SpriteData.Name))
+                    spc.TileData.Id = id;
+                    if (string.IsNullOrEmpty(spc.TileData.Name))
                     {
-                        spc.SpriteData.Name = "Sprite " + spc.SpriteData.Id.ToString();
+                        spc.TileData.Name = "Tile " + spc.TileData.Id.ToString();
                     }
-                    spc.SpriteData.Export = true;
-                    selectedSprite = spc;
+                    spc.TileData.Export = true;
+                    selectedTile = spc;
                     break;
                 }
-                if (spc.SpriteData == null && spriteData != null)
+                if (spc.TileData == null && TileData != null)
                 {
-                    SpritePatternsList[n].SpriteData = spriteData;
-                    selectedSprite = SpritePatternsList[n];
+                    TilePatternsList[n].TileData = TileData;
+                    selectedTile = TilePatternsList[n];
                     break;
                 }
             }
 
-            // Add void sprite
-            var spritePattern = new SpritePatternControl();
-            SpritePatternsList.Add(spritePattern);
-            wpSpriteList.Children.Add(spritePattern);
-            spritePattern.Initialize(null, SpriteList_Command);
+            // Add void Tile
+            var TilePattern = new TilePatternControl();
+            TilePatternsList.Add(TilePattern);
+            wpTileList.Children.Add(TilePattern);
+            TilePattern.Initialize(null, TileList_Command, TileMain.Width, TileMain.Height);
+            wpTileList.InvalidateMeasure();
+            CalculateWrapPanelHeight();
 
-            SpriteList_Unselect(selectedSprite);
+            TileList_Unselect(selectedTile);
         }
 
 
-        private void SpriteList_Unselect(SpritePatternControl selected)
+        private void TileList_Unselect(TilePatternControl selected)
         {
-            foreach (var control in SpritePatternsList)
+            foreach (var control in TilePatternsList)
             {
                 if (control == selected)
                 {
@@ -620,60 +695,63 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         }
 
 
-        private void SpriteList_Delete(SpritePatternControl control)
+        private void TileList_Delete(TilePatternControl control)
         {
-            SpritePatternsList.Remove(control);
-            wpSpriteList.Children.Remove(control);
-            ctrlEditor.SpriteData = null;
-            ctrlPreview.SpriteData = null;
-            ctrlProperties.SpriteData = null;
+            TilePatternsList.Remove(control);
+            wpTileList.Children.Remove(control);
+            ctrlEditor.TileData = null;
+            ctrlPreview.TileData = null;
+            ctrlProperties.TileData = null;
             control = null;
+            CalculateWrapPanelHeight();
         }
 
 
-        private void SpriteList_Insert(ZXMapsTile spriteData)
+        private void TileList_Insert(ZXMapsTile TileData)
         {
-            var current = spriteData.CurrentFrame;
-            var curPat = spriteData.Patterns[current];
+            var current = TileData.CurrentFrame;
+            var curPat = TileData.Patterns[current];
 
             var pat = curPat.Clonar<Pattern>();
             pat.RawData = new int[pat.RawData.Length];
 
-            var pats = spriteData.Patterns.Take(current).ToList();
+            var pats = TileData.Patterns.Take(current).ToList();
             pats.Add(pat);
-            pats.AddRange(spriteData.Patterns.Skip(current));
-            spriteData.Patterns = pats;
-            spriteData.Frames++;
+            pats.AddRange(TileData.Patterns.Skip(current));
+            TileData.Patterns = pats;
+            TileData.Frames++;
             ctrlProperties.Refresh();
             ctrlEditor.Refresh();
-            txtFrame.MaxHeight = spriteData.Frames - 1;
+            txtFrame.MaxHeight = TileData.Frames - 1;
         }
 
 
-        private void SpriteList_Clone(ZXMapsTile spriteData)
+        private void TileList_Clone(ZXMapsTile TileData)
         {
-            SpritePatternControl selectedSprite = null;
-            int id = SpritePatternsList.Where(d => d.SpriteData != null).Max(d => d.SpriteData.Id) + 1;
-            var spc = SpritePatternsList.FirstOrDefault(d => d.SpriteData == null);
+            TilePatternControl selectedTile = null;
+            int id = TilePatternsList.Where(d => d.TileData != null).Max(d => d.TileData.Id) + 1;
+            var spc = TilePatternsList.FirstOrDefault(d => d.TileData == null);
             if (spc == null)
             {
                 return;
             }
-            var sd = spriteData.Clonar<ZXMapsTile>();
+            var sd = TileData.Clonar<ZXMapsTile>();
             sd.Id = id;
-            sd.Name = spriteData.Name + " - copy";
-            spc.SpriteData = sd;
+            sd.Name = TileData.Name + " - copy";
+            spc.TileData = sd;
 
-            var spritePattern = new SpritePatternControl();
-            SpritePatternsList.Add(spritePattern);
-            wpSpriteList.Children.Add(spritePattern);
-            spritePattern.Initialize(null, SpriteList_Command);
+            var TilePattern = new TilePatternControl();
+            TilePatternsList.Add(TilePattern);
+            wpTileList.Children.Add(TilePattern);
+            TilePattern.Initialize(null, TileList_Command, TileMain.Width, TileMain.Height);
+            wpTileList.InvalidateMeasure();
+            CalculateWrapPanelHeight();
 
             spc.Select();
         }
 
 
-        private void SpriteList_Modified(ZXMapsTile spriteData)
+        private void TileList_Modified(ZXMapsTile TileData)
         {
             if (!_Modified)
             {
@@ -681,46 +759,126 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 DocumentModified?.Invoke(this, EventArgs.Empty);
             }
 
-            if (spriteData == null)
+            if (TileData == null)
             {
                 return;
             }
-            var ctrl = SpritePatternsList.FirstOrDefault(d => d.SpriteData != null && d.SpriteData.Id == spriteData.Id);
+            var ctrl = TilePatternsList.FirstOrDefault(d => d.TileData != null && d.TileData.Id == TileData.Id);
             if (ctrl != null)
             {
-                ctrl.SpriteData = spriteData;
+                ctrl.TileData = TileData;
                 ctrl.Refresh();
             }
+
+            wpTileList.ItemWidth = (TileMain.Width * 4) + 4;
+            wpTileList.ItemHeight = (TileMain.Height * 4) + 4;
+
+            // Calcular altura del WrapPanel basada en el contenido
+            CalculateWrapPanelHeight();
+            wpTileList.InvalidateMeasure();
         }
+
+        private void CalculateWrapPanelHeight()
+        {
+            if (wpTileList.ItemWidth <= 0 || wpTileList.ItemHeight <= 0 || wpTileList.Children.Count == 0)
+            {
+                return;
+            }
+
+            // Obtener el ancho disponible del ScrollViewer padre
+            double availableWidth = wpTileList.Bounds.Width;
+
+            // Si el ancho no está disponible aún, intentar obtenerlo del control padre
+            if (availableWidth <= 0)
+            {
+                var parent = wpTileList.Parent as Control;
+                if (parent != null)
+                {
+                    availableWidth = parent.Bounds.Width;
+                }
+            }
+
+            // Si aún no está disponible, usar una estimación basada en el número de elementos
+            if (availableWidth <= 0)
+            {
+                // Estimación: asumir que el ScrollViewer tiene aproximadamente 160-180 px de ancho
+                // Esto es relativo al contenedor padre
+                availableWidth = 160;
+            }
+
+            // Asegurar que hay espacio suficiente
+            if (availableWidth < wpTileList.ItemWidth)
+            {
+                availableWidth = wpTileList.ItemWidth;
+            }
+
+            // Calcular el número de columnas que caben
+            int itemsPerRow = Math.Max(1, (int)(availableWidth / wpTileList.ItemWidth));
+
+            // Calcular el número de filas necesarias
+            int totalRows = Math.Max(1, (int)Math.Ceiling((double)wpTileList.Children.Count / itemsPerRow));
+
+            // Calcular la altura total (número de filas * altura de cada item)
+            double calculatedHeight = totalRows * wpTileList.ItemHeight;
+
+            wpTileList.Height = calculatedHeight;
+        }
+
+
+        private void BtnTileInfoHide_Tapped(object? sender, TappedEventArgs e)
+        {
+            btnTileInfoShow.IsVisible = true;
+            btnTileInfoHide.IsVisible = false;
+            foreach(var ctrl in TilePatternsList)
+            {
+                ctrl.InfoVisible = false;
+            }
+        }
+
+        private void BtnTileInfoShow_Tapped(object? sender, TappedEventArgs e)
+        {
+            btnTileInfoShow.IsVisible = false;
+            btnTileInfoHide.IsVisible = true;
+            foreach (var ctrl in TilePatternsList)
+            {
+                ctrl.InfoVisible = true;
+            }
+        }
+
+
 
         #endregion
 
 
-        #region Sprite editor
+        #region Tile editor
 
-        private void Editor_Command(SpritePatternEditor sender, string command)
+        private void Editor_Command(TilePatternEditor sender, string command)
         {
-            switch (command)
+            try
             {
-                case "REFRESH":
-                    {
-                        var cur = SpritePatternsList.FirstOrDefault(d => d.IsSelected);
-                        if (cur != null)
+                switch (command)
+                {
+                    case "REFRESH":
                         {
-                            cur.SpriteData = sender.SpriteData;
-                            cur.Refresh();
-                            SpriteList_Modified(sender.SpriteData);
-                            ctrlProperties.SpriteData = sender.SpriteData;
-                            ctrlProperties.PrimaryColor = sender.PrimaryColorIndex;
-                            ctrlProperties.SecondaryColor = sender.SecondaryColorIndex;
-                            ctrlPreview.SpriteData = sender.SpriteData;
+                            var cur = TilePatternsList.FirstOrDefault(d => d.IsSelected);
+                            if (cur != null)
+                            {
+                                cur.TileData = sender.TileData;
+                                cur.Refresh();
+                                TileList_Modified(sender.TileData);
+                                ctrlProperties.TileData = TileMain;
+                                ctrlProperties.PrimaryColor = sender.PrimaryColorIndex;
+                                ctrlProperties.SecondaryColor = sender.SecondaryColorIndex;
+                                ctrlPreview.TileData = sender.TileData;
 
-                            btnColorPicker.IsChecked = !ctrlEditor.ColorPicker;
-                            UpdateColorPanel();
+                                btnColorPicker.IsChecked = !ctrlEditor.ColorPicker;
+                                UpdateColorPanel();
+                            }
                         }
-                    }
-                    break;
+                        break;
+                }
             }
+            catch { }
         }
 
         #endregion
@@ -731,16 +889,19 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         private void Refresh()
         {
+            // TODO: Multiple frames per tile?
+            /*
             txtFrame.Text = actualFrame.ToString();
-            if (ctrlProperties.SpriteData != null)
+            if (ctrlProperties.TileData != null)
             {
-                txtFrame.Maximum = ctrlProperties.SpriteData.Frames - 1;
+                txtFrame.Maximum = ctrlProperties.TileData.Frames - 1;
             }
             else
             {
                 txtFrame.Maximum = 0;
             }
             txtFrame.UpdateLayout();
+            */
         }
 
 
@@ -787,11 +948,13 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         private void TxtFrame_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
         {
+            // TODO: Multiple frames per tile?
+            /*
             byte v = txtFrame.Text.ToByte();
             if (actualFrame == v ||
-                ctrlProperties.SpriteData == null ||
+                ctrlProperties.TileData == null ||
                 v < 0 ||
-                v >= (ctrlProperties.SpriteData.Frames))
+                v >= (ctrlProperties.TileData.Frames))
             {
                 return;
             }
@@ -800,12 +963,13 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 v = 255;
             }
             actualFrame = v;
-            if (ctrlEditor.SpriteData != null)
+            if (ctrlEditor.TileData != null)
             {
-                ctrlEditor.SpriteData.CurrentFrame = actualFrame;
+                ctrlEditor.TileData.CurrentFrame = actualFrame;
                 ctrlEditor.Refresh();
             }
             Refresh();
+            */
         }
 
         #endregion
@@ -1014,9 +1178,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         private void Export()
         {
-            var dlg = new SpriteExportDialog();
-            dlg.Initialize(FileName, SpritePatternsList.Select(d => d.SpriteData));
+            /*
+            var dlg = new TileExportDialog();
+            dlg.Initialize(FileName, TilePatternsList.Select(d => d.TileData));
             dlg.ShowDialog(this.VisualRoot as Window);
+            */
         }
 
 
@@ -1029,7 +1195,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         private void BtnViewAttributes_Tapped(object? sender, TappedEventArgs e)
         {
-            ctrlEditor.ViewAttributes = btnViewAttributes.IsChecked==true;
+            ctrlEditor.ViewAttributes = btnViewAttributes.IsChecked == true;
         }
 
         private void BtnColorPicker_Tapped(object? sender, TappedEventArgs e)
@@ -1168,32 +1334,38 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         private void Import()
         {
-            var dlg = new SpriteImportDialog();
-            dlg.Initialize(FileName, SpritePatternsList.Select(d => d.SpriteData), Import_Command);
+            /*
+            var dlg = new TileImportDialog();
+            dlg.Initialize(FileName, TilePatternsList.Select(d => d.TileData), Import_Command);
             dlg.ShowDialog(this.VisualRoot as Window);
+            */
         }
 
 
-        private void Import_Command(ZXMapsTile sprite, string command)
+        private void Import_Command(ZXMapsTile Tile, string command)
         {
-            switch (command)
+            try
             {
-                case "ADD":
-                    SpriteList_AddSprite(sprite);
-                    ctrlEditor.SpriteData = sprite;
-                    ctrlPreview.SpriteData = sprite;
-                    ctrlPreview.Refresh();
-                    ctrlProperties.SpriteData = sprite;
-                    //SpriteList_Modified(sender.SpriteData);
-                    break;
-                case "UPDATE":
-                    //var spr = SpritePatternsList.FirstOrDefault(d => d.Name == sprite.Name);
-                    //if (spr != null)
-                    //{
-                    //    SpriteList_Modified(sprite);
-                    //}
-                    break;
+                switch (command)
+                {
+                    case "ADD":
+                        TileList_AddTile(Tile);
+                        ctrlEditor.TileData = Tile;
+                        ctrlPreview.TileData = Tile;
+                        ctrlPreview.Refresh();
+                        ctrlProperties.TileData = TileMain;
+                        //TileList_Modified(sender.TileData);
+                        break;
+                    case "UPDATE":
+                        //var spr = TilePatternsList.FirstOrDefault(d => d.Name == Tile.Name);
+                        //if (spr != null)
+                        //{
+                        //    TileList_Modified(Tile);
+                        //}
+                        break;
+                }
             }
+            catch { }
         }
 
 

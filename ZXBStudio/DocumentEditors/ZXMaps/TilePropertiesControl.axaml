@@ -1,0 +1,31 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:svg="using:Avalonia.Svg.Skia"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 x:Class="ZXBasicStudio.DocumentEditors.ZXMaps.TilePropertiesControl"
+			 HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+	<ScrollViewer>
+		<Grid Name="pnlProperties" ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,*,Auto" Margin="0,0,0,4">
+			<TextBlock Grid.Row="0" Classes="dialog" VerticalAlignment="Center" HorizontalAlignment="Right">Name:</TextBlock>
+			<TextBox Name="txtName" Classes="dialog" Grid.Row="0" Grid.Column="1" MaxWidth="Infinity"></TextBox>
+
+			<TextBlock Grid.Row="1" Classes="dialog" VerticalAlignment="Center" HorizontalAlignment="Right">Width:</TextBlock>
+			<Border Grid.Row="1" Grid.Column="1" Classes="numericborder">
+				<NumericUpDown Classes="dialog" Name="txtWidth" Minimum="8" Increment="8" Maximum="256" Value="8" VerticalAlignment="Center"/>
+			</Border>
+
+			<TextBlock Grid.Row="2" Classes="dialog" VerticalAlignment="Center" HorizontalAlignment="Right">Height:</TextBlock>
+			<Border Grid.Row="2" Grid.Column="1" Classes="numericborder">
+				<NumericUpDown Classes="dialog" Name="txtHeight" Minimum="8" Increment="8" Maximum="256" Value="8" VerticalAlignment="Center"/>
+			</Border>
+
+			<TextBlock Grid.Row="3" Classes="dialog" VerticalAlignment="Center" HorizontalAlignment="Right">Mode:</TextBlock>
+			<ComboBox Name="cmbMode" Classes="dialog" Grid.Row="3" Grid.Column="1" HorizontalAlignment="Left" MaxWidth="Infinity" Margin="4,4,0,2">
+				<ComboBoxItem>Monochrome</ComboBoxItem>
+				<ComboBoxItem>ZX Spectrum</ComboBoxItem>
+			</ComboBox>
+		</Grid>
+	</ScrollViewer>
+</UserControl>

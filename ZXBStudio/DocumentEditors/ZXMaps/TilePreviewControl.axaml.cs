@@ -14,16 +14,16 @@ using ZXBasicStudio.Common;
 using ZXBasicStudio.DocumentEditors.ZXGraphics.log;
 using ZXBasicStudio.DocumentEditors.ZXGraphics.neg;
 
-namespace ZXBasicStudio.DocumentEditors.ZXGraphics
+namespace ZXBasicStudio.DocumentEditors.ZXMaps
 {
-    public partial class SpritePreviewControl : UserControl, IDisposable
+    public partial class TilePreviewControl : UserControl, IDisposable
     {
         #region Public properties
 
         /// <summary>
-        /// Sprite data
+        /// Tile data
         /// </summary>
-        public ZXMapsTile? SpriteData { get; set; }
+        public ZXMapsTile? TileData { get; set; }
         public int Zoom { get; set; } = 4;
 
         #endregion
@@ -34,7 +34,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         private int speed = 1;
         private DispatcherTimer tmr;
         private Color emptyColor = new Color(255, 0x28, 0x28, 0x28);
-        ZXSpriteImage aspect = new ZXSpriteImage();
+        TileImage aspect = new TileImage();
 
         /// <summary>
         /// Speeds in milliseconds
@@ -43,7 +43,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         #endregion
 
-        public SpritePreviewControl()
+        public TilePreviewControl()
         {
             tmr = new DispatcherTimer(TimeSpan.FromMilliseconds(speeds[2]), DispatcherPriority.Normal, Refresh);
             tmr.Stop();
@@ -57,12 +57,12 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// <summary>
         /// Initializes the control
         /// </summary>
-        /// <param name="spriteData">Data of the sprite, if is null, the "Add" icon is visible and no properties are shown</param>
+        /// <param name="TileData">Data of the Tile, if is null, the "Add" icon is visible and no properties are shown</param>
         /// <param name="callBackCommand">CallBak for actions command, line "ADD", "CLONE", "DELETE" or "SELECTED"</param>
         /// <returns></returns>
-        public bool Initialize(ZXMapsTile spriteData)
+        public bool Initialize(ZXMapsTile TileData)
         {
-            this.SpriteData = spriteData;
+            this.TileData = TileData;
 
             this.cmbSpeed.SelectionChanged += CmbSpeed_SelectionChanged;
             tmr.Interval = TimeSpan.FromMilliseconds(speeds[speed]);
@@ -93,7 +93,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         public void Refresh(object? sender = null, EventArgs? e = null)
         {
-            if (SpriteData == null || SpriteData.Patterns == null || SpriteData.Patterns.Count == 0)
+            if (TileData == null || TileData.Patterns == null || TileData.Patterns.Count == 0)
             {
                 // Delete background
 
@@ -112,7 +112,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 tmr = new DispatcherTimer(TimeSpan.FromMilliseconds(speeds[speed]), DispatcherPriority.Normal, Refresh);
             }
 
-            if (SpriteData.Masked)
+            if (TileData.Masked)
             {
                 frameNumber += 2;
             }
@@ -121,15 +121,15 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 frameNumber++;
             }
 
-            if (frameNumber >= SpriteData.Frames)
+            if (frameNumber >= TileData.Frames)
             {
                 frameNumber = 0;
             }
 
-            imgPreview.Width = SpriteData.Width * Zoom;
-            imgPreview.Height = SpriteData.Height * Zoom;
+            imgPreview.Width = TileData.Width * Zoom;
+            imgPreview.Height = TileData.Height * Zoom;
 
-            aspect.RenderSprite(SpriteData, frameNumber);
+            aspect.RenderTile(TileData, frameNumber);
             imgPreview.InvalidateVisual();
         }
 

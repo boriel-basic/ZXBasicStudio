@@ -17,34 +17,34 @@ using ZXBasicStudio.DocumentEditors.ZXGraphics.log;
 using ZXBasicStudio.DocumentEditors.ZXGraphics.neg;
 using ZXBasicStudio.Extensions;
 
-namespace ZXBasicStudio.DocumentEditors.ZXGraphics
+namespace ZXBasicStudio.DocumentEditors.ZXMaps
 {
-    public partial class SpritePatternEditor : UserControl
+    public partial class TilePatternEditor : UserControl
     {
         #region Public properties
 
         /// <summary>
-        /// Actual Sprite data
+        /// Actual Tile data
         /// </summary>
-        public ZXMapsTile SpriteData
+        public ZXMapsTile TileData
         {
             get
             {
-                return _SpriteData;
+                return _TileData;
             }
             set
             {
-                _SpriteData = value;
-                if (_SpriteData == null)
+                _TileData = value;
+                if (_TileData == null)
                 {
                     lastId = null;
                 }
                 else
                 {
-                    if (lastId != _SpriteData.Id)
+                    if (lastId != _TileData.Id)
                     {
-                        _SpriteData.CurrentFrame = 0;
-                        lastId = _SpriteData.Id;
+                        _TileData.CurrentFrame = 0;
+                        lastId = _TileData.Id;
                     }
                 }
                 Undo_AddPoint();
@@ -110,11 +110,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         #region Private fields
 
-        private ZXMapsTile _SpriteData = null;
+        private ZXMapsTile _TileData = null;
         private int _Zoom = 24;
-        private Action<SpritePatternEditor, string> CallBackCommand = null;
+        private Action<TilePatternEditor, string> CallBackCommand = null;
         private int? lastId = null;
-        private ZXSpriteImage aspect = new ZXSpriteImage();
+        private TileImage aspect = new TileImage();
 
         /// <summary>
         /// True when mouse left button is pressed
@@ -135,7 +135,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         #region Public Methods
 
-        public SpritePatternEditor()
+        public TilePatternEditor()
         {
             InitializeComponent();
 
@@ -158,7 +158,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// </summary>
         /// <param name="callBackCommand">CallBack for commands: "REFRESH"</param>
         /// <returns>True if OK or False if error</returns>
-        public bool Initialize(Action<SpritePatternEditor, string> callBackCommand)
+        public bool Initialize(Action<TilePatternEditor, string> callBackCommand)
         {
             this.CallBackCommand = callBackCommand;
             return true;
@@ -171,7 +171,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         public void Refresh(bool callBack = false)
         {
             //cnvEditor.Children.Clear();
-            if (SpriteData == null)
+            if (TileData == null)
             {
                 aspect.Clear(Colors.White);
                 grdEditor.InvalidateVisual();
@@ -179,7 +179,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             }
 
 
-            aspect.RenderSprite(SpriteData, SpriteData.CurrentFrame);
+            aspect.RenderTile(TileData, TileData.CurrentFrame);
             grdEditor.Zoom = _Zoom;
             this.InvalidateVisual();
 
@@ -208,7 +208,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 return;
             }
             var op = operations[operationIndex];
-            if (Pattern_Equals(SpriteData.Patterns[SpriteData.CurrentFrame], op))
+            if (Pattern_Equals(TileData.Patterns[TileData.CurrentFrame], op))
             {
                 operationIndex--;
                 Undo();
@@ -216,9 +216,10 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             }
             if (op != null)
             {
-                SpriteData.Patterns[SpriteData.CurrentFrame] = op;
+                TileData.Patterns[TileData.CurrentFrame] = op;
                 Refresh();
             }
+            CallBackCommand(this, "REFRESH");
         }
 
 
@@ -233,7 +234,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 return;
             }
             var op = operations[operationIndex];
-            if (Pattern_Equals(SpriteData.Patterns[SpriteData.CurrentFrame], op))
+            if (Pattern_Equals(TileData.Patterns[TileData.CurrentFrame], op))
             {
                 operationIndex++;
                 Redo();
@@ -241,7 +242,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             }
             if (op != null)
             {
-                SpriteData.Patterns[SpriteData.CurrentFrame] = op;
+                TileData.Patterns[TileData.CurrentFrame] = op;
                 Refresh();
             }
         }
@@ -251,7 +252,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         {
             try
             {
-                if (SpriteData == null || SpriteData.Patterns == null)
+                if (TileData == null || TileData.Patterns == null)
                 {
                     operations.Clear();
                     return;
@@ -261,14 +262,14 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                     operationIndex < operations.Count)
                 {
                     var lastOp = operations[operationIndex];
-                    if (Pattern_Equals(SpriteData.Patterns[SpriteData.CurrentFrame], lastOp))
+                    if (Pattern_Equals(TileData.Patterns[TileData.CurrentFrame], lastOp))
                     {
                         return; // No changes
                     }
                 }
                 operations = operations.Take(operationIndex+1).ToList();
 
-                var op = SpriteData.Patterns[SpriteData.CurrentFrame].Clonar<Pattern>();
+                var op = TileData.Patterns[TileData.CurrentFrame].Clonar<Pattern>();
                 operations.Add(op);
                 operationIndex = operations.Count - 1;
             }
@@ -308,7 +309,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 int y = (int)p.Position.Y;
                 x = x / (_Zoom + 1);
                 y = y / (_Zoom + 1);
-                var atr=GetAttribute(SpriteData.Patterns[SpriteData.CurrentFrame], x,y);
+                var atr=GetAttribute(TileData.Patterns[TileData.CurrentFrame], x,y);
                 PrimaryColorIndex = atr.Ink;
                 SecondaryColorIndex = atr.Paper;
                 ColorPicker = false;
@@ -391,7 +392,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// <param name="value">Value of the point</param>
         private void SetPoint(double mx, double my, int value)
         {
-            if (SpriteData == null)
+            if (TileData == null)
             {
                 return;
             }
@@ -402,30 +403,30 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             x = x / (_Zoom + 1);
             y = y / (_Zoom + 1);
 
-            if (x < 0 || y < 0 || x >= SpriteData.Width || y >= SpriteData.Height)
+            if (x < 0 || y < 0 || x >= TileData.Width || y >= TileData.Height)
             {
                 return;
             }
 
-            int dir = (SpriteData.Width * y) + x;
-            var sprite = SpriteData.Patterns[SpriteData.CurrentFrame];
+            int dir = (TileData.Width * y) + x;
+            var Tile = TileData.Patterns[TileData.CurrentFrame];
 
-            switch (SpriteData.GraphicMode)
+            switch (TileData.GraphicMode)
             {
                 case GraphicsModes.Monochrome:
-                    sprite.RawData[dir] = value;
+                    Tile.RawData[dir] = value;
                     break;
                 case GraphicsModes.ZXSpectrum:
                     {
                         if (value == PrimaryColorIndex)
                         {
-                            sprite.RawData[dir] = 1;
+                            Tile.RawData[dir] = 1;
                         }
                         else
                         {
-                            sprite.RawData[dir] = 0;
+                            Tile.RawData[dir] = 0;
                         }
-                        SetAttribute(sprite, x, y);
+                        SetAttribute(Tile, x, y);
                     }
                     break;
             }
@@ -446,14 +447,14 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         private void SetAttribute(Pattern pattern, int x, int y)
         {
-            int cW = SpriteData.Width / 8;
+            int cW = TileData.Width / 8;
             int cX = x / 8;
             int cY = y / 8;
             var attr = pattern.Attributes[(cY * cW) + cX];
             attr.Ink = PrimaryColorIndex;
             attr.Paper = SecondaryColorIndex;
             attr.Flash = false;
-            switch (SpriteData.GraphicMode)
+            switch (TileData.GraphicMode)
             {
                 case GraphicsModes.Monochrome:
                     attr.Bright = false;
@@ -477,9 +478,9 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         {
             if(pattern.Attributes == null)
             {
-                pattern.Attributes = new AttributeColor[(SpriteData.Width / 8) * (SpriteData.Height / 8)];
+                pattern.Attributes = new AttributeColor[(TileData.Width / 8) * (TileData.Height / 8)];
             }
-            int cW = SpriteData.Width / 8;
+            int cW = TileData.Width / 8;
             int cX = x / 8;
             int cY = y / 8;
             return pattern.Attributes[(cY * cW) + cX];
@@ -499,19 +500,19 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
 
         /// <summary>
-        /// Clear sprite
+        /// Clear Tile
         /// </summary>
         public void Clear()
         {
-            if (SpriteData == null || SpriteData.Patterns == null ||
-                SpriteData.CurrentFrame >= (SpriteData.Patterns.Count) ||
-                SpriteData.Patterns[SpriteData.CurrentFrame].RawData == null)
+            if (TileData == null || TileData.Patterns == null ||
+                TileData.CurrentFrame >= (TileData.Patterns.Count) ||
+                TileData.Patterns[TileData.CurrentFrame].RawData == null)
             {
                 return;
             }
-            for (int n = 0; n < SpriteData.Patterns[SpriteData.CurrentFrame].RawData.Length; n++)
+            for (int n = 0; n < TileData.Patterns[TileData.CurrentFrame].RawData.Length; n++)
             {
-                SpriteData.Patterns[SpriteData.CurrentFrame].RawData[n] = SecondaryColorIndex;
+                TileData.Patterns[TileData.CurrentFrame].RawData[n] = SecondaryColorIndex;
             }
             Undo_AddPoint();
             Refresh(true);
@@ -534,7 +535,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// </summary>
         public void Copy()
         {
-            var patterns = new Pattern[1] { SpriteData.Patterns[SpriteData.CurrentFrame] };
+            var patterns = new Pattern[1] { TileData.Patterns[TileData.CurrentFrame] };
             TopLevel.GetTopLevel(this)?.Clipboard?.SetTextAsync(patterns.Serializar()).Wait();
         }
 
@@ -544,7 +545,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// </summary>
         public async void Paste()
         {
-            var pattern = SpriteData.Patterns[SpriteData.CurrentFrame];
+            var pattern = TileData.Patterns[TileData.CurrentFrame];
             var cbData = await TopLevel.GetTopLevel(this).Clipboard.GetTextAsync();
             if (string.IsNullOrEmpty(cbData))
             {
@@ -560,19 +561,19 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             {
                 if (cbPatterns[0].RawData == null)
                 {
-                    SpriteData.Patterns[SpriteData.CurrentFrame].RawData = ServiceLayer.PointData2RawData(cbPatterns[0].Data, 8, 8);
+                    TileData.Patterns[TileData.CurrentFrame].RawData = ServiceLayer.PointData2RawData(cbPatterns[0].Data, 8, 8);
                 }
                 else
                 {
-                    SpriteData.Patterns[SpriteData.CurrentFrame].RawData = cbPatterns[0].RawData;
-                    SpriteData.Patterns[SpriteData.CurrentFrame].Attributes = cbPatterns[0].Attributes;
+                    TileData.Patterns[TileData.CurrentFrame].RawData = cbPatterns[0].RawData;
+                    TileData.Patterns[TileData.CurrentFrame].Attributes = cbPatterns[0].Attributes;
                 }
             }
             else
             {
                 // Create an empty pattern
                 var pat2 = pattern.Clonar<Pattern>();
-                pat2.RawData = new int[SpriteData.Width * SpriteData.Height];
+                pat2.RawData = new int[TileData.Width * TileData.Height];
 
                 if (cbPatterns[0].RawData == null)
                 {
@@ -582,8 +583,8 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                     int dir = 0;
                     for (int n = 0; n < cbPatterns.Length; n++)
                     {
-                        //int d1 = (n / SpriteData.Width);
-                        //int d2 = (d1 * SpriteData.Width) - n;
+                        //int d1 = (n / TileData.Width);
+                        //int d2 = (d1 * TileData.Width) - n;
                         for (int py = 0; py < 8; py++)
                         {
                             for (int px = 0; px < 8; px++)
@@ -591,29 +592,29 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                                 var po = cbPatterns[n].Data.FirstOrDefault(d => d.X == px && d.Y == py);
                                 if (po != null)
                                 {
-                                    dir = ((oy + py) * SpriteData.Width) + (ox + px);
+                                    dir = ((oy + py) * TileData.Width) + (ox + px);
 
                                     if (dir < pattern.RawData.Length)
                                     {
-                                        SpriteData.Patterns[SpriteData.CurrentFrame].RawData[dir] = po.ColorIndex;
+                                        TileData.Patterns[TileData.CurrentFrame].RawData[dir] = po.ColorIndex;
                                         //pattern.RawData[dir] = po.ColorIndex;
                                     }
                                 }
                             }
                         }
                         ox += 8;
-                        if (ox >= SpriteData.Width)
+                        if (ox >= TileData.Width)
                         {
                             ox = 0;
                             oy += 8;
                         }
                     }
-                    //SpriteData.Patterns[SpriteData.CurrentFrame].Data = pat2.Data;
+                    //TileData.Patterns[TileData.CurrentFrame].Data = pat2.Data;
                 }
                 else
                 {
                     // Paste from RawData
-                    var dat = SpriteData.Patterns[SpriteData.CurrentFrame].RawData;
+                    var dat = TileData.Patterns[TileData.CurrentFrame].RawData;
                     var cbDat = cbPatterns[0].RawData;
                     for (int n = 0; n < cbDat.Length && n < dat.Length; n++)
                     {
@@ -631,9 +632,9 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// </summary>
         public void HorizontalMirror()
         {
-            int maxWidth = SpriteData.Width;
-            int maxHeight = SpriteData.Height;
-            var pat1 = SpriteData.Patterns[SpriteData.CurrentFrame];
+            int maxWidth = TileData.Width;
+            int maxHeight = TileData.Height;
+            var pat1 = TileData.Patterns[TileData.CurrentFrame];
             var pat2 = pat1.Clonar<Pattern>();
             for (int y = 0; y < maxHeight; y++)
             {
@@ -643,7 +644,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                     SetPointValue(maxWidth - x - 1, y, pd1, ref pat2);
                 }
             }
-            SpriteData.Patterns[SpriteData.CurrentFrame] = pat2;
+            TileData.Patterns[TileData.CurrentFrame] = pat2;
             Undo_AddPoint();
             Refresh(true);
         }
@@ -654,9 +655,9 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// </summary>
         public void VerticalMirror()
         {
-            int maxWidth = SpriteData.Width;
-            int maxHeight = SpriteData.Height;
-            var pat1 = SpriteData.Patterns[SpriteData.CurrentFrame];
+            int maxWidth = TileData.Width;
+            int maxHeight = TileData.Height;
+            var pat1 = TileData.Patterns[TileData.CurrentFrame];
             var pat2 = pat1.Clonar<Pattern>();
             for (int y = 0; y < maxHeight; y++)
             {
@@ -666,7 +667,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                     SetPointValue(x, maxHeight - y - 1, pd1, ref pat2);
                 }
             }
-            SpriteData.Patterns[SpriteData.CurrentFrame] = pat2;
+            TileData.Patterns[TileData.CurrentFrame] = pat2;
             Undo_AddPoint();
             Refresh(true);
         }
@@ -677,17 +678,17 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// </summary>
         public void RotateLeft()
         {
-            if (SpriteData.Width != SpriteData.Height)
+            if (TileData.Width != TileData.Height)
             {
                 Window.GetTopLevel(this)?.ShowError("Can't do this!", "Only square graphics can be rotated (with the same width as height).");
                 return;
             }
 
-            var pattern = SpriteData.Patterns[SpriteData.CurrentFrame];
+            var pattern = TileData.Patterns[TileData.CurrentFrame];
             var pattern2 = pattern.Clonar<Pattern>();
 
-            int maxWidth = SpriteData.Width;
-            int maxHeight = SpriteData.Height;
+            int maxWidth = TileData.Width;
+            int maxHeight = TileData.Height;
             for (int y = 0; y < maxHeight; y++)
             {
                 for (int x = 0; x < maxWidth; x++)
@@ -696,7 +697,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                     SetPointValue(y, maxWidth - x - 1, pd1, ref pattern2);
                 }
             }
-            SpriteData.Patterns[SpriteData.CurrentFrame] = pattern2;
+            TileData.Patterns[TileData.CurrentFrame] = pattern2;
             Undo_AddPoint();
             Refresh(true);
         }
@@ -707,17 +708,17 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// </summary>
         public void RotateRight()
         {
-            if (SpriteData.Width != SpriteData.Height)
+            if (TileData.Width != TileData.Height)
             {
                 Window.GetTopLevel(this)?.ShowError("Can't do this!", "Only square graphics can be rotated (with the same width as height).");
                 return;
             }
 
-            var pattern = SpriteData.Patterns[SpriteData.CurrentFrame];
+            var pattern = TileData.Patterns[TileData.CurrentFrame];
             var pattern2 = pattern.Clonar<Pattern>();
 
-            int maxWidth = SpriteData.Width;
-            int maxHeight = SpriteData.Height;
+            int maxWidth = TileData.Width;
+            int maxHeight = TileData.Height;
             for (int y = 0; y < maxHeight; y++)
             {
                 for (int x = 0; x < maxWidth; x++)
@@ -726,7 +727,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                     SetPointValue(maxHeight - y - 1, x, pd1, ref pattern2);
                 }
             }
-            SpriteData.Patterns[SpriteData.CurrentFrame] = pattern2;
+            TileData.Patterns[TileData.CurrentFrame] = pattern2;
             Undo_AddPoint();
             Refresh(true);
         }
@@ -737,11 +738,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// </summary>
         public void ShiftUp()
         {
-            var pattern = SpriteData.Patterns[SpriteData.CurrentFrame];
+            var pattern = TileData.Patterns[TileData.CurrentFrame];
             var pattern2 = pattern.Clonar<Pattern>();
 
-            int maxWidth = SpriteData.Width;
-            int maxHeight = SpriteData.Height;
+            int maxWidth = TileData.Width;
+            int maxHeight = TileData.Height;
             for (int y = 0; y < maxHeight; y++)
             {
                 for (int x = 0; x < maxWidth; x++)
@@ -755,7 +756,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                     SetPointValue(x, y2, pd1, ref pattern2);
                 }
             }
-            SpriteData.Patterns[SpriteData.CurrentFrame] = pattern2;
+            TileData.Patterns[TileData.CurrentFrame] = pattern2;
             Undo_AddPoint();
             Refresh(true);
         }
@@ -766,11 +767,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// </summary>
         public void ShiftRight()
         {
-            var pattern = SpriteData.Patterns[SpriteData.CurrentFrame];
+            var pattern = TileData.Patterns[TileData.CurrentFrame];
             var pattern2 = pattern.Clonar<Pattern>();
 
-            int maxWidth = SpriteData.Width;
-            int maxHeight = SpriteData.Height;
+            int maxWidth = TileData.Width;
+            int maxHeight = TileData.Height;
             for (int y = 0; y < maxHeight; y++)
             {
                 for (int x = 0; x < maxWidth; x++)
@@ -784,7 +785,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                     SetPointValue(x2, y, pd1, ref pattern2);
                 }
             }
-            SpriteData.Patterns[SpriteData.CurrentFrame] = pattern2;
+            TileData.Patterns[TileData.CurrentFrame] = pattern2;
             Undo_AddPoint();
             Refresh(true);
         }
@@ -795,11 +796,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// </summary>
         public void ShiftDown()
         {
-            var pattern = SpriteData.Patterns[SpriteData.CurrentFrame];
+            var pattern = TileData.Patterns[TileData.CurrentFrame];
             var pattern2 = pattern.Clonar<Pattern>();
 
-            int maxWidth = SpriteData.Width;
-            int maxHeight = SpriteData.Height;
+            int maxWidth = TileData.Width;
+            int maxHeight = TileData.Height;
             for (int y = 0; y < maxHeight; y++)
             {
                 for (int x = 0; x < maxWidth; x++)
@@ -813,7 +814,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                     SetPointValue(x, y2, pd1, ref pattern2);
                 }
             }
-            SpriteData.Patterns[SpriteData.CurrentFrame] = pattern2;
+            TileData.Patterns[TileData.CurrentFrame] = pattern2;
             Undo_AddPoint();
             Refresh(true);
         }
@@ -824,11 +825,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// </summary>
         public void ShiftLeft()
         {
-            var pattern = SpriteData.Patterns[SpriteData.CurrentFrame];
+            var pattern = TileData.Patterns[TileData.CurrentFrame];
             var pattern2 = pattern.Clonar<Pattern>();
 
-            int maxWidth = SpriteData.Width;
-            int maxHeight = SpriteData.Height;
+            int maxWidth = TileData.Width;
+            int maxHeight = TileData.Height;
             for (int y = 0; y < maxHeight; y++)
             {
                 for (int x = 0; x < maxWidth; x++)
@@ -842,7 +843,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                     SetPointValue(x2, y, pd1, ref pattern2);
                 }
             }
-            SpriteData.Patterns[SpriteData.CurrentFrame] = pattern2;
+            TileData.Patterns[TileData.CurrentFrame] = pattern2;
             Undo_AddPoint();
             Refresh(true);
         }
@@ -853,11 +854,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// </summary>
         public void MoveUp()
         {
-            var pattern = SpriteData.Patterns[SpriteData.CurrentFrame];
+            var pattern = TileData.Patterns[TileData.CurrentFrame];
             var pattern2 = pattern.Clonar<Pattern>();
 
-            int maxWidth = SpriteData.Width;
-            int maxHeight = SpriteData.Height;
+            int maxWidth = TileData.Width;
+            int maxHeight = TileData.Height;
             for (int y = 0; y < maxHeight; y++)
             {
                 for (int x = 0; x < maxWidth; x++)
@@ -872,7 +873,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                     SetPointValue(x, y2, pd1, ref pattern2);
                 }
             }
-            SpriteData.Patterns[SpriteData.CurrentFrame] = pattern2;
+            TileData.Patterns[TileData.CurrentFrame] = pattern2;
             Undo_AddPoint();
             Refresh(true);
         }
@@ -883,11 +884,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// </summary>
         public void MoveRight()
         {
-            var pattern = SpriteData.Patterns[SpriteData.CurrentFrame];
+            var pattern = TileData.Patterns[TileData.CurrentFrame];
             var pattern2 = pattern.Clonar<Pattern>();
 
-            int maxWidth = SpriteData.Width;
-            int maxHeight = SpriteData.Height;
+            int maxWidth = TileData.Width;
+            int maxHeight = TileData.Height;
             for (int y = 0; y < maxHeight; y++)
             {
                 for (int x = 0; x < maxWidth; x++)
@@ -902,7 +903,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                     SetPointValue(x2, y, pd1, ref pattern2);
                 }
             }
-            SpriteData.Patterns[SpriteData.CurrentFrame] = pattern2;
+            TileData.Patterns[TileData.CurrentFrame] = pattern2;
             Undo_AddPoint();
             Refresh(true);
         }
@@ -913,11 +914,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// </summary>
         public void MoveDown()
         {
-            var pattern = SpriteData.Patterns[SpriteData.CurrentFrame];
+            var pattern = TileData.Patterns[TileData.CurrentFrame];
             var pattern2 = pattern.Clonar<Pattern>();
 
-            int maxWidth = SpriteData.Width;
-            int maxHeight = SpriteData.Height;
+            int maxWidth = TileData.Width;
+            int maxHeight = TileData.Height;
             for (int y = 0; y < maxHeight; y++)
             {
                 for (int x = 0; x < maxWidth; x++)
@@ -932,7 +933,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                     SetPointValue(x, y2, pd1, ref pattern2);
                 }
             }
-            SpriteData.Patterns[SpriteData.CurrentFrame] = pattern2;
+            TileData.Patterns[TileData.CurrentFrame] = pattern2;
             Undo_AddPoint();
             Refresh(true);
         }
@@ -943,11 +944,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// </summary>
         public void MoveLeft()
         {
-            var pattern = SpriteData.Patterns[SpriteData.CurrentFrame];
+            var pattern = TileData.Patterns[TileData.CurrentFrame];
             var pattern2 = pattern.Clonar<Pattern>();
 
-            int maxWidth = SpriteData.Width;
-            int maxHeight = SpriteData.Height;
+            int maxWidth = TileData.Width;
+            int maxHeight = TileData.Height;
             for (int y = 0; y < maxHeight; y++)
             {
                 for (int x = 0; x < maxWidth; x++)
@@ -962,7 +963,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                     SetPointValue(x2, y, pd1, ref pattern2);
                 }
             }
-            SpriteData.Patterns[SpriteData.CurrentFrame] = pattern2;
+            TileData.Patterns[TileData.CurrentFrame] = pattern2;
             Undo_AddPoint();
             Refresh(true);
         }
@@ -973,11 +974,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// </summary>
         public void Invert()
         {
-            var pattern = SpriteData.Patterns[SpriteData.CurrentFrame];
+            var pattern = TileData.Patterns[TileData.CurrentFrame];
             var pattern2 = pattern.Clonar<Pattern>();
 
-            int maxWidth = SpriteData.Width;
-            int maxHeight = SpriteData.Height;
+            int maxWidth = TileData.Width;
+            int maxHeight = TileData.Height;
             for (int y = 0; y < maxHeight; y++)
             {
                 for (int x = 0; x < maxWidth; x++)
@@ -998,7 +999,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                     SetPointValue(x, y, pd1, ref pattern2);
                 }
             }
-            SpriteData.Patterns[SpriteData.CurrentFrame] = pattern2;
+            TileData.Patterns[TileData.CurrentFrame] = pattern2;
             Undo_AddPoint();
             Refresh(true);
         }
@@ -1009,23 +1010,23 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// </summary>
         public void Mask()
         {
-            var pattern = SpriteData.Patterns[SpriteData.CurrentFrame];
-            int maxX = (SpriteData.Width) - 1;
-            int maxY = (SpriteData.Height) - 1;
+            var pattern = TileData.Patterns[TileData.CurrentFrame];
+            int maxX = (TileData.Width) - 1;
+            int maxY = (TileData.Height) - 1;
 
             var pattern2 = new Pattern()
             {
                 Id = pattern.Id,
                 Name = pattern.Name,
                 Number = pattern.Number,
-                RawData = new int[SpriteData.Width * SpriteData.Height]
+                RawData = new int[TileData.Width * TileData.Height]
             };
 
             _Mask(0, 0, ref pattern, ref pattern2);
             _Mask(maxX, 0, ref pattern, ref pattern2);
             _Mask(0, maxY, ref pattern, ref pattern2);
             _Mask(maxX, maxY, ref pattern, ref pattern2);
-            SpriteData.Patterns[SpriteData.CurrentFrame] = pattern2;
+            TileData.Patterns[TileData.CurrentFrame] = pattern2;
             Undo_AddPoint();
             Refresh(true);
         }
@@ -1057,7 +1058,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             {
                 _Mask(x - 1, y, ref pattern1, ref pattern2);
             }
-            if (x < (SpriteData.Width) - 1)
+            if (x < (TileData.Width) - 1)
             {
                 _Mask(x + 1, y, ref pattern1, ref pattern2);
             }
@@ -1065,7 +1066,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             {
                 _Mask(x, y - 1, ref pattern1, ref pattern2);
             }
-            if (y < (SpriteData.Height) - 1)
+            if (y < (TileData.Height) - 1)
             {
                 _Mask(x, y + 1, ref pattern1, ref pattern2);
             }
@@ -1081,11 +1082,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// <returns>Point data or null if no data</returns>
         private int GetPointValue(int x, int y, Pattern pattern)
         {
-            if (x < 0 || y < 0 || x > (SpriteData.Width - 1) || y > (SpriteData.Height - 1))
+            if (x < 0 || y < 0 || x > (TileData.Width - 1) || y > (TileData.Height - 1))
             {
                 return SecondaryColorIndex;
             }
-            return pattern.RawData[(SpriteData.Width * y) + x];
+            return pattern.RawData[(TileData.Width * y) + x];
         }
 
 
@@ -1098,11 +1099,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// <param name="pattern">Pattern to use</param>
         private void SetPointValue(int x, int y, int colorIndex, ref Pattern pattern)
         {
-            if (x < 0 || y < 0 || x > (SpriteData.Width - 1) || y > (SpriteData.Height - 1))
+            if (x < 0 || y < 0 || x > (TileData.Width - 1) || y > (TileData.Height - 1))
             {
                 return;
             }
-            pattern.RawData[(SpriteData.Width * y) + x] = colorIndex;
+            pattern.RawData[(TileData.Width * y) + x] = colorIndex;
         }
 
         #endregion
@@ -1112,7 +1113,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         private void GrdEditor_InvertPixelsCell(double mx, double my)
         {
-            if (SpriteData == null)
+            if (TileData == null)
             {
                 return;
             }
@@ -1126,7 +1127,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             x = x / 8;
             y = y / 8;
 
-            if (x < 0 || y < 0 || x >= SpriteData.Width || y >= SpriteData.Height)
+            if (x < 0 || y < 0 || x >= TileData.Width || y >= TileData.Height)
             {
                 return;
             }
@@ -1135,17 +1136,17 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             {
                 for (int px = 0; px < 8; px++)
                 {
-                    int dir = ((y * 8 + py) * SpriteData.Width) + (x * 8 + px);
-                    if (dir < SpriteData.Patterns[SpriteData.CurrentFrame].RawData.Length)
+                    int dir = ((y * 8 + py) * TileData.Width) + (x * 8 + px);
+                    if (dir < TileData.Patterns[TileData.CurrentFrame].RawData.Length)
                     {
-                        var value = SpriteData.Patterns[SpriteData.CurrentFrame].RawData[dir];
+                        var value = TileData.Patterns[TileData.CurrentFrame].RawData[dir];
                         if (value == PrimaryColorIndex)
                         {
-                            SpriteData.Patterns[SpriteData.CurrentFrame].RawData[dir] = SecondaryColorIndex;
+                            TileData.Patterns[TileData.CurrentFrame].RawData[dir] = SecondaryColorIndex;
                         }
                         else if (value == SecondaryColorIndex)
                         {
-                            SpriteData.Patterns[SpriteData.CurrentFrame].RawData[dir] = PrimaryColorIndex;
+                            TileData.Patterns[TileData.CurrentFrame].RawData[dir] = PrimaryColorIndex;
                         }
                     }
                 }
@@ -1155,7 +1156,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         private void GrdEditor_InvertColorsCell(double mx, double my)
         {
-            if (SpriteData == null)
+            if (TileData == null)
             {
                 return;
             }
@@ -1166,14 +1167,14 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
             var inkBak = PrimaryColorIndex;
             var paperBak = SecondaryColorIndex;
-            var attr=GetAttribute(SpriteData.Patterns[SpriteData.CurrentFrame], x, y);
+            var attr=GetAttribute(TileData.Patterns[TileData.CurrentFrame], x, y);
             if (attr == null)
             {
                 return;
             }
             PrimaryColorIndex = attr.Paper;
             SecondaryColorIndex = attr.Ink;
-            SetAttribute(SpriteData.Patterns[SpriteData.CurrentFrame], x, y);
+            SetAttribute(TileData.Patterns[TileData.CurrentFrame], x, y);
             PrimaryColorIndex = inkBak;
             SecondaryColorIndex=paperBak;
             Refresh();

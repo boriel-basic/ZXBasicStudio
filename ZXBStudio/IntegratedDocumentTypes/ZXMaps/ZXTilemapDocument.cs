@@ -16,17 +16,17 @@ using ZXBasicStudio.DocumentModel.Interfaces;
 
 namespace ZXBasicStudio.IntegratedDocumentTypes.ZXGraphics
 {
-    public class SpriteDocument : IZXDocumentType
+    public class ZXTilemapDocument : IZXDocumentType
     {
-        static readonly string[] _docExtensions = { ".spr" };
-        static readonly string _docName = "Sprites file";
-        static readonly string _docDesc = "Sprite files allow you to create and modify graphics of different sizes and formats. Once created, they can be built in multiple formats.";
+        static readonly string[] _docExtensions = { ".til", ".zxtil" };
+        static readonly string _docName = "Tilemap file";
+        static readonly string _docDesc = "Tilemap files allow you to create and modify a set of tiles for use in maps. Once created, it can be used in the zxmap built-in editor.";
         static readonly string _docCat = "Graphics";
-        static readonly string _docAspect = "/Svg/Documents/file-sprite.svg";
-        static readonly Guid _docId = Guid.Parse("E5D4D440-B156-42F1-8FBB-E78D655E754E");
+        static readonly string _docAspect = "/Svg/Documents/file-tile.svg";
+        static readonly Guid _docId = Guid.Parse("baed2950-b902-44dd-aac6-4912b533684f");
         public static Guid Id => _docId;
 
-        static readonly SpriteDocumentFactory _factory = new SpriteDocumentFactory();
+        static readonly ZXTilemapDocumentFactory _factory = new ZXTilemapDocumentFactory();
         Bitmap? _icon;
 
         public string[] DocumentExtensions => _docExtensions;
@@ -66,7 +66,7 @@ namespace ZXBasicStudio.IntegratedDocumentTypes.ZXGraphics
         };
 
 
-        public SpriteDocument()
+        public ZXTilemapDocument()
         {
             _exportManager.Initialize(DocumentEditors.ZXGraphics.neg.FileTypes.Sprite);
         }
@@ -78,7 +78,7 @@ namespace ZXBasicStudio.IntegratedDocumentTypes.ZXGraphics
             {
                 if (_icon == null)
                 {
-                    _icon = new Bitmap(AssetLoader.Open(new Uri("avares://ZXBasicStudio/Assets/zxGraphics_spr.png")));
+                    _icon = new Bitmap(AssetLoader.Open(new Uri("avares://ZXBasicStudio/Assets/zxmaps_til.png")));
                 }
 
                 return _icon;

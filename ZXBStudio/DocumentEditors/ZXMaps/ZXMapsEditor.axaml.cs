@@ -12,6 +12,7 @@ using ZXBasicStudio.Common;
 using ZXBasicStudio.DocumentEditors.NextDows.neg;
 using ZXBasicStudio.DocumentEditors.ZXGraphics;
 using ZXBasicStudio.DocumentEditors.ZXGraphics.neg;
+using ZXBasicStudio.DocumentEditors.ZXMaps.Neg;
 using ZXBasicStudio.DocumentEditors.ZXTextEditor.Classes.Folding;
 using ZXBasicStudio.DocumentModel.Classes;
 
@@ -27,7 +28,6 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         public override event EventHandler? RequestSaveDocument;
 
         #endregion
-
 
 
         #region ZXDocumentBase properties
@@ -122,13 +122,14 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         {
             try
             {
+                /*
                 var masterList = SpritePatternsList.Select(d => d.SpriteData).ToArray();
-                var sprList = new List<Sprite>();
+                var sprList = new List<Tile>();
                 foreach (var spr in masterList)
                 {
                     sprList.Add(spr); //.Clonar<Sprite>());
                 }
-                foreach (Sprite spr in sprList)
+                foreach (Tile spr in sprList)
                 {
                     if (spr == null)
                     {
@@ -150,6 +151,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
                 _Modified = false;
                 DocumentSaved?.Invoke(this, EventArgs.Empty);
+                */
                 return true;
             }
             catch (Exception ex)
@@ -220,10 +222,56 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         //private PaletteColor[] Palette=null;
 
 
+        private ZXMapsMap Map = null;
+
+
         public ZXMapsEditor(string fileName)
         {
-            FileName= fileName;
+            FileName = fileName;
+            if (File.Exists(FileName))
+            {
+                try
+                {
+                    var fileData = File.ReadAllText(FileName);
+                    if (!string.IsNullOrEmpty(fileData))
+                    {
+                        Map = fileData.Deserializar<ZXMapsMap>();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    //MessageBox.Show($"Error loading file {FileName}: {ex.Message}");
+                }
+            }
+
+            if (Map == null)
+            {
+                Map = new ZXMapsMap();
+                Map.Height = 12;
+                Map.Width=16;
+                Map.MappingType = ZXMapsMappingTypes.Sequential;
+                Map.MapType = ZXMapsTypes.Rooms;
+                Map.TileHeight = 16;
+                Map.TileWidth = 16;
+
+                Map.Layers = new List<ZXMapsLayer>();
+                Map.Layers.Add(new ZXMapsLayer()
+                {
+                    Id = 0,
+                    LayersType = ZXMapsLayersType.Tiles,
+                    Name = "Default layer",
+                    Order = 0,
+                    Selected = true,
+                    Visible = true
+                });
+
+                Map.PropertyDefinitons = new List<ZXMapsPropertyDefiniton>();
+            }
+
             InitializeComponent();
+
+            ctrlLayers.Initialize(Map.Layers);
+            ctrlProperties.Initialize(Map);
         }
 
 
@@ -246,7 +294,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         /// Refresh the editor UI
         /// </summary>
         public void Refresh()
-        {            
+        {
             //cnvEditor.Children.Clear();
             Viewport = Controls.FirstOrDefault(d => d.Id == 0);
             if (Viewport == null)
@@ -267,11 +315,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                 };
                 Viewport.Properties = new List<ControlProperty>();
                 Controls.Add(Viewport);
-            }            
+            }
 
-            foreach (var control in Controls.OrderBy(d=>d.Id))
+            foreach (var control in Controls.OrderBy(d => d.Id))
             {
-                switch(control.ControlType)
+                switch (control.ControlType)
                 {
                     case ControlsTypes.Panel:
                         Draw_Panel(control);
@@ -281,7 +329,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
             //cnvEditor.Width = WindowWidth * Zoom;
             //cnvEditor.Height = WindowHeight * Zoom;
-       }
+        }
 
 
         public void Draw_Panel(ControlItem control)
