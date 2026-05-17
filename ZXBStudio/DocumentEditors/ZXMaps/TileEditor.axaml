@@ -11,7 +11,7 @@
 			 Background="#ff202020"
 			 x:Class="ZXBasicStudio.DocumentEditors.ZXMaps.TileEditor">
 	<Grid Name="grdMain" RowDefinitions="*,Auto">
-		<Grid Name="grdEditor" Grid.RowSpan="2" ColumnDefinitions="180,4,*,4,200" Margin="0,8,0,0">
+		<Grid Name="grdEditor" Grid.RowSpan="2" ColumnDefinitions="180,4,*,4,300" Margin="0,8,0,0">
 
 			<zxd:ZXDockingContainer Name="dockLeft" DockingGroup="ZXGraphics" RowDefinitions="*">
 				<zxd:ZXDockingControl Name="dockPatterns" Title="Tile list" DockingGroup="ZXGraphics">
@@ -192,18 +192,18 @@
 
 			<GridSplitter ResizeDirection="Columns" Grid.Column="3" Classes="vertical"></GridSplitter>
 
-			<zxd:ZXDockingContainer Name="dockRight" DockingGroup="ZXGraphics" Grid.Column="4" RowDefinitions="*,4,4*" Background="Red">
-				<zxd:ZXDockingControl Grid.Row="0" Name="dockPreview" Title="Preview" DockingGroup="ZXGraphics" DesiredFloatingSize="200,400">
+			<zxd:ZXDockingContainer Name="dockRight" DockingGroup="ZXGraphics" Grid.Column="4" RowDefinitions="Auto,4,*" Background="Red">
+				<zxd:ZXDockingControl Grid.Row="0" Name="dockProperties" Title="Properties" DockingGroup="ZXGraphics" DesiredFloatingSize="200,400">
 					<zxd:ZXDockingControl.DockedControl>
-						<local:TilePreviewControl Name="ctrlPreview"></local:TilePreviewControl>
+						<local:TilePropertiesControl Name="ctrlProperties"/>
 					</zxd:ZXDockingControl.DockedControl>
 				</zxd:ZXDockingControl>
 
 				<GridSplitter ResizeDirection="Rows" Grid.Row="1" Classes="horizontal"></GridSplitter>
 
-				<zxd:ZXDockingControl Grid.Row="2" Name="dockProperties" Title="Properties" DockingGroup="ZXGraphics" DesiredFloatingSize="200,400">
+				<zxd:ZXDockingControl Grid.Row="2" Name="dockPreview" Title="Preview" DockingGroup="ZXGraphics" DesiredFloatingSize="200,400">
 					<zxd:ZXDockingControl.DockedControl>
-						<local:TilePropertiesControl Name="ctrlProperties"/>
+						<local:TilePreviewControl Name="ctrlPreview"></local:TilePreviewControl>
 					</zxd:ZXDockingControl.DockedControl>
 				</zxd:ZXDockingControl>
 			</zxd:ZXDockingContainer>

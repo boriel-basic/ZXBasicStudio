@@ -100,7 +100,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         private int tileWidth = 16;
         private int tileHeight = 16;
 
-        private bool _InfoVisible = false;
+        private bool _InfoVisible = true;
 
         #endregion
 
