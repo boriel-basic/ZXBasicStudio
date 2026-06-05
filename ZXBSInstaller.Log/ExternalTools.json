@@ -36,7 +36,7 @@
     "SiteUrl": "https://boriel-basic.net",
     "LicenseType": "GNU Affero General Public License v3.0",
     "LicenceUrl": "https://raw.githubusercontent.com/boriel-basic/zxbasic/refs/heads/main/LICENSE.txt",
-    "VersionsUrl": "https://boriel.com/files/zxb/",
+    "VersionsUrl": "https://files.boriel-basic.net/zxb/",
     "LocalPath": "",
     "Unzip": true,
     "CreateVerFile": false,
