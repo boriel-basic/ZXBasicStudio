@@ -64,7 +64,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         {
             this.TileData = TileData;
 
-            this.cmbSpeed.SelectionChanged += CmbSpeed_SelectionChanged;
+            //this.cmbSpeed.SelectionChanged += CmbSpeed_SelectionChanged;
             tmr.Interval = TimeSpan.FromMilliseconds(speeds[speed]);
 
             return true;
@@ -80,16 +80,16 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             tmr.Stop();
         }
 
-        private void CmbSpeed_SelectionChanged(object? sender, SelectionChangedEventArgs e)
-        {
-            var s = cmbSpeed.SelectedIndex.ToInteger();
-            if (s < 0 || s >= speeds.Length)
-            {
-                s = 2;
-            }
-            speed = s;
-            tmr.Interval = TimeSpan.FromMilliseconds(speeds[speed]);
-        }
+        //private void CmbSpeed_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        //{
+            //var s = cmbSpeed.SelectedIndex.ToInteger();
+            //if (s < 0 || s >= speeds.Length)
+            //{
+            //    s = 2;
+            //}
+            //speed = s;
+            //tmr.Interval = TimeSpan.FromMilliseconds(speeds[speed]);
+        //}
 
         public void Refresh(object? sender = null, EventArgs? e = null)
         {
