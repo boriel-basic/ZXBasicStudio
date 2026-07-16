@@ -1,11 +1,148 @@
 <UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:local="clr-namespace:ZXBasicStudio.DocumentEditors.ZXGraphics"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="ZXBasicStudio.DocumentEditors.ZXMaps.TilePatternEditor">
-  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-    <local:ZXGridImageView Name="grdEditor" />
-  </ScrollViewer>
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:svg="using:Avalonia.Svg.Skia"
+			 xmlns:zxgraphics="using:ZXBasicStudio.DocumentEditors.ZXGraphics"
+			 xmlns:local="clr-namespace:ZXBasicStudio.DocumentEditors.ZXGraphics"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 x:Class="ZXBasicStudio.DocumentEditors.ZXMaps.TilePatternEditor">
+	<Grid RowDefinitions="Auto,*,Auto">
+		<WrapPanel Orientation="Horizontal" Margin="10" Background="#ff202020" Height="NaN">
+
+			<Button Classes="toolbar" Name="btnUndo" ToolTip.Tip="Undo last action">
+				<svg:Svg Path="/Svg/undo.svg"></svg:Svg>
+			</Button>
+			<Button Classes="toolbar" Name="btnRedo" ToolTip.Tip="Redo last action" >
+				<svg:Svg Path="/Svg/redo.svg"></svg:Svg>
+			</Button>
+
+			<Button Classes="toolbar" Name="btnClear" ToolTip.Tip="Clear active patterns" Margin="4,0,0,0">
+				<svg:Svg Path="/Svg/Cancel.svg"></svg:Svg>
+			</Button>
+			<Line StartPoint="0,0" EndPoint="0,32" Stroke="White" Margin="5,0,5,0"></Line>
+
+			<Button Classes="toolbar" Name="btnCut" ToolTip.Tip="Cut active patterns to clipboard">
+				<svg:Svg Path="/Svg/Cut.svg"></svg:Svg>
+			</Button>
+
+			<Button Classes="toolbar" Name="btnCopy" ToolTip.Tip="Copy active patterns to clipboard">
+				<svg:Svg Path="/Svg/Copy.svg"></svg:Svg>
+			</Button>
+			<Button Classes="toolbar" Name="btnPaste" ToolTip.Tip="Paste from clipboard to active patterns">
+				<svg:Svg Path="/Svg/Paste.svg"></svg:Svg>
+			</Button>
+			<Line StartPoint="0,0" EndPoint="0,32" Stroke="White" Margin="5,0,5,0"></Line>
+
+			<Button Classes="toolbar" Name="btnHMirror" ToolTip.Tip="Horizontal mirror">
+				<svg:Svg Path="/Svg/HMirror.svg"></svg:Svg>
+			</Button>
+			<Button Classes="toolbar_r90" Name="btnVMirror" ToolTip.Tip="Vertical mirror">
+				<svg:Svg Path="/Svg/VMirror.svg"></svg:Svg>
+			</Button>
+			<Line StartPoint="0,0" EndPoint="0,32" Stroke="White" Margin="5,0,5,0"></Line>
+
+			<Button Classes="toolbar" Name="btnRotateLeft" ToolTip.Tip="Rotate pattern to left">
+				<svg:Svg Path="/Svg/RotateLeft.svg"></svg:Svg>
+			</Button>
+			<Button Classes="toolbar" Name="btnRotateRight" ToolTip.Tip="Rotate pattern to right">
+				<svg:Svg Path="/Svg/RotateRight.svg"></svg:Svg>
+			</Button>
+			<Line StartPoint="0,0" EndPoint="0,32" Stroke="White" Margin="5,0,5,0"></Line>
+
+			<Button Classes="toolbar_hMirror" Name="btnShiftLeft" ToolTip.Tip="Shift pattern to left (pixels that exit from the left reappear from the right)">
+				<svg:Svg Path="/Svg/ShiftRight.svg"></svg:Svg>
+			</Button>
+			<Button Classes="toolbar" Name="btnShiftRight" ToolTip.Tip="Shift pattern to right (pixels that exit from the right reappear from the left)">
+				<svg:Svg Path="/Svg/ShiftRight.svg"></svg:Svg>
+			</Button>
+			<Button Classes="toolbar_r270" Name="btnShiftUp" ToolTip.Tip="Shift pattern up (pixels that exit from the top reappear from the bottom)">
+				<svg:Svg Path="/Svg/ShiftRight.svg"></svg:Svg>
+			</Button>
+			<Button Classes="toolbar_r90" Name="btnShiftDown" ToolTip.Tip="Shift pattern down (pixels that exit from the bottom reappear from the top)">
+				<svg:Svg Path="/Svg/ShiftRight.svg"></svg:Svg>
+			</Button>
+			<Line StartPoint="0,0" EndPoint="0,32" Stroke="White" Margin="5,0,5,0"></Line>
+
+			<Button Classes="toolbar_hMirror" Name="btnMoveLeft" ToolTip.Tip="Move pattern to left">
+				<svg:Svg Path="/Svg/MoveRight.svg"></svg:Svg>
+			</Button>
+			<Button Classes="toolbar" Name="btnMoveRight" ToolTip.Tip="Move pattern to right">
+				<svg:Svg Path="/Svg/MoveRight.svg"></svg:Svg>
+			</Button>
+			<Button Classes="toolbar_r270" Name="btnMoveUp" ToolTip.Tip="Move pattern up ">
+				<svg:Svg Path="/Svg/MoveRight.svg"></svg:Svg>
+			</Button>
+			<Button Classes="toolbar_r90" Name="btnMoveDown" ToolTip.Tip="Move pattern down">
+				<svg:Svg Path="/Svg/MoveRight.svg"></svg:Svg>
+			</Button>
+			<Line StartPoint="0,0" EndPoint="0,32" Stroke="White" Margin="5,0,5,0"></Line>
+
+			<Button Classes="toolbar" Name="btnInvert" ToolTip.Tip="Invert pattern">
+				<svg:Svg Path="/Svg/Invert.svg"></svg:Svg>
+			</Button>
+			<Button Classes="toolbar" Name="btnMask" ToolTip.Tip="Mask pattern">
+				<svg:Svg Path="/Svg/Mask.svg"></svg:Svg>
+			</Button>
+			<Line StartPoint="0,0" EndPoint="0,32" Stroke="White" Margin="5,0,5,0"></Line>
+
+			<ToggleButton Classes="toolbar" Name="btnViewAttributes" ToolTip.Tip="Hide or view attributes" IsChecked="True">
+				<svg:Svg Path="/Svg/hide.svg"></svg:Svg>
+			</ToggleButton>
+			<ToggleButton Classes="toolbar" Name="btnColorPicker" ToolTip.Tip="Select cell"  IsChecked="True">
+				<svg:Svg Path="/Svg/picker.svg"></svg:Svg>
+			</ToggleButton>
+			<ToggleButton Classes="toolbar" Name="btnInvertPixelsCell" ToolTip.Tip="Invert pixels on selected cell" IsChecked="True">
+				<svg:Svg Path="/Svg/invert-mode-svgrepo-com.svg"></svg:Svg>
+			</ToggleButton>
+			<ToggleButton Classes="toolbar" Name="btnInvertColorsCell" ToolTip.Tip="Invert attributes on selected cell" IsChecked="True">
+				<svg:Svg Path="/Svg/invert-color-svgrepo-com.svg"></svg:Svg>
+			</ToggleButton>
+			<Line StartPoint="0,0" EndPoint="0,32" Stroke="White" Margin="5,0,5,0"></Line>
+
+
+			<Button Classes="toolbar" Name="btnImport" ToolTip.Tip="Import from image or data">
+				<svg:Svg Path="/Svg/ImageImport.svg"></svg:Svg>
+			</Button>
+
+			<Button Classes="toolbar" Name="btnExport" ToolTip.Tip="Export pattern">
+				<svg:Svg Path="/Svg/buildexport.svg"></svg:Svg>
+			</Button>
+		</WrapPanel>
+
+		<ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+			<local:ZXGridImageView Name="grdEditor" />
+		</ScrollViewer>
+
+		<WrapPanel Orientation="Horizontal" Background="#ff202020" Grid.Row="2" Margin="10,5,10,5" Height="NaN">
+			<TextBlock Name="txtZoom" Classes="dialog" Width="54">Zoom 24x</TextBlock>
+			<Slider Name="sldZoom" Width="100" Minimum="1" Maximum="9" Value="6" VerticalAlignment="Center"/>
+
+			<TextBlock Name="lblFrame" Classes="dialog" Width="55" Margin="16,8,0,0" IsVisible="False">Frame</TextBlock>
+			<Border Classes="numericborder" Margin="-10,0,0,0" IsVisible="False">
+				<NumericUpDown Classes="dialog" Name="txtFrame" Minimum="0" Increment="1" Maximum="255" Value="0" VerticalAlignment="Center"/>
+			</Border>
+
+			<Grid Name="btnPaper" Margin="8,0,0,0" ColumnDefinitions="*,16,Auto">
+				<TextBlock Margin="10,5,5,5">Paper</TextBlock>
+				<Border  Grid.Column="1" BorderBrush="Red" BorderThickness="1" Width="20" Height="20">
+					<Grid Name="grdPaper">
+						<TextBlock Name="txtPaper" Grid.Column="2" HorizontalAlignment="Center">0</TextBlock>
+					</Grid>
+				</Border>
+			</Grid>
+
+			<Grid Name="btnInk" Margin="8,0,0,0" ColumnDefinitions="*,16,Auto">
+				<TextBlock Margin="10,5,5,5">Ink</TextBlock>
+				<Border  Grid.Column="1" BorderBrush="Red" BorderThickness="1" Width="20" Height="20">
+					<Grid Name="grdInk">
+						<TextBlock Name="txtInk" Grid.Column="2" HorizontalAlignment="Center">1</TextBlock>
+					</Grid>
+				</Border>
+			</Grid>
+		</WrapPanel>
+
+		<zxgraphics:ColorPickerControl Name="ctrlColorPicker" Grid.Row="1" IsVisible="false"/>
+
+	</Grid>
 </UserControl>

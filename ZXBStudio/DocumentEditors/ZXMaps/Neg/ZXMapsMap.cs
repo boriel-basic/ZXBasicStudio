@@ -11,6 +11,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps.Neg
     /// </summary>
     public class ZXMapsMap
     {
+        public string Name { get; set; }
         public ZXMapsTypes MapType { get; set; }
         public int Width { get; set; }
         public int Height { get; set; }

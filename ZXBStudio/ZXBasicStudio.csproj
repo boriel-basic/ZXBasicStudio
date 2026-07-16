@@ -642,6 +642,9 @@
     <Compile Update="DocumentEditors\ZXMaps\LayerItemControl.axaml.cs">
       <DependentUpon>LayerItemControl.axaml</DependentUpon>
     </Compile>
+    <Compile Update="DocumentEditors\ZXMaps\MapFileSelectorControl.axaml.cs">
+      <DependentUpon>MapFileSelectorControl.axaml</DependentUpon>
+    </Compile>
     <Compile Update="DocumentEditors\ZXMaps\MapPropertiesControl.axaml.cs">
       <DependentUpon>MapPropertiesControl.axaml</DependentUpon>
     </Compile>

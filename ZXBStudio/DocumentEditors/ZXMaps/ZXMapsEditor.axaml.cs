@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using ZXBasicStudio.Common;
+using ZXBasicStudio.Dialogs;
 using ZXBasicStudio.DocumentEditors.NextDows.neg;
 using ZXBasicStudio.DocumentEditors.ZXGraphics;
 using ZXBasicStudio.DocumentEditors.ZXGraphics.neg;
@@ -122,36 +123,10 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         {
             try
             {
-                /*
-                var masterList = SpritePatternsList.Select(d => d.SpriteData).ToArray();
-                var sprList = new List<Tile>();
-                foreach (var spr in masterList)
-                {
-                    sprList.Add(spr); //.Clonar<Sprite>());
-                }
-                foreach (Tile spr in sprList)
-                {
-                    if (spr == null)
-                    {
-                        continue;
-                    }
-
-                    if (spr.Frames < spr.Patterns.Count())
-                    {
-                        spr.Patterns = spr.Patterns.Take(spr.Frames).ToList();
-                    }
-                }
-
-                var dataJSon = sprList.Serializar();
-                //if (!ServiceLayer.Files_SaveFileString(FileName, dataJSon))
-                //{
-                //    return false;
-                //}
-                //;
-
+                var json = Map.Serializar();
+                File.WriteAllText(FileName, json);
                 _Modified = false;
                 DocumentSaved?.Invoke(this, EventArgs.Empty);
-                */
                 return true;
             }
             catch (Exception ex)
@@ -164,6 +139,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
         public override bool RenameDocument(string NewName, TextWriter OutputLog)
         {
+            Map.Name = Path.GetFileNameWithoutExtension(NewName);
             FileName = NewName;
             return true;
         }
@@ -247,6 +223,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             if (Map == null)
             {
                 Map = new ZXMapsMap();
+                Map.Name = Path.GetFileNameWithoutExtension(FileName);
                 Map.Height = 12;
                 Map.Width=16;
                 Map.MappingType = ZXMapsMappingTypes.Sequential;
@@ -330,7 +307,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             //cnvEditor.Width = WindowWidth * Zoom;
             //cnvEditor.Height = WindowHeight * Zoom;
         }
-
+       
 
         public void Draw_Panel(ControlItem control)
         {

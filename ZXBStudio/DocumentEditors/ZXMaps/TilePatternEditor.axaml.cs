@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
@@ -21,6 +22,26 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 {
     public partial class TilePatternEditor : UserControl
     {
+        #region Private properties
+
+        /// <summary>
+        /// last zoom value
+        /// </summary>
+        private int lastZoom = 0;
+
+        /// <summary>
+        /// Zooms values
+        /// </summary>
+        private int[] zooms = new int[]
+        {
+            1,2,4,8,16,24,32,48,64
+        };
+
+        private byte actualFrame = 0;
+
+        #endregion
+
+
         #region Public properties
 
         /// <summary>
@@ -38,15 +59,14 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                 if (_TileData == null)
                 {
                     lastId = null;
+                    return;
                 }
-                else
+                if (lastId != _TileData.Id)
                 {
-                    if (lastId != _TileData.Id)
-                    {
-                        _TileData.CurrentFrame = 0;
-                        lastId = _TileData.Id;
-                    }
+                    _TileData.CurrentFrame = 0;
+                    lastId = _TileData.Id;
                 }
+                txtFrame.MaxHeight = _TileData.Frames - 1;
                 Undo_AddPoint();
                 Refresh(true);
             }
@@ -95,7 +115,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                 aspect.ViewAttributes = value;
                 Refresh(false);
             }
-        } 
+        }
 
         private bool _ViewAttributes = true;
 
@@ -104,6 +124,18 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         public bool InvertColorsCell { get; set; } = false;
 
         public bool ColorPicker { get; set; } = false;
+
+        public int Frame
+        {
+            get
+            {
+                return txtFrame.Text.ToInteger();
+            }
+            set
+            {
+                txtFrame.Text = value.ToString();
+            }
+        }
 
         #endregion
 
@@ -150,6 +182,43 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             grdEditor.PointerExited += GrdEditor_PointerExited;
 
             aspect.ViewAttributes = true;
+
+            sldZoom.PropertyChanged += SldZoom_PropertyChanged;
+            txtFrame.PropertyChanged += TxtFrame_PropertyChanged;
+
+            btnClear.Tapped += BtnClear_Tapped;
+            btnCut.Tapped += BtnCut_Tapped;
+            btnCopy.Tapped += BtnCopy_Tapped;
+            btnPaste.Tapped += BtnPaste_Tapped;
+            btnHMirror.Tapped += BtnHMirror_Tapped;
+            btnVMirror.Tapped += BtnVMirror_Tapped;
+            btnRotateLeft.Tapped += BtnRotateLeft_Tapped;
+            btnRotateRight.Tapped += BtnRotateRight_Tapped;
+            btnShiftUp.Tapped += BtnShiftUp_Tapped;
+            btnShiftRight.Tapped += BtnShiftRight_Tapped;
+            btnShiftDown.Tapped += BtnShiftDown_Tapped;
+            btnShiftLeft.Tapped += BtnShiftLeft_Tapped;
+            btnMoveUp.Tapped += BtnMoveUp_Tapped;
+            btnMoveRight.Tapped += BtnMoveRight_Tapped;
+            btnMoveDown.Tapped += BtnMoveDown_Tapped;
+            btnMoveLeft.Tapped += BtnMoveLeft_Tapped;
+            btnInvert.Tapped += BtnInvert_Tapped;
+            btnMask.Tapped += BtnMask_Tapped;
+            btnExport.Tapped += BtnExport_Tapped;
+            btnImport.Tapped += BtnImport_Tapped;
+
+            btnUndo.Tapped += BtnUndo_Tapped;
+            btnRedo.Tapped += BtnRedo_Tapped;
+
+            btnViewAttributes.Tapped += BtnViewAttributes_Tapped;
+            btnColorPicker.Tapped += BtnColorPicker_Tapped;
+            btnInvertColorsCell.Tapped += BtnInvertColorsCell_Tapped;
+            btnInvertPixelsCell.Tapped += BtnInvertPixelsCell_Tapped;
+
+            btnPaper.Tapped += BtnPaper_Click;
+            btnInk.Tapped += BtnInk_Tapped;
+            UpdateColorPanel();
+
         }
 
 
@@ -267,7 +336,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                         return; // No changes
                     }
                 }
-                operations = operations.Take(operationIndex+1).ToList();
+                operations = operations.Take(operationIndex + 1).ToList();
 
                 var op = TileData.Patterns[TileData.CurrentFrame].Clonar<Pattern>();
                 operations.Add(op);
@@ -309,7 +378,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                 int y = (int)p.Position.Y;
                 x = x / (_Zoom + 1);
                 y = y / (_Zoom + 1);
-                var atr=GetAttribute(TileData.Patterns[TileData.CurrentFrame], x,y);
+                var atr = GetAttribute(TileData.Patterns[TileData.CurrentFrame], x, y);
                 PrimaryColorIndex = atr.Ink;
                 SecondaryColorIndex = atr.Paper;
                 ColorPicker = false;
@@ -338,7 +407,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                     MouseRightPressed = true;
                 }
             }
-        }        
+        }
 
 
         /// <summary>
@@ -476,7 +545,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
         private AttributeColor GetAttribute(Pattern pattern, int x, int y)
         {
-            if(pattern.Attributes == null)
+            if (pattern.Attributes == null)
             {
                 pattern.Attributes = new AttributeColor[(TileData.Width / 8) * (TileData.Height / 8)];
             }
@@ -1132,7 +1201,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                 return;
             }
 
-            for(int py = 0; py < 8; py++)
+            for (int py = 0; py < 8; py++)
             {
                 for (int px = 0; px < 8; px++)
                 {
@@ -1167,7 +1236,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
             var inkBak = PrimaryColorIndex;
             var paperBak = SecondaryColorIndex;
-            var attr=GetAttribute(TileData.Patterns[TileData.CurrentFrame], x, y);
+            var attr = GetAttribute(TileData.Patterns[TileData.CurrentFrame], x, y);
             if (attr == null)
             {
                 return;
@@ -1176,9 +1245,498 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             SecondaryColorIndex = attr.Ink;
             SetAttribute(TileData.Patterns[TileData.CurrentFrame], x, y);
             PrimaryColorIndex = inkBak;
-            SecondaryColorIndex=paperBak;
+            SecondaryColorIndex = paperBak;
             Refresh();
         }
+        #endregion
+
+
+
+        #region Color
+
+        private void BtnPaper_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+        {
+            if (ctrlColorPicker.IsVisible)
+            {
+                ctrlColorPicker.IsVisible = false;
+                return;
+            }
+            var Tile = TileData;
+            if (Tile.GraphicMode == GraphicsModes.Monochrome)
+            {
+                return;
+            }
+            ctrlColorPicker.IsVisible = true;
+            ctrlColorPicker.Inicialize(Tile.GraphicMode, Tile.Palette, SecondaryColorIndex, ColorPickerPaper_Action);
+        }
+
+
+        private void BtnInk_Tapped(object? sender, TappedEventArgs e)
+        {
+            if (ctrlColorPicker.IsVisible)
+            {
+                ctrlColorPicker.IsVisible = false;
+                return;
+            }
+            var Tile = TileData;
+            if (Tile.GraphicMode == GraphicsModes.Monochrome)
+            {
+                return;
+            }
+            ctrlColorPicker.IsVisible = true;
+            ctrlColorPicker.Inicialize(Tile.GraphicMode, Tile.Palette, PrimaryColorIndex, ColorPickerInk_Action);
+        }
+
+
+        public void UpdateColorPanel()
+        {
+            var Tile = TileData;
+            if (Tile == null)
+            {
+                return;
+            }
+            switch (Tile.GraphicMode)
+            {
+                case GraphicsModes.Monochrome:
+                    {
+                        var ink = Tile.Palette[1];
+                        var paper = Tile.Palette[0];
+                        grdPaper.Background = new SolidColorBrush(Color.FromRgb(paper.Red, paper.Green, paper.Blue));
+                        txtPaper.Foreground = new SolidColorBrush(Color.FromRgb(ink.Red, ink.Green, ink.Blue));
+                        txtPaper.Text = "0";
+                        grdInk.Background = new SolidColorBrush(Color.FromRgb(ink.Red, ink.Green, ink.Blue));
+                        txtInk.Foreground = new SolidColorBrush(Color.FromRgb(paper.Red, paper.Green, paper.Blue));
+                        txtInk.Text = "1";
+                    }
+                    break;
+
+                case GraphicsModes.ZXSpectrum:
+                case GraphicsModes.Next:
+                    {
+                        var ink = Tile.Palette[PrimaryColorIndex];
+                        var paper = Tile.Palette[SecondaryColorIndex];
+                        grdPaper.Background = new SolidColorBrush(Color.FromRgb(paper.Red, paper.Green, paper.Blue));
+                        txtPaper.Foreground = new SolidColorBrush(Color.FromRgb(ink.Red, ink.Green, ink.Blue));
+                        txtPaper.Text = SecondaryColorIndex.ToString();
+                        grdInk.Background = new SolidColorBrush(Color.FromRgb(ink.Red, ink.Green, ink.Blue));
+                        txtInk.Foreground = new SolidColorBrush(Color.FromRgb(paper.Red, paper.Green, paper.Blue));
+                        txtInk.Text = PrimaryColorIndex.ToString();
+                    }
+                    break;
+            }
+        }
+
+
+
+        private void ColorPickerPaper_Action(string command, int indexColor)
+        {
+            SecondaryColorIndex = indexColor;
+            UpdateColorPanel();
+        }
+
+
+        private void ColorPickerInk_Action(string command, int indexColor)
+        {
+            PrimaryColorIndex = indexColor;
+            UpdateColorPanel();
+        }
+
+        #endregion
+
+
+
+        #region Main editor
+
+
+        private void Refresh()
+        {
+            // TODO: Multiple frames per tile?
+            /*
+            txtFrame.Text = actualFrame.ToString();
+            if (ctrlProperties.TileData != null)
+            {
+                txtFrame.Maximum = ctrlProperties.TileData.Frames - 1;
+            }
+            else
+            {
+                txtFrame.Maximum = 0;
+            }
+            txtFrame.UpdateLayout();
+            */
+        }
+
+
+        /// <summary>
+        /// Zoom changed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void SldZoom_PropertyChanged(object? sender, Avalonia.AvaloniaPropertyChangedEventArgs e)
+        {
+            int z = (int)sldZoom.Value;
+            if (z == 0 || z == lastZoom)
+            {
+                return;
+            }
+            lastZoom = z;
+
+            z = zooms[z - 1];
+            txtZoom.Text = "Zoom " + z.ToString() + "x";
+            Zoom = z;
+        }
+
+
+        public void ZoomIn()
+        {
+            int v = sldZoom.Value.ToInteger();
+            if (v < zooms.Length - 1)
+            {
+                sldZoom.Value = v - 1;
+            }
+        }
+
+
+        public void ZoomOut()
+        {
+            int v = sldZoom.Value.ToInteger();
+            if (v > 0)
+            {
+                sldZoom.Value = v - 1;
+            }
+
+        }
+
+
+        private void TxtFrame_PropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+        {
+            // TODO: Multiple frames per tile?
+            /*
+            byte v = txtFrame.Text.ToByte();
+            if (actualFrame == v ||
+                ctrlProperties.TileData == null ||
+                v < 0 ||
+                v >= (ctrlProperties.TileData.Frames))
+            {
+                return;
+            }
+            if (v > 255)
+            {
+                v = 255;
+            }
+            actualFrame = v;
+            if (TileData != null)
+            {
+                TileData.CurrentFrame = actualFrame;
+                Refresh();
+            }
+            Refresh();
+            */
+        }
+
+        #endregion
+
+
+        #region ToolBar
+
+        /// <summary>
+        /// Clear click
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BtnClear_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)
+        {
+            this.Clear();
+        }
+
+        /// <summary>
+        /// Cut click
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BtnCut_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)
+        {
+            this.Cut();
+        }
+
+
+        //Copy click
+        private void BtnCopy_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)
+        {
+            this.Copy();
+        }
+
+
+        /// <summary>
+        /// Paste click
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BtnPaste_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)
+        {
+            this.Paste();
+        }
+
+
+        /// <summary>
+        /// Horizontal mirror click
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BtnHMirror_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)
+        {
+            this.HorizontalMirror();
+        }
+
+
+        /// <summary>
+        /// Vertical mirror click
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BtnVMirror_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)
+        {
+            this.VerticalMirror();
+        }
+
+
+        /// <summary>
+        /// Rotate left
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BtnRotateLeft_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)
+        {
+            this.RotateLeft();
+        }
+
+
+        /// <summary>
+        /// Rotate right
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BtnRotateRight_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)
+        {
+            this.RotateRight();
+        }
+
+
+        /// <summary>
+        /// Shift up
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BtnShiftUp_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)
+        {
+            this.ShiftUp();
+        }
+
+
+        /// <summary>
+        /// Shift right
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BtnShiftRight_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)
+        {
+            this.ShiftRight();
+        }
+
+
+        /// <summary>
+        /// Shift down
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BtnShiftDown_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)
+        {
+            this.ShiftDown();
+        }
+
+
+        /// <summary>
+        /// Shift left
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BtnShiftLeft_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)
+        {
+            this.ShiftLeft();
+        }
+
+
+        /// <summary>
+        /// Move up
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BtnMoveUp_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)
+        {
+            this.MoveUp();
+        }
+
+
+        /// <summary>
+        /// Move right
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BtnMoveRight_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)
+        {
+            this.MoveRight();
+        }
+
+
+        /// <summary>
+        /// Move down
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BtnMoveDown_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)
+        {
+            this.MoveDown();
+        }
+
+
+        /// <summary>
+        /// Move left
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BtnMoveLeft_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)
+        {
+            this.MoveLeft();
+        }
+
+
+        /// <summary>
+        /// Invert
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BtnInvert_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)
+        {
+            this.Invert();
+        }
+
+
+        /// <summary>
+        /// Mask
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void BtnMask_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)
+        {
+            this.Mask();
+        }
+
+
+        private void BtnExport_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)
+        {
+            Export();
+        }
+
+
+        public void Export()
+        {
+            /*
+            var dlg = new TileExportDialog();
+            dlg.Initialize(FileName, TilePatternsList.Select(d => d.TileData));
+            dlg.ShowDialog(this.VisualRoot as Window);
+            */
+        }
+
+
+        private void BtnImport_Tapped(object? sender, TappedEventArgs e)
+        {
+            Import();
+        }
+
+
+
+        private void BtnViewAttributes_Tapped(object? sender, TappedEventArgs e)
+        {
+            ViewAttributes = btnViewAttributes.IsChecked == true;
+        }
+
+        private void BtnColorPicker_Tapped(object? sender, TappedEventArgs e)
+        {
+            ColorPicker = btnColorPicker.IsChecked == false;
+        }
+
+
+        private void BtnInvertPixelsCell_Tapped(object? sender, TappedEventArgs e)
+        {
+            InvertPixelsCell = btnInvertPixelsCell.IsChecked == false;
+            if (InvertPixelsCell)
+            {
+                btnInvertColorsCell.IsChecked = true;
+                InvertColorsCell = false;
+            }
+        }
+
+
+        private void BtnInvertColorsCell_Tapped(object? sender, TappedEventArgs e)
+        {
+            InvertColorsCell = btnInvertColorsCell.IsChecked == false;
+            if (InvertColorsCell)
+            {
+                btnInvertPixelsCell.IsChecked = true;
+                InvertPixelsCell = false;
+            }
+        }
+
+
+        private void BtnRedo_Tapped(object? sender, TappedEventArgs e)
+        {
+            Redo();
+        }
+
+
+        private void BtnUndo_Tapped(object? sender, TappedEventArgs e)
+        {
+            Undo();
+        }
+
+        #endregion
+
+
+
+        #region Import
+
+        private void Import()
+        {
+            /*
+            var dlg = new TileImportDialog();
+            dlg.Initialize(FileName, TilePatternsList.Select(d => d.TileData), Import_Command);
+            dlg.ShowDialog(this.VisualRoot as Window);
+            */
+        }
+
+
+        private void Import_Command(ZXMapsTile Tile, string command)
+        {
+            try
+            {
+                switch (command)
+                {
+                    case "ADD":
+                        TileData = Tile;
+                        CallBackCommand?.Invoke(this, "ADD");
+                        break;
+                    case "UPDATE":
+                        //var spr = TilePatternsList.FirstOrDefault(d => d.Name == Tile.Name);
+                        //if (spr != null)
+                        //{
+                        //    TileList_Modified(Tile);
+                        //}
+                        break;
+                }
+            }
+            catch { }
+        }
+
+
         #endregion
     }
 }

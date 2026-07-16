@@ -11,6 +11,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
+using ZXBasicStudio.Classes;
 using ZXBasicStudio.Common;
 using ZXBasicStudio.DocumentEditors.NextDows.neg;
 using ZXBasicStudio.DocumentEditors.ZXGraphics;
@@ -23,7 +25,19 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 {
     public partial class MapPropertiesControl : UserControl
     {
-        private ZXMapsMap Map = null;
+        public ZXMapsMap Map
+        {
+            get
+            {
+                return _Map;
+            }
+            set
+            {
+                _Map = value;
+                Refresh();
+            }
+        }
+        private ZXMapsMap _Map = null;
         private int CurrentTap = 0;
 
 
@@ -36,30 +50,37 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         public bool Initialize(ZXMapsMap map)
         {
             this.Map = map;
-            Refresh();
             return true;
         }        
 
 
         public void Refresh()
-        {            
-            // Map
-            cmbMapType.SelectedIndex = (int)Map.MapType;
-            txtMapHeight.Value = Map.Height;
-            txtMapWidth.Value = Map.Width;
-            txtMapTileHeight.Value = Map.TileHeight;
-            txtMapTileWidth.Value = Map.TileWidth;
-            cmbMappingType.SelectedIndex = (int)Map.MappingType;
-            // Layer
-            var layer = Map.Layers.FirstOrDefault(d => d.Selected);
-            if (layer == null)
+        {
+            if (Map == null)
             {
                 tabControl.SelectedIndex = 0;
+                //tabControl.IsVisible = false;
             }
             else
             {
-                txtLayerName.Text = layer.Name;
-                cmbLayerType.SelectedIndex = (int)layer.LayersType;
+                // Map
+                cmbMapType.SelectedIndex = (int)Map.MapType;
+                txtMapHeight.Value = Map.Height;
+                txtMapWidth.Value = Map.Width;
+                txtMapTileHeight.Value = Map.TileHeight;
+                txtMapTileWidth.Value = Map.TileWidth;
+                cmbMappingType.SelectedIndex = (int)Map.MappingType;
+                // Layer
+                var layer = Map.Layers?.FirstOrDefault(d => d.Selected);
+                if (layer == null)
+                {
+                    tabControl.SelectedIndex = 0;
+                }
+                else
+                {
+                    txtLayerName.Text = layer.Name;
+                    cmbLayerType.SelectedIndex = (int)layer.LayersType;
+                }
             }
         }
     }
