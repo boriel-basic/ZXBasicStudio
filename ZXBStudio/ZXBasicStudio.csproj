@@ -651,6 +651,9 @@
     <Compile Update="DocumentEditors\ZXMaps\LayersControl.axaml.cs">
       <DependentUpon>LayersControl.axaml</DependentUpon>
     </Compile>
+    <Compile Update="DocumentEditors\ZXMaps\MapPatternEditor.axaml.cs">
+      <DependentUpon>MapPatternEditor.axaml</DependentUpon>
+    </Compile>
     <Compile Update="DocumentEditors\ZXMaps\TilePropertiesControl.axaml.cs">
       <DependentUpon>TilePropertiesControl.axaml</DependentUpon>
     </Compile>

@@ -300,6 +300,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
             ctrlMapFileSelector.Initialize(TileMain.DefaultMap, MapFileSelector_Command);
             ctrlMapProperties.Initialize(ctrlMapFileSelector.Map, TileMain, MapProperties_Command);
+            ctrlMapEditor.Initialize(ctrlMapFileSelector.Map, TileMain, MapEditor_Command);
 
             btnTileInfoHide.Tapped += BtnTileInfoHide_Tapped;
             btnTileInfoShow.Tapped += BtnTileInfoShow_Tapped;
@@ -334,6 +335,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             ctrlEditor.Refresh();
         }
 
+
         #region TileList
 
         private void TileList_Command(TilePatternControl sender, string command)
@@ -354,6 +356,10 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                     ctrlEditor.Frame = 0;
                     ctrlPreview.Refresh();
                     TileProperties_FrameUpdate(ctrlTileProperties, command);
+                    if (sender.TileData != null)
+                    {
+                        ctrlMapEditor.CurrentTile = sender.TileData.Id;
+                    }
                     break;
             }
         }
@@ -846,22 +852,15 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
         private void tabControlEditor_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
-            //if (tabControlEditor == null)
-            //{
-            //    return;
-            //}
+            if (tabControlEditor == null)
+            {
+                return;
+            }
 
-            //int idTab = tabControlEditor.SelectedIndex;
-            //if (idTab == 0)
-            //{
-            //    dockTileProperties.IsVisible = true;
-            //    dockMapProperties.IsVisible = false;
-            //}
-            //else
-            //{
-            //    dockTileProperties.IsVisible = false;
-            //    dockMapProperties.IsVisible = true;
-            //}
+            if (tabControlEditor.SelectedIndex == 1)
+            {
+                ctrlMapEditor.Refresh(false);
+            }
         }
 
         #endregion
@@ -887,6 +886,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             {
                 _Modified = true;
                 DocumentModified?.Invoke(this, EventArgs.Empty);
+                ctrlMapEditor.Map = Map;
             }
         }
 
@@ -896,6 +896,16 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         #region MapProperties
 
         private void MapProperties_Command(MapPropertiesControl control, string arg2)
+        {
+
+        }
+
+        #endregion
+
+
+        #region MapEditor
+
+        private void MapEditor_Command(MapPatternEditor editor, string arg2)
         {
 
         }

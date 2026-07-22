@@ -20,5 +20,6 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps.Neg
         public ZXMapsMappingTypes MappingType { get; set; }
         public List<ZXMapsPropertyDefiniton> PropertyDefinitons { get; set; }
         public List<ZXMapsLayer> Layers { get; set; } 
+        public ZXMapsTileArray[,] TileArrays { get; set; }
     }
 }

@@ -25,21 +25,26 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         #endregion
 
         #region Constructors
+
         public TileImage()
         {
             bitmap = new WriteableBitmap(new PixelSize(8, 8), new Vector(72, 72), Avalonia.Platform.PixelFormat.Rgba8888, Avalonia.Platform.AlphaFormat.Opaque);
 
             Clear(Colors.White);
         }
+
+
         public TileImage(ZXMapsTile Tile, int FrameNumber)
         {
             bitmap = new WriteableBitmap(new PixelSize(Tile.Width, Tile.Height), new Vector(72, 72), Avalonia.Platform.PixelFormat.Rgba8888, Avalonia.Platform.AlphaFormat.Opaque);
 
             RenderTile(Tile, FrameNumber);
         }
+
         #endregion
 
         #region Public functions
+
         public unsafe void Clear(Color ClearColor)
         {
             if (bitmap == null) //disposed
@@ -61,6 +66,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             IsEmpty = true;
         }
 
+
         public unsafe void RenderTile(ZXMapsTile Tile, int FrameNumber)
         {
             try
@@ -71,7 +77,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                 if (bitmap.PixelSize.Width != Tile.Width || bitmap.PixelSize.Height != Tile.Height)
                 {
                     bitmap.Dispose();
-                    bitmap = new WriteableBitmap(new PixelSize(Tile.Width, Tile.Height), new Vector(72, 72), Avalonia.Platform.PixelFormat.Rgba8888, Avalonia.Platform.AlphaFormat.Opaque);
+                    bitmap = new WriteableBitmap(new PixelSize(Tile.Width, Tile.Height), new Vector(72,72), Avalonia.Platform.PixelFormat.Rgba8888, Avalonia.Platform.AlphaFormat.Opaque);
                 }
 
                 using var lockData = bitmap.Lock();
@@ -144,6 +150,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         #endregion
 
         #region Private functions
+
         uint ToRgba(PaletteColor Color)
         {
             return (uint)((255 << 24) | (Color.Blue << 16) | (Color.Green << 8) | Color.Red);
@@ -178,6 +185,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             }
             return Pattern.Attributes[dir];
         }
+
         #endregion
 
         #region IZXBitmap implementation
@@ -189,6 +197,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             }
         }
 
+
         public PixelSize PixelSize
         {
             get
@@ -197,13 +206,16 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             }
         }
 
+
         public void Draw(DrawingContext context, Rect sourceRect, Rect destRect)
         {
             ((IImage)bitmap).Draw(context, sourceRect, destRect);
         }
+
         #endregion
 
         #region IDisposable implementation
+
         public void Dispose()
         {
             if (bitmap == null)
@@ -213,6 +225,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             bitmap = null;
             IsEmpty = true;
         }
+
         #endregion
     }
 }

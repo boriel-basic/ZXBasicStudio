@@ -54,19 +54,20 @@
 				<TabControl Name="tabControlEditor" SelectionChanged="tabControlEditor_SelectionChanged">
 
 					<TabItem Header="Tile editor">
-						<local:TilePatternEditor Name="ctrlEditor" Grid.Row="1" Background="#303030"/>
+						<local:TilePatternEditor Name="ctrlEditor" Background="#303030"/>
 					</TabItem>
 
 					<TabItem Header="Map editor">
-				</TabItem>
+						<local:MapPatternEditor Name="ctrlMapEditor" Background="#303030"/>
+					</TabItem>
 
 				</TabControl>
 			</Grid>
 
 			<GridSplitter ResizeDirection="Columns" Grid.Column="3" Classes="vertical"></GridSplitter>
 
-			<zxd:ZXDockingContainer Name="dockRight" DockingGroup="ZXGraphics" Grid.Column="4" 
-						   RowDefinitions="Auto,4,Auto,4,*">
+			<zxd:ZXDockingContainer Name="dockRight" DockingGroup="ZXGraphics" Grid.Column="4"
+									RowDefinitions="Auto,4,Auto,4,*">
 
 				<zxd:ZXDockingControl Grid.Row="0" Name="dockTileProperties" Title="Tiles Properties" DockingGroup="ZXGraphics" DesiredFloatingSize="200,400">
 					<zxd:ZXDockingControl.DockedControl>
