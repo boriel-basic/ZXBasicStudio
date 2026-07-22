@@ -18,7 +18,7 @@ namespace ZXBasicStudio.IntegratedDocumentTypes.ZXGraphics
 {
     public class ZXTilemapDocument : IZXDocumentType
     {
-        static readonly string[] _docExtensions = { ".til", ".zxtil" };
+        static readonly string[] _docExtensions = { ".zxtil" };
         static readonly string _docName = "Tilemap file";
         static readonly string _docDesc = "Tilemap files allow you to create and modify a set of tiles for use in maps. Once created, it can be used in the zxmap built-in editor.";
         static readonly string _docCat = "Graphics";

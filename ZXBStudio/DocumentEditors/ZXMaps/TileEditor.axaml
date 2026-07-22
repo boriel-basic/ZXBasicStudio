@@ -87,7 +87,7 @@
 
 				<GridSplitter ResizeDirection="Rows" Grid.Row="3" Classes="horizontal"></GridSplitter>
 
-				<zxd:ZXDockingControl Grid.Row="4" Name="dockPreview" Title="Tile Preview" DockingGroup="ZXGraphics" DesiredFloatingSize="200,400">
+				<zxd:ZXDockingControl Grid.Row="4" Name="dockPreview" Title="Tile Preview" DockingGroup="ZXGraphics" DesiredFloatingSize="200,400" IsVisible="False">
 					<zxd:ZXDockingControl.DockedControl>
 						<local:TilePreviewControl Name="ctrlPreview"></local:TilePreviewControl>
 					</zxd:ZXDockingControl.DockedControl>

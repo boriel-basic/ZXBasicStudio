@@ -14,6 +14,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps.Neg
         public int Width { get; set; }
         public int Height { get; set; }
 
+        public string DefaultMap { get; set; }
         public List<ZXMapsTile> Tiles { get; set; }
     }
 }

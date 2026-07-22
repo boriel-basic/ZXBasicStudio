@@ -9,6 +9,7 @@ using Avalonia.Threading;
 using AvaloniaEdit.Folding;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -38,7 +39,22 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             }
         }
         private ZXMapsMap _Map = null;
-        private int CurrentTap = 0;
+        
+        public ZXMapsTiles Tiles
+        {
+            get
+            {
+                return _Tiles;
+            }
+            set
+            {
+                _Tiles = value;
+                Refresh();
+            }
+        }
+        private ZXMapsTiles _Tiles = null;
+
+        private Action<MapPropertiesControl, string> Command = null;
 
 
         public MapPropertiesControl()
@@ -47,11 +63,24 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         }
 
 
-        public bool Initialize(ZXMapsMap map)
+        public bool Initialize(ZXMapsMap map, ZXMapsTiles tiles, Action<MapPropertiesControl,string> callBackCommand)
         {
-            this.Map = map;
+            this._Map = map;
+            this._Tiles = tiles;
+            this.Command = callBackCommand;
+
+            cmbMapType.SelectionChanged += CmbMapType_SelectionChanged;
+            txtMapWidth.ValueChanged += TxtMapWidth_ValueChanged;
+            txtMapHeight.ValueChanged += TxtMapHeight_ValueChanged;
+            txtMapWidth.ValueChanged += TxtMapWidth_ValueChanged;
+            txtMapTileWidth.ValueChanged += TxtMapTileWidth_ValueChanged;
+            txtMapTileHeight.ValueChanged += TxtMapTileHeight_ValueChanged;
+            //cmbMappingType.SelectionChanged += CmbMappingType_SelectionChanged;
+
+            Refresh();
+
             return true;
-        }        
+        }
 
 
         public void Refresh()
@@ -82,6 +111,79 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                     cmbLayerType.SelectedIndex = (int)layer.LayersType;
                 }
             }
+
+            if(_Map!=null && _Tiles != null)
+            {
+                if (_Map.TileWidth != _Tiles.Width)
+                {
+                    txtMapTileWidth.Background = new SolidColorBrush(Colors.Red);
+                }
+                else
+                {
+                    txtMapTileWidth.Background = null;
+                }
+                if (_Map.TileHeight != _Tiles.Height)
+                {
+                    txtMapTileHeight.Background = new SolidColorBrush(Colors.Red);
+                }
+                else
+                {
+                    txtMapTileHeight.Background = null;
+                }
+            }
         }
+
+
+        #region Values changed
+
+        private void CmbMappingType_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            Map.MappingType = (ZXMapsMappingTypes)cmbMappingType.SelectedIndex;
+            Command?.Invoke(this, "UPDATE");
+            Refresh();
+        }
+
+
+        private void TxtMapTileHeight_ValueChanged(object? sender, NumericUpDownValueChangedEventArgs e)
+        {
+            Map.TileHeight = txtMapTileHeight.Text.ToInteger();
+            Command?.Invoke(this, "UPDATE");
+            Refresh();
+        }
+
+
+        private void TxtMapTileWidth_ValueChanged(object? sender, NumericUpDownValueChangedEventArgs e)
+        {
+            Map.TileWidth = txtMapTileWidth.Text.ToInteger();
+            Command?.Invoke(this, "UPDATE");
+            Refresh();
+        }
+
+
+        private void TxtMapHeight_ValueChanged(object? sender, NumericUpDownValueChangedEventArgs e)
+        {
+            Map.Height = txtMapHeight.Text.ToInteger();
+            Command?.Invoke(this, "UPDATE");
+            Refresh();
+        }
+
+
+        private void TxtMapWidth_ValueChanged(object? sender, NumericUpDownValueChangedEventArgs e)
+        {
+            Map.Width = txtMapWidth.Text.ToInteger();
+            Command?.Invoke(this, "UPDATE");
+            Refresh();
+        }
+
+
+        private void CmbMapType_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            Map.MapType = (ZXMapsTypes)cmbMapType.SelectedIndex;
+            Command?.Invoke(this, "UPDATE");
+            Refresh();
+        }
+
+        #endregion
+
     }
 }

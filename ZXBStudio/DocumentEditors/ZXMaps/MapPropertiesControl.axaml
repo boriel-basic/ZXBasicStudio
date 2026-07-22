@@ -46,20 +46,19 @@
 							<NumericUpDown Classes="dialog" Name="txtMapTileHeight" Minimum="8" Increment="8" Maximum="256" Value="16" VerticalAlignment="Center"/>
 						</Border>
 						<TextBlock Grid.Row="4" Grid.Column="2" Classes="dialog" VerticalAlignment="Center">(pixels)</TextBlock>
-
-						<TextBlock Grid.Row="5" Classes="dialog" VerticalAlignment="Center" HorizontalAlignment="Right">Mapping type:</TextBlock>
-						<ComboBox Grid.Row="5" Grid.Column="1" Name="cmbMappingType" Classes="dialog" HorizontalAlignment="Stretch" Margin="5,0,5,2">
+						
+						<TextBlock Grid.Row="5" Classes="dialog" VerticalAlignment="Center" HorizontalAlignment="Right" IsVisible="False">Mapping type:</TextBlock>
+						<ComboBox Grid.Row="5" Grid.Column="1" Name="cmbMappingType" Classes="dialog" HorizontalAlignment="Stretch" Margin="5,0,5,2" IsVisible="False">
 							<ComboBoxItem>Sequential</ComboBoxItem>
-							<!-- TODO: Implement all types...
 							<ComboBoxItem>Coordinates</ComboBoxItem>
 							<ComboBoxItem>Blocks</ComboBoxItem>
-							-->
 						</ComboBox>
+
 					</Grid>
 				</ScrollViewer>
 			</TabItem>
 
-			<TabItem Header="Layer">
+			<TabItem Header="Layer" IsVisible="False">
 				<Grid Grid.RowDefinitions="Auto,1,*">
 					<TextBlock Text="Layer properties" FontSize="16" Margin="8,8,8,2"/>
 					<Grid Grid.Row="1" Background="Gray"></Grid>
@@ -80,7 +79,7 @@
 				</Grid>
 			</TabItem>
 
-			<TabItem Header="Room">
+			<TabItem Header="Room" IsVisible="False">
 				<Grid Grid.RowDefinitions="Auto,1,*">
 					<TextBlock Text="Room properties" FontSize="16" Margin="8,8,8,2"/>
 					<Grid Grid.Row="1" Background="Gray"></Grid>
@@ -93,7 +92,7 @@
 				</Grid>
 			</TabItem>
 
-			<TabItem Header="Tile">
+			<TabItem Header="Tile" IsVisible="False">
 				<Grid Grid.RowDefinitions="Auto,1,*">
 					<TextBlock Text="Tile properties" FontSize="16" Margin="8,8,8,2"/>
 					<Grid Grid.Row="1" Background="Gray"></Grid>

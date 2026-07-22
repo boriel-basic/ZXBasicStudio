@@ -2,9 +2,9 @@
 {
     public enum ZXMapsTypes
     {
-        Rooms = 0,
-        HorizontalScroll = 1,
-        VerticalScroll = 2,
-        MultidirectionalScroll = 3
+        MultidirectionalScroll = 0,
+        Rooms = 1,
+        HorizontalScroll = 2,
+        VerticalScroll = 3,
     }
 }

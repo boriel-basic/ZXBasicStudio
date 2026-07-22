@@ -23,6 +23,8 @@ using AvaloniaEdit;
 using System.Reflection;
 using FFmpeg.AutoGen;
 using Avalonia.Media;
+using ZXBasicStudio.DocumentEditors.ZXMaps.Log;
+using ZXBasicStudio.Controls;
 
 namespace ZXBasicStudio.DocumentEditors.ZXMaps
 {
@@ -95,6 +97,8 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
         }
 
+
+
         #endregion
 
 
@@ -152,7 +156,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                 if (Map != null)
                 {
                     var json = Map.Serializar();
-                    var fileName = Path.Combine(ZXProjectManager.Current.ProjectPath, Map.Name+ ".zxmap");
+                    var fileName = Path.Combine(ZXProjectManager.Current.ProjectPath, Map.Name + ".zxmap");
                     if (!ServiceLayer.Files_SaveFileString(fileName, json))
                     {
                         return false;
@@ -174,12 +178,15 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         public override bool RenameDocument(string NewName, TextWriter OutputLog)
         {
             FileName = NewName;
+            //ServiceLayer_Maps.Maps_RemoveMap(FileName);
+            //ServiceLayer_Maps.Maps_AddMap(FileName,Map);
             return true;
         }
 
 
         public override bool CloseDocument(TextWriter OutputLog, bool ForceClose)
         {
+            //ServiceLayer_Maps.Maps_RemoveMap(FileName);
             return true;
         }
 
@@ -251,51 +258,30 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
             TilePatternsList = new List<TilePatternControl>();
 
-            var data = ServiceLayer.GetFileData(fileName);
-            if (data == null || data.Length == 0)
+            TileMain = ServiceLayer_Maps.Tiles_LoadMapsTiles(fileName);
+            if (TileMain == null)
             {
                 TileMain = new ZXMapsTiles()
                 {
                     GraphicMode = GraphicsModes.Monochrome,
                     Height = 16,
                     Width = 16,
-                    Name = Path.GetFileName(fileName).ToStringNoNull().Replace(".til", "").Replace(".zxtil", ""),
+                    Name = Path.GetFileName(fileName).ToStringNoNull().Replace(".zxtil", ""),
                     Tiles = new List<ZXMapsTile>()
                 };
             }
-            if (data != null)
+
+            wpTileList.ItemWidth = (TileMain.Width * 4) + 4;
+            wpTileList.ItemHeight = (TileMain.Height * 4) + 4;
+
+            foreach (var Tile in TileMain.Tiles)
             {
-                var dataS = Encoding.UTF8.GetString(data);
-                if (!string.IsNullOrEmpty(dataS))
-                {
-                    TileMain = dataS.Deserializar<ZXMapsTiles>();
-
-                    wpTileList.ItemWidth = (TileMain.Width * 4) + 4;
-                    wpTileList.ItemHeight = (TileMain.Height * 4) + 4;
-
-                    foreach (var Tile in TileMain.Tiles)
-                    {
-                        // Check attributes for ZX Spectrum mode
-                        if (Tile != null && Tile.Patterns != null)
-                        {
-                            var al = (Tile.Width / 8) * (Tile.Height / 8);
-                            foreach (var pattern in Tile.Patterns)
-                            {
-                                if (pattern.Attributes != null)
-                                {
-                                    pattern.Attributes = pattern.Attributes.Take(al).ToArray();
-                                }
-                            }
-                        }
-
-                        // Create pattern list
-                        var tpc = new TilePatternControl();
-                        tpc.Initialize(Tile, TileList_Command, TileMain.Width, TileMain.Height);
-                        TilePatternsList.Add(tpc);
-                        wpTileList.Children.Add(tpc);
-                        wpTileList.InvalidateMeasure();
-                    }
-                }
+                // Create pattern list
+                var tpc = new TilePatternControl();
+                tpc.Initialize(Tile, TileList_Command, TileMain.Width, TileMain.Height);
+                TilePatternsList.Add(tpc);
+                wpTileList.Children.Add(tpc);
+                wpTileList.InvalidateMeasure();
             }
 
             if (TilePatternsList.Count == 0)
@@ -312,9 +298,9 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                 ctrlTileProperties.Initialize(TileMain, TileProperties_Command);
             }
 
-            ctrlMapFileSelector.Initialize(Path.GetFileNameWithoutExtension(fileName), MapFileSelector_Command);
-            ctrlMapProperties.Initialize(ctrlMapFileSelector.Map);
-            
+            ctrlMapFileSelector.Initialize(TileMain.DefaultMap, MapFileSelector_Command);
+            ctrlMapProperties.Initialize(ctrlMapFileSelector.Map, TileMain, MapProperties_Command);
+
             btnTileInfoHide.Tapped += BtnTileInfoHide_Tapped;
             btnTileInfoShow.Tapped += BtnTileInfoShow_Tapped;
 
@@ -883,10 +869,35 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
         #region MapFileSelector
 
-        private void MapFileSelector_Command(MapFileSelectorControl sender,string command)
+        private void MapFileSelector_Command(MapFileSelectorControl sender, string command)
         {
             Map = sender.Map;
+            var old = TileMain.DefaultMap;
+            if (Map == null)
+            {
+                TileMain.DefaultMap = null;
+            }
+            else
+            {
+                TileMain.DefaultMap = Map.Name;
+            }
             ctrlMapProperties.Map = sender.Map;
+
+            if (old != TileMain.DefaultMap)
+            {
+                _Modified = true;
+                DocumentModified?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        #endregion
+
+
+        #region MapProperties
+
+        private void MapProperties_Command(MapPropertiesControl control, string arg2)
+        {
+
         }
 
         #endregion

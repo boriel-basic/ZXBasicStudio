@@ -13,6 +13,7 @@ using ZXBasicStudio.Dialogs;
 using ZXBasicStudio.DocumentEditors.NextDows.neg;
 using ZXBasicStudio.DocumentEditors.ZXGraphics;
 using ZXBasicStudio.DocumentEditors.ZXGraphics.neg;
+using ZXBasicStudio.DocumentEditors.ZXMaps.Log;
 using ZXBasicStudio.DocumentEditors.ZXMaps.Neg;
 using ZXBasicStudio.DocumentEditors.ZXTextEditor.Classes.Folding;
 using ZXBasicStudio.DocumentModel.Classes;
@@ -243,14 +244,19 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                 });
 
                 Map.PropertyDefinitons = new List<ZXMapsPropertyDefiniton>();
+                ServiceLayer_Maps.Maps_SaveMap(FileName, Map);
             }
 
             InitializeComponent();
 
             ctrlLayers.Initialize(Map.Layers);
-            ctrlProperties.Initialize(Map);
+            ctrlProperties.Initialize(Map,null,MapProperties_Command);
         }
 
+        private void MapProperties_Command(MapPropertiesControl control, string arg2)
+        {
+            //throw new NotImplementedException();
+        }
 
         public bool Initialize()
         {

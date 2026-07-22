@@ -17,6 +17,7 @@ using ZXBasicStudio.Common;
 using ZXBasicStudio.DocumentEditors.NextDows.neg;
 using ZXBasicStudio.DocumentEditors.ZXGraphics;
 using ZXBasicStudio.DocumentEditors.ZXGraphics.neg;
+using ZXBasicStudio.DocumentEditors.ZXMaps.Log;
 using ZXBasicStudio.DocumentEditors.ZXMaps.Neg;
 using ZXBasicStudio.DocumentEditors.ZXTextEditor.Classes.Folding;
 using ZXBasicStudio.DocumentModel.Classes;
@@ -64,8 +65,10 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         public bool Initialize(string mapName, Action<MapFileSelectorControl, string> callBackComando)
         {
             this.Comando = callBackComando;
-            LoadMap(mapName);
-
+            if (!string.IsNullOrEmpty(mapName))
+            {
+                Map = ServiceLayer_Maps.Maps_LoadMapByName(mapName);
+            }
             FillCombo();
             return true;
         }
@@ -73,7 +76,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
         public void Refresh()
         {
-            
+
         }
 
 
@@ -131,7 +134,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             try
             {
                 var name = cmbFileName.Text;
-                LoadMap(name);
+                Map = ServiceLayer_Maps.Maps_LoadMapByName(name);
                 Comando?.Invoke(this, "SELECTED");
             }
             catch (Exception ex)
@@ -139,28 +142,6 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                 //MessageBox.Show($"Error loading file {FileName}: {ex.Message}");
             }
 
-        }
-
-
-        private void LoadMap(string name)
-        {
-            try
-            {
-                var fileName = Path.Combine(ZXProjectManager.Current.ProjectPath, name + ".zxmap");
-                if (File.Exists(fileName))
-                {
-                    var json = File.ReadAllText(fileName);
-                    Map = json.Deserializar<ZXMapsMap>();
-                }
-                else
-                {
-                    Map = null;
-                }
-            }
-            catch (Exception ex)
-            {
-                //MessageBox.Show($"Error loading file {FileName}: {ex.Message}");
-            }
         }
     }
 }
