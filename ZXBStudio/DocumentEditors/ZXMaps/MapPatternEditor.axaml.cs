@@ -155,8 +155,6 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
             cnvEditor.PointerMoved += CnvEditor_PointerMoved;
             cnvEditor.PointerPressed += CnvEditor_PointerPressed;
-            cnvEditor.PointerReleased += CnvEditor_PointerReleased;
-            cnvEditor.PointerExited += CnvEditor_PointerExited;
 
             sldZoom.PropertyChanged += SldZoom_PropertyChanged;
             txtFrame.PropertyChanged += TxtFrame_PropertyChanged;
@@ -209,12 +207,12 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                         var i = new ZXGridImageView();
                         i.Show8x8Grid = false;
                         i.ViewAttributes = false;
-                        i.PointerEntered += I_PointerEntered;
-                        i.PointerExited += I_PointerExited;
-                        i.PointerPressed += I_PointerPressed;
-                        i.PointerReleased += I_PointerReleased;
-                        i.PointerMoved += I_PointerMoved;
-                        i.Tag = x + (y * _map.Width);
+                        //i.PointerEntered += I_PointerEntered;
+                        //i.PointerExited += I_PointerExited;
+                        //i.PointerPressed += I_PointerPressed;
+                        //i.PointerReleased += I_PointerReleased;
+                        //i.PointerMoved += I_PointerMoved;
+                        //i.Tag = x + (y * _map.Width);
                         images[x, y] = i;
                         cnvEditor.Children.Add(i);
                     }
@@ -275,7 +273,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                 CallBackCommand?.Invoke(this, "REFRESH");
             }
         }
-        
+
         #endregion
 
 
@@ -286,7 +284,6 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
         public void Undo()
         {
-            /*
             if (operationIndex > operations.Count - 1)
             {
                 operationIndex = operations.Count - 1;
@@ -296,26 +293,18 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                 return;
             }
             var op = operations[operationIndex];
-            map.TileArrays
-            if (Pattern_Equals(TileData.Patterns[TileData.CurrentFrame], op))
+            if (op == null)
             {
-                operationIndex--;
-                Undo();
                 return;
             }
-            if (op != null)
-            {
-                TileData.Patterns[TileData.CurrentFrame] = op;
-                Refresh();
-            }
-            CallBackCommand(this, "REFRESH");
-            */
+            _map.TileArrays[op.X, op.Y] = op;
+            operationIndex--;
+            Refresh(true);
         }
 
 
         public void Redo()
         {
-            /*
             if (operationIndex > operations.Count - 1)
             {
                 return;
@@ -325,79 +314,15 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                 return;
             }
             var op = operations[operationIndex];
-            if (Pattern_Equals(TileData.Patterns[TileData.CurrentFrame], op))
-            {
-                operationIndex++;
-                Redo();
-                return;
-            }
-            if (op != null)
-            {
-                TileData.Patterns[TileData.CurrentFrame] = op;
-                Refresh();
-            }
-            */
+            _map.TileArrays[op.X, op.Y] = op;
+            operationIndex++;
+            Refresh(true);
         }
 
         #endregion
 
 
         #region Drawing events
-
-        private bool pointerPressed = false;
-
-        private void I_PointerExited(object? sender, PointerEventArgs e)
-        {
-            ZXGridImageView i = sender as ZXGridImageView;
-            i.BorderBrush = null;
-            i.BorderThickness = new Thickness(0);
-        }
-
-
-        private void I_PointerEntered(object? sender, PointerEventArgs e)
-        {
-            ZXGridImageView i = sender as ZXGridImageView;
-            i.BorderBrush = new SolidColorBrush(Colors.Red);
-            i.BorderThickness = new Thickness(1);                       
-        }
-
-
-        private void I_PointerPressed(object? sender, PointerPressedEventArgs e)
-        {
-            pointerPressed = true;
-            ZXGridImageView i = sender as ZXGridImageView;
-            int id = i.Tag.ToInteger();
-            int y = id / _map.Width;
-            int x = id - (y * _map.Width);
-            _map.TileArrays[x, y].TileId = CurrentTile;
-            Refresh(true);
-        }
-
-
-        private void I_PointerReleased(object? sender, PointerReleasedEventArgs e)
-        {
-            pointerPressed = false;
-        }
-
-
-        private void I_PointerMoved(object? sender, PointerEventArgs e)
-        {
-            ZXGridImageView i = sender as ZXGridImageView;
-            i.BorderBrush = new SolidColorBrush(Colors.Red);
-            i.BorderThickness = new Thickness(1);
-
-            //if (pointerPressed)
-            //{
-            //    int id = i.Tag.ToInteger();
-            //    Console.WriteLine(id.ToString());
-            //    int y = id / _map.Width;
-            //    int x = id - (y * _map.Width);
-            //    _map.TileArrays[x, y].TileId = CurrentTile;
-            //    Refresh(false);
-            //}
-        }
-
-
 
         /// <summary>
         /// Event for mouse pressed
@@ -406,67 +331,20 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         /// <param name="e"></param>
         private void CnvEditor_PointerPressed(object? sender, Avalonia.Input.PointerPressedEventArgs e)
         {
-            //var p = e.GetCurrentPoint(CnvEditor);
+            var p = e.GetCurrentPoint(cnvEditor);
+            var w = images[0, 0].Width;
+            var h = images[0, 0].Height;
+            int x = (int)(p.Position.X / w);
+            int y = (int)(p.Position.Y / h);
 
-            //if (ColorPicker)
-            //{
-            //    int x = (int)p.Position.X;
-            //    int y = (int)p.Position.Y;
-            //    x = x / (_Zoom + 1);
-            //    y = y / (_Zoom + 1);
-            //    var atr = GetAttribute(TileData.Patterns[TileData.CurrentFrame], x, y);
-            //    PrimaryColorIndex = atr.Ink;
-            //    SecondaryColorIndex = atr.Paper;
-            //    ColorPicker = false;
-            //    Refresh(true);
-            //}
-            //else if (InvertPixelsCell)
-            //{
-            //    CnvEditor_InvertPixelsCell(p.Position.X, p.Position.Y);
-            //}
-            //else if (InvertColorsCell)
-            //{
-            //    CnvEditor_InvertColorsCell(p.Position.X, p.Position.Y);
-            //}
-            //else
-            //{
-            //    if (p.Properties.IsLeftButtonPressed)
-            //    {
-            //        SetPoint(p.Position.X, p.Position.Y, PrimaryColorIndex);
-            //        MouseLeftPressed = true;
-            //        MouseRightPressed = false;
-            //    }
-            //    else if (p.Properties.IsRightButtonPressed)
-            //    {
-            //        SetPoint(p.Position.X, p.Position.Y, SecondaryColorIndex);
-            //        MouseLeftPressed = false;
-            //        MouseRightPressed = true;
-            //    }
-            //}
-        }
-
-
-        /// <summary>
-        /// Event for mouse released
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void CnvEditor_PointerReleased(object? sender, Avalonia.Input.PointerReleasedEventArgs e)
-        {
-            MouseLeftPressed = false;
-            MouseRightPressed = false;
-        }
-
-
-        /// <summary>
-        /// Event for pointer moved outside control
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void CnvEditor_PointerExited(object? sender, Avalonia.Input.PointerEventArgs e)
-        {
-            MouseLeftPressed = false;
-            MouseRightPressed = false;
+            if (p.Properties.IsLeftButtonPressed)
+            {
+                SetTile(x, y, CurrentTile);
+            }
+            if (p.Properties.IsRightButtonPressed)
+            {
+                SetTile(x, y, 0);
+            }
         }
 
 
@@ -477,17 +355,29 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         /// <param name="e"></param>
         private void CnvEditor_PointerMoved(object? sender, Avalonia.Input.PointerEventArgs e)
         {
-            //var p = e.GetCurrentPoint(cnvEditor);
-            //if (MouseLeftPressed)
-            //{
-            //    SetPoint(p.Position.X, p.Position.Y, PrimaryColorIndex);
-            //}
-            //else if (MouseRightPressed)
-            //{
-            //    SetPoint(p.Position.X, p.Position.Y, SecondaryColorIndex);
-            //}
+            if (e.Properties.IsLeftButtonPressed || e.Properties.IsRightButtonPressed)
+            {
+                var p = e.GetCurrentPoint(cnvEditor);
+                var w = images[0, 0].Width;
+                var h = images[0, 0].Height;
+                int x = (int)(p.Position.X / w);
+                int y = (int)(p.Position.Y / h);
+
+                if (e.Properties.IsLeftButtonPressed)
+                {
+                    SetTile(x, y, CurrentTile);
+                }
+                else if (e.Properties.IsRightButtonPressed)
+                {
+                    SetTile(x, y, 0);
+                }
+            }
         }
 
+
+        private int lastX = -1;
+        private int lastY = -1;
+        private int lastValue = -1;
 
         /// <summary>
         /// Set point to a color value
@@ -495,101 +385,30 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         /// <param name="mx">Absolute x</param>
         /// <param name="my">Absolute y</param>
         /// <param name="value">Value of the point</param>
-        private void SetPoint(double mx, double my, int value)
+        private void SetTile(int x, int y, int value)
         {
-            //if (TileData == null)
-            //{
-            //    return;
-            //}
+            if (_map == null)
+            {
+                return;
+            }
 
-            //int x = (int)mx;
-            //int y = (int)my;
+            if(lastX==x && lastY==y && lastValue == value)
+            {
+                return;
+            }
+            var ta = _map.TileArrays[x, y];
+            operations.Add(ta.Clonar<ZXMapsTileArray>());
+            operationIndex = operations.Count - 1;
+            lastX = ta.X;
+            lastY = ta.Y;
+            lastValue = value;
 
-            //x = x / (_Zoom + 1);
-            //y = y / (_Zoom + 1);
-
-            //if (x < 0 || y < 0 || x >= TileData.Width || y >= TileData.Height)
-            //{
-            //    return;
-            //}
-
-            //int dir = (TileData.Width * y) + x;
-            //var Tile = TileData.Patterns[TileData.CurrentFrame];
-
-            //switch (TileData.GraphicMode)
-            //{
-            //    case GraphicsModes.Monochrome:
-            //        Tile.RawData[dir] = value;
-            //        break;
-            //    case GraphicsModes.ZXSpectrum:
-            //        {
-            //            if (value == PrimaryColorIndex)
-            //            {
-            //                Tile.RawData[dir] = 1;
-            //            }
-            //            else
-            //            {
-            //                Tile.RawData[dir] = 0;
-            //            }
-            //            SetAttribute(Tile, x, y);
-            //        }
-            //        break;
-            //}
-
-            //Undo_AddPoint();
-            //Refresh(false);
-
-            //if (tmr == null)
-            //{
-            //    tmr = new DispatcherTimer();
-            //    tmr.Tick += Tmr_Tick;
-            //    tmr.Interval = TimeSpan.FromMilliseconds(250);
-            //}
-            //tmr.Stop();
-            //tmr.Start();
+            if (ta.TileId != value)
+            {
+                ta.TileId = value;
+                Refresh(true);
+            }
         }
-
-
-        private void SetAttribute(Pattern pattern, int x, int y)
-        {
-            //int cW = TileData.Width / 8;
-            //int cX = x / 8;
-            //int cY = y / 8;
-            //var attr = pattern.Attributes[(cY * cW) + cX];
-            //attr.Ink = PrimaryColorIndex;
-            //attr.Paper = SecondaryColorIndex;
-            //attr.Flash = false;
-            //switch (TileData.GraphicMode)
-            //{
-            //    case GraphicsModes.Monochrome:
-            //        attr.Bright = false;
-            //        break;
-            //    case GraphicsModes.ZXSpectrum:
-            //        if (PrimaryColorIndex > 7 || SecondaryColorIndex > 7)
-            //        {
-            //            attr.Bright = true;
-            //        }
-            //        else
-            //        {
-            //            attr.Bright = false;
-            //        }
-            //        break;
-            //}
-            //pattern.Attributes[(cY * cW) + cX] = attr;
-        }
-
-
-        //private AttributeColor GetAttribute(Pattern pattern, int x, int y)
-        //{
-        //if (pattern.Attributes == null)
-        //{
-        //    pattern.Attributes = new AttributeColor[(TileData.Width / 8) * (TileData.Height / 8)];
-        //}
-        //int cW = TileData.Width / 8;
-        //int cX = x / 8;
-        //int cY = y / 8;
-        //return pattern.Attributes[(cY * cW) + cX];
-        //}
 
 
         private void Tmr_Tick(object? sender, EventArgs e)

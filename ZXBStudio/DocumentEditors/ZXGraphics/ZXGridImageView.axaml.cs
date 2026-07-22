@@ -170,13 +170,13 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
-            Debug.WriteLine($"OnPointerPressed: {e.GetPosition(this)}");
+            //Debug.WriteLine($"OnPointerPressed: {e.GetPosition(this)}");
         }
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
             base.OnPointerMoved(e);
-            Debug.WriteLine($"OnPointerMoved: {this.Width}/{this.Height} : {e.GetPosition(this)}");
+            //Debug.WriteLine($"OnPointerMoved: {this.Width}/{this.Height} : {e.GetPosition(this)}");
         }
     }
 }
