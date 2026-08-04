@@ -92,7 +92,7 @@ public abstract class AbstractMessageBoxParams
     /// <summary>
     /// Determines system decorations (title bar, border, etc)
     /// </summary>
-    public WindowDecorations SystemDecorations { get; set; } = WindowDecorations.Full;
+    public SystemDecorations SystemDecorations { get; set; } = SystemDecorations.Full;
 
     /// <summary>
     /// Window under all windows
