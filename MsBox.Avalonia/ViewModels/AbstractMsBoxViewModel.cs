@@ -86,7 +86,7 @@ public abstract class AbstractMsBoxViewModel : INotifyPropertyChanged, IInput
     public double MaxHeight { get; set; }
     public double Height { get; set; }
 
-    public WindowDecorations SystemDecorations { get; set; }
+    public SystemDecorations SystemDecorations { get; set; }
     public bool Topmost { get; set; }
 
     public SizeToContent SizeToContent { get; set; } = SizeToContent.Height;
