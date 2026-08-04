@@ -428,17 +428,13 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         /// </summary>
         public void Clear()
         {
-            //if (TileData == null || TileData.Patterns == null ||
-            //    TileData.CurrentFrame >= (TileData.Patterns.Count) ||
-            //    TileData.Patterns[TileData.CurrentFrame].RawData == null)
-            //{
-            //    return;
-            //}
-            //for (int n = 0; n < TileData.Patterns[TileData.CurrentFrame].RawData.Length; n++)
-            //{
-            //    TileData.Patterns[TileData.CurrentFrame].RawData[n] = SecondaryColorIndex;
-            //}
-            //Undo_AddPoint();
+            for (int y = 0; y < _map.Height; y++)
+            {
+                for (int x = 0; x < _map.Width; x++)
+                {
+                    SetTile(x, y, 0);
+                }
+            }
             Refresh(true);
         }
 
