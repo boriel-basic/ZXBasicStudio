@@ -25,6 +25,7 @@ using FFmpeg.AutoGen;
 using Avalonia.Media;
 using ZXBasicStudio.DocumentEditors.ZXMaps.Log;
 using ZXBasicStudio.Controls;
+using System.Data;
 
 namespace ZXBasicStudio.DocumentEditors.ZXMaps
 {
@@ -76,6 +77,8 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         protected virtual AbstractFoldingStrategy? foldingStrategy { get { return null; } }
 
         private Guid documentTypeId = Guid.Empty;
+
+        private int selectedTileId = 0;
 
         #endregion
 
@@ -301,7 +304,9 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             ctrlMapFileSelector.Initialize(TileMain.DefaultMap, MapFileSelector_Command);
             ctrlMapProperties.Initialize(ctrlMapFileSelector.Map, TileMain, MapProperties_Command);
             ctrlMapEditor.Initialize(ctrlMapFileSelector.Map, TileMain, MapEditor_Command);
-
+            
+            btnTileMoveLeft.Tapped += BtnTileMoveLeft_Tapped;
+            btnTileMoveRight.Tapped += BtnTileMoveRight_Tapped;
             btnTileInfoHide.Tapped += BtnTileInfoHide_Tapped;
             btnTileInfoShow.Tapped += BtnTileInfoShow_Tapped;
 
@@ -343,6 +348,10 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             switch (command)
             {
                 case "ADD":
+                    if (sender.TileData != null)
+                    {
+                        sender.TileData.Id = TilePatternsList.Count-1;
+                    }
                     TileList_AddTile(null);
                     ctrlEditor.TileData = sender.TileData;
                     ctrlPreview.TileData = sender.TileData;
@@ -360,16 +369,334 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                     {
                         ctrlMapEditor.CurrentTile = sender.TileData.Id;
                     }
+                    selectedTileId = sender.TileData?.Id ?? 0;
                     break;
             }
         }
 
+
+        private void BtnTileMoveRight_Tapped(object? sender, TappedEventArgs e)
+        {
+            if (selectedTileId == (TileMain.Tiles.Count - 1))
+            {
+                return;
+            }
+
+            var temp = TileMain.Tiles[selectedTileId];
+            TileMain.Tiles[selectedTileId] = TileMain.Tiles[selectedTileId + 1];
+            TileMain.Tiles[selectedTileId + 1] = temp;
+            selectedTileId++;
+            Tiles_Renum();
+            Tiles_Select(selectedTileId);
+        }
+
+
+        private void BtnTileMoveLeft_Tapped(object? sender, TappedEventArgs e)
+        {
+            if (selectedTileId < 1)
+            {
+                return;
+            }
+
+            var temp = TileMain.Tiles[selectedTileId];
+            TileMain.Tiles[selectedTileId] = TileMain.Tiles[selectedTileId - 1];
+            TileMain.Tiles[selectedTileId - 1] = temp;
+            selectedTileId--;
+            Tiles_Renum();
+            Tiles_Select(selectedTileId);
+        }
+
+
+        private void Tiles_Select(int id)
+        {
+            var tpc = TilePatternsList.FirstOrDefault(d =>
+                d != null &&
+                d.TileData != null &&
+                d.TileData.Id == id);
+            if (tpc != null)
+            {
+                tpc.Select();
+            }
+        }
+
+
+        private void Tiles_Renum()
+        {
+            for (int n = 0; n < TilePatternsList.Count; n++)
+            {
+                if (TilePatternsList[n].TileData == null || TileMain.Tiles[n] == null)
+                {
+                    continue;
+                }
+
+                TileMain.Tiles[n].Id = n;
+                var spc = TilePatternsList[n];
+                if (spc.TileData != null)
+                {
+                    spc.TileData = TileMain.Tiles[n];
+                    spc.TileData.Id = n;
+                    spc.IsSelected = false;
+                    if (n == selectedTileId)
+                    {
+                        ctrlEditor.TileData = TileMain.Tiles[n];
+                        ctrlEditor.Refresh();
+                        ctrlPreview.TileData = TileMain.Tiles[n];
+                        ctrlPreview.Refresh();
+                    }
+                }
+            }
+            ctrlMapEditor.Refresh(true);
+        }
+
+
+        private void BtnTileInfoHide_Tapped(object? sender, TappedEventArgs e)
+        {            
+            btnTileInfoShow.IsVisible = true;
+            btnTileInfoHide.IsVisible = false;
+            foreach (var ctrl in TilePatternsList)
+            {
+                ctrl.InfoVisible = false;
+            }
+        }
+
+
+        private void BtnTileInfoShow_Tapped(object? sender, TappedEventArgs e)
+        {
+            btnTileInfoShow.IsVisible = false;
+            btnTileInfoHide.IsVisible = true;
+            foreach (var ctrl in TilePatternsList)
+            {
+                ctrl.InfoVisible = true;
+            }
+        }
+
+
+        private void TileList_AddTile(ZXMapsTile TileData)
+        {            
+            TileMain.Tiles.Add(TileData);
+
+            TilePatternControl selectedTile = null;
+            int id = 0;
+            if (TilePatternsList.Count > 0)
+            {
+                var sds = TilePatternsList.Where(d => d.TileData != null);
+                if (sds.Any())
+                {
+                    id = sds.Max(d => d.TileData.Id) + 1;
+                }
+            }
+            for (int n = 0; n < TilePatternsList.Count; n++)
+            {
+                var spc = TilePatternsList[n];
+                if (spc.TileData != null && spc.TileData.Id < 0)
+                {
+                    spc.TileData.Id = id;
+                    if (string.IsNullOrEmpty(spc.TileData.Name))
+                    {
+                        spc.TileData.Name = "Tile " + spc.TileData.Id.ToString();
+                    }
+                    spc.TileData.Export = true;
+                    selectedTile = spc;
+                    break;
+                }
+                if (spc.TileData == null && TileData != null)
+                {
+                    TilePatternsList[n].TileData = TileData;
+                    selectedTile = TilePatternsList[n];
+                    break;
+                }
+            }
+
+            // Add void Tile
+            var TilePattern = new TilePatternControl();            
+            TilePatternsList.Add(TilePattern);
+            wpTileList.Children.Add(TilePattern);
+            TilePattern.Initialize(null, TileList_Command, TileMain.Width, TileMain.Height);
+            wpTileList.InvalidateMeasure();
+            CalculateWrapPanelHeight();
+
+            TileList_Unselect(selectedTile);
+        }
+
+
+        private void TileList_Unselect(TilePatternControl selected)
+        {
+            foreach (var control in TilePatternsList)
+            {
+                if (control == selected)
+                {
+                    control.IsSelected = true;
+                }
+                else
+                {
+                    control.IsSelected = false;
+                }
+            }
+        }
+
+
+        private void TileList_Delete(TilePatternControl control)
+        {
+            TilePatternsList.Remove(control);
+            wpTileList.Children.Remove(control);
+            ctrlEditor.TileData = null;
+            ctrlPreview.TileData = null;
+            ctrlTileProperties.TileData = null;
+            control = null;
+            CalculateWrapPanelHeight();
+        }
+
+
+        private void TileList_Insert(ZXMapsTile TileData)
+        {
+            var current = TileData.CurrentFrame;
+            var curPat = TileData.Patterns[current];
+
+            var pat = curPat.Clonar<Pattern>();
+            pat.RawData = new int[pat.RawData.Length];
+
+            var pats = TileData.Patterns.Take(current).ToList();
+            pats.Add(pat);
+            pats.AddRange(TileData.Patterns.Skip(current));
+            TileData.Patterns = pats;
+            TileData.Frames++;
+            ctrlTileProperties.Refresh();
+            ctrlEditor.Refresh();
+        }
+
+
+        private void TileList_Modified(ZXMapsTile TileData)
+        {
+            if (!_Modified)
+            {
+                _Modified = true;
+                DocumentModified?.Invoke(this, EventArgs.Empty);
+            }
+
+            if (TileData == null)
+            {
+                return;
+            }
+
+            var ctrl = TilePatternsList.FirstOrDefault(d => d.TileData != null && d.TileData.Id == TileData.Id);
+            if (ctrl != null)
+            {
+                ctrl.TileData = TileData;
+                ctrl.Refresh();
+            }
+            
+            var td=TileMain.Tiles.FirstOrDefault(d =>d!=null && d.Id == TileData.Id);
+            if (td != null)
+            {
+                td = TileData;
+            }
+            else
+            {
+                for (int n = 0; n < TileMain.Tiles.Count; n++)
+                {
+                    if (TileMain.Tiles[n] == null)
+                    {
+                        TileMain.Tiles[n] = TileData;
+                        break;
+                    }
+                }
+            }
+
+            wpTileList.ItemWidth = (TileMain.Width * 4) + 4;
+            wpTileList.ItemHeight = (TileMain.Height * 4) + 4;
+
+            // Calcular altura del WrapPanel basada en el contenido
+            CalculateWrapPanelHeight();
+            wpTileList.InvalidateMeasure();
+
+            ctrlMapEditor.Refresh(false);
+        }
+
+        private void CalculateWrapPanelHeight()
+        {
+            if (wpTileList.ItemWidth <= 0 || wpTileList.ItemHeight <= 0 || wpTileList.Children.Count == 0)
+            {
+                return;
+            }
+
+            // Obtener el ancho disponible del ScrollViewer padre
+            double availableWidth = wpTileList.Bounds.Width;
+
+            // Si el ancho no está disponible aún, intentar obtenerlo del control padre
+            if (availableWidth <= 0)
+            {
+                var parent = wpTileList.Parent as Control;
+                if (parent != null)
+                {
+                    availableWidth = parent.Bounds.Width;
+                }
+            }
+
+            // Si aún no está disponible, usar una estimación basada en el número de elementos
+            if (availableWidth <= 0)
+            {
+                // Estimación: asumir que el ScrollViewer tiene aproximadamente 160-180 px de ancho
+                // Esto es relativo al contenedor padre
+                availableWidth = 160;
+            }
+
+            // Asegurar que hay espacio suficiente
+            if (availableWidth < wpTileList.ItemWidth)
+            {
+                availableWidth = wpTileList.ItemWidth;
+            }
+
+            // Calcular el número de columnas que caben
+            int itemsPerRow = Math.Max(1, (int)(availableWidth / wpTileList.ItemWidth));
+
+            // Calcular el número de filas necesarias
+            int totalRows = Math.Max(1, (int)Math.Ceiling((double)wpTileList.Children.Count / itemsPerRow));
+
+            // Calcular la altura total (número de filas * altura de cada item)
+            double calculatedHeight = totalRows * wpTileList.ItemHeight;
+
+            wpTileList.Height = calculatedHeight;
+        }
+
+        #endregion
+
+
+        #region Tile preview
 
         private void TilePreview_Command(TilePreviewControl sender, string command)
         {
 
         }
 
+
+        private void TileProperties_FrameUpdate(TilePropertiesControl sender, string command)
+        {
+            if (sender.TileData == null)
+            {
+                return;
+            }
+
+            // TODO: Multiple frames per tile?
+            /*
+            int f = sender.TileData.Frames - 1;
+            if (f < 0)
+            {
+                f = 0;
+            }
+            else if (f > 255)
+            {
+                f = 255;
+            }
+            txtFrame.Maximum = f;
+            txtFrame.Text = f.ToString();
+            txtFrame.UpdateLayout();
+            */
+            TileProperties_Command(sender, "REFRESH");
+        }
+        #endregion
+
+
+        #region Tile properties
 
         private void TileProperties_Command(TilePropertiesControl sender, string command)
         {
@@ -471,125 +798,8 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             return pat;
         }
 
+        #endregion
 
-        private void TileProperties_FrameUpdate(TilePropertiesControl sender, string command)
-        {
-            if (sender.TileData == null)
-            {
-                return;
-            }
-
-            // TODO: Multiple frames per tile?
-            /*
-            int f = sender.TileData.Frames - 1;
-            if (f < 0)
-            {
-                f = 0;
-            }
-            else if (f > 255)
-            {
-                f = 255;
-            }
-            txtFrame.Maximum = f;
-            txtFrame.Text = f.ToString();
-            txtFrame.UpdateLayout();
-            */
-            TileProperties_Command(sender, "REFRESH");
-        }
-
-
-        private void TileList_AddTile(ZXMapsTile TileData)
-        {
-            TileMain.Tiles.Add(TileData);
-
-            TilePatternControl selectedTile = null;
-            int id = 0;
-            if (TilePatternsList.Count > 0)
-            {
-                var sds = TilePatternsList.Where(d => d.TileData != null);
-                if (sds.Any())
-                {
-                    id = sds.Max(d => d.TileData.Id) + 1;
-                }
-            }
-            for (int n = 0; n < TilePatternsList.Count; n++)
-            {
-                var spc = TilePatternsList[n];
-                if (spc.TileData != null && spc.TileData.Id < 0)
-                {
-                    spc.TileData.Id = id;
-                    if (string.IsNullOrEmpty(spc.TileData.Name))
-                    {
-                        spc.TileData.Name = "Tile " + spc.TileData.Id.ToString();
-                    }
-                    spc.TileData.Export = true;
-                    selectedTile = spc;
-                    break;
-                }
-                if (spc.TileData == null && TileData != null)
-                {
-                    TilePatternsList[n].TileData = TileData;
-                    selectedTile = TilePatternsList[n];
-                    break;
-                }
-            }
-
-            // Add void Tile
-            var TilePattern = new TilePatternControl();
-            TilePatternsList.Add(TilePattern);
-            wpTileList.Children.Add(TilePattern);
-            TilePattern.Initialize(null, TileList_Command, TileMain.Width, TileMain.Height);
-            wpTileList.InvalidateMeasure();
-            CalculateWrapPanelHeight();
-
-            TileList_Unselect(selectedTile);
-        }
-
-
-        private void TileList_Unselect(TilePatternControl selected)
-        {
-            foreach (var control in TilePatternsList)
-            {
-                if (control == selected)
-                {
-                    control.IsSelected = true;
-                }
-                else
-                {
-                    control.IsSelected = false;
-                }
-            }
-        }
-
-
-        private void TileList_Delete(TilePatternControl control)
-        {
-            TilePatternsList.Remove(control);
-            wpTileList.Children.Remove(control);
-            ctrlEditor.TileData = null;
-            ctrlPreview.TileData = null;
-            ctrlTileProperties.TileData = null;
-            control = null;
-            CalculateWrapPanelHeight();
-        }
-
-
-        private void TileList_Insert(ZXMapsTile TileData)
-        {
-            var current = TileData.CurrentFrame;
-            var curPat = TileData.Patterns[current];
-
-            var pat = curPat.Clonar<Pattern>();
-            pat.RawData = new int[pat.RawData.Length];
-
-            var pats = TileData.Patterns.Take(current).ToList();
-            pats.Add(pat);
-            pats.AddRange(TileData.Patterns.Skip(current));
-            TileData.Patterns = pats;
-            TileData.Frames++;
-            ctrlTileProperties.Refresh();
-            ctrlEditor.Refresh();
-        }
 
 
         private void TileList_Clone(ZXMapsTile TileData)
@@ -617,103 +827,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         }
 
 
-        private void TileList_Modified(ZXMapsTile TileData)
-        {
-            if (!_Modified)
-            {
-                _Modified = true;
-                DocumentModified?.Invoke(this, EventArgs.Empty);
-            }
-
-            if (TileData == null)
-            {
-                return;
-            }
-            var ctrl = TilePatternsList.FirstOrDefault(d => d.TileData != null && d.TileData.Id == TileData.Id);
-            if (ctrl != null)
-            {
-                ctrl.TileData = TileData;
-                ctrl.Refresh();
-            }
-
-            wpTileList.ItemWidth = (TileMain.Width * 4) + 4;
-            wpTileList.ItemHeight = (TileMain.Height * 4) + 4;
-
-            // Calcular altura del WrapPanel basada en el contenido
-            CalculateWrapPanelHeight();
-            wpTileList.InvalidateMeasure();
-        }
-
-        private void CalculateWrapPanelHeight()
-        {
-            if (wpTileList.ItemWidth <= 0 || wpTileList.ItemHeight <= 0 || wpTileList.Children.Count == 0)
-            {
-                return;
-            }
-
-            // Obtener el ancho disponible del ScrollViewer padre
-            double availableWidth = wpTileList.Bounds.Width;
-
-            // Si el ancho no está disponible aún, intentar obtenerlo del control padre
-            if (availableWidth <= 0)
-            {
-                var parent = wpTileList.Parent as Control;
-                if (parent != null)
-                {
-                    availableWidth = parent.Bounds.Width;
-                }
-            }
-
-            // Si aún no está disponible, usar una estimación basada en el número de elementos
-            if (availableWidth <= 0)
-            {
-                // Estimación: asumir que el ScrollViewer tiene aproximadamente 160-180 px de ancho
-                // Esto es relativo al contenedor padre
-                availableWidth = 160;
-            }
-
-            // Asegurar que hay espacio suficiente
-            if (availableWidth < wpTileList.ItemWidth)
-            {
-                availableWidth = wpTileList.ItemWidth;
-            }
-
-            // Calcular el número de columnas que caben
-            int itemsPerRow = Math.Max(1, (int)(availableWidth / wpTileList.ItemWidth));
-
-            // Calcular el número de filas necesarias
-            int totalRows = Math.Max(1, (int)Math.Ceiling((double)wpTileList.Children.Count / itemsPerRow));
-
-            // Calcular la altura total (número de filas * altura de cada item)
-            double calculatedHeight = totalRows * wpTileList.ItemHeight;
-
-            wpTileList.Height = calculatedHeight;
-        }
-
-
-        private void BtnTileInfoHide_Tapped(object? sender, TappedEventArgs e)
-        {
-            btnTileInfoShow.IsVisible = true;
-            btnTileInfoHide.IsVisible = false;
-            foreach (var ctrl in TilePatternsList)
-            {
-                ctrl.InfoVisible = false;
-            }
-        }
-
-        private void BtnTileInfoShow_Tapped(object? sender, TappedEventArgs e)
-        {
-            btnTileInfoShow.IsVisible = false;
-            btnTileInfoHide.IsVisible = true;
-            foreach (var ctrl in TilePatternsList)
-            {
-                ctrl.InfoVisible = true;
-            }
-        }
-
-
-
-        #endregion
+        
 
 
         #region Tile editor

@@ -119,12 +119,13 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         private async void BtnFile_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)
         {
-            var fileTypes = new FilePickerFileType[4];
+            var fileTypes = new FilePickerFileType[5];
             fileTypes[0] = new FilePickerFileType("All files") { Patterns = new[] { "*", "*.*" } };
             fileTypes[1] = new FilePickerFileType("BMP files") { Patterns = new[] { "*.bmp" } };
             fileTypes[2] = new FilePickerFileType("JPG files") { Patterns = new[] { "*.jpg", "*.jpeg" } };
             fileTypes[3] = new FilePickerFileType("PNG files") { Patterns = new[] { "*.png" } };
-            /*fileTypes[4] = new FilePickerFileType("SCR Spectrum screen files") { Patterns = new[] { "*.scr" } };*/
+            fileTypes[4] = new FilePickerFileType("ZX Paintbrush SCR files") { Patterns = new[] { "*.scr" } };
+            /*fileTypes[5] = new FilePickerFileType("SCR Spectrum screen files") { Patterns = new[] { "*.scr" } };*/
 
             var select = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {

@@ -28,10 +28,10 @@
 									<svg:Svg Path="/Svg/forward-solid.svg"></svg:Svg>
 								</Button>
 								<Line StartPoint="0,0" EndPoint="0,26" Stroke="White" Margin="5,0,5,0"></Line>
-								<Button Classes="toolbar" Name="btnTileInfoShow" ToolTip.Tip="Show tile number">
+								<Button Classes="toolbar" Name="btnTileInfoShow" ToolTip.Tip="Show tile number"  IsVisible="False">
 									<svg:Svg Path="/Svg/circle-info-solid.svg"></svg:Svg>
 								</Button>
-								<Button Classes="toolbar" Name="btnTileInfoHide" ToolTip.Tip="Move actual tile to the right" IsVisible="False">
+								<Button Classes="toolbar" Name="btnTileInfoHide" ToolTip.Tip="Move actual tile to the right">
 									<svg:Svg Path="/Svg/comment-slash-solid.svg"></svg:Svg>
 								</Button>
 								<Line StartPoint="0,0" EndPoint="0,26" Stroke="White" Margin="5,0,5,0"></Line>

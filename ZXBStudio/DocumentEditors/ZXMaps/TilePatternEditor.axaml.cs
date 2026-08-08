@@ -210,10 +210,10 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             btnUndo.Tapped += BtnUndo_Tapped;
             btnRedo.Tapped += BtnRedo_Tapped;
 
-            btnViewAttributes.Tapped += BtnViewAttributes_Tapped;
-            btnColorPicker.Tapped += BtnColorPicker_Tapped;
-            btnInvertColorsCell.Tapped += BtnInvertColorsCell_Tapped;
-            btnInvertPixelsCell.Tapped += BtnInvertPixelsCell_Tapped;
+            //btnViewAttributes.Tapped += BtnViewAttributes_Tapped;
+            //btnColorPicker.Tapped += BtnColorPicker_Tapped;
+            //btnInvertColorsCell.Tapped += BtnInvertColorsCell_Tapped;
+            //btnInvertPixelsCell.Tapped += BtnInvertPixelsCell_Tapped;
 
             btnPaper.Tapped += BtnPaper_Click;
             btnInk.Tapped += BtnInk_Tapped;
@@ -1650,40 +1650,6 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         private void BtnImport_Tapped(object? sender, TappedEventArgs e)
         {
             Import();
-        }
-
-
-
-        private void BtnViewAttributes_Tapped(object? sender, TappedEventArgs e)
-        {
-            ViewAttributes = btnViewAttributes.IsChecked == true;
-        }
-
-        private void BtnColorPicker_Tapped(object? sender, TappedEventArgs e)
-        {
-            ColorPicker = btnColorPicker.IsChecked == false;
-        }
-
-
-        private void BtnInvertPixelsCell_Tapped(object? sender, TappedEventArgs e)
-        {
-            InvertPixelsCell = btnInvertPixelsCell.IsChecked == false;
-            if (InvertPixelsCell)
-            {
-                btnInvertColorsCell.IsChecked = true;
-                InvertColorsCell = false;
-            }
-        }
-
-
-        private void BtnInvertColorsCell_Tapped(object? sender, TappedEventArgs e)
-        {
-            InvertColorsCell = btnInvertColorsCell.IsChecked == false;
-            if (InvertColorsCell)
-            {
-                btnInvertPixelsCell.IsChecked = true;
-                InvertPixelsCell = false;
-            }
         }
 
 

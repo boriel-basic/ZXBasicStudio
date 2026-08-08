@@ -71,6 +71,10 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         {
             try
             {
+                if (Tile == null)
+                {
+                    return;
+                }
                 if (bitmap == null) //disposed
                     throw new ObjectDisposedException("ZXTileImage");
 

@@ -86,6 +86,7 @@
 			</Button>
 			<Line StartPoint="0,0" EndPoint="0,32" Stroke="White" Margin="5,0,5,0"></Line>
 
+			<!--
 			<ToggleButton Classes="toolbar" Name="btnViewAttributes" ToolTip.Tip="Hide or view attributes" IsChecked="True">
 				<svg:Svg Path="/Svg/hide.svg"></svg:Svg>
 			</ToggleButton>
@@ -99,7 +100,7 @@
 				<svg:Svg Path="/Svg/invert-color-svgrepo-com.svg"></svg:Svg>
 			</ToggleButton>
 			<Line StartPoint="0,0" EndPoint="0,32" Stroke="White" Margin="5,0,5,0"></Line>
-
+			-->
 
 			<Button Classes="toolbar" Name="btnImport" ToolTip.Tip="Import from image or data">
 				<svg:Svg Path="/Svg/ImageImport.svg"></svg:Svg>

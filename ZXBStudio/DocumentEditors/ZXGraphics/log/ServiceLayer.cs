@@ -1,22 +1,24 @@
-﻿using ZXBasicStudio.DocumentEditors.ZXGraphics.dat;
-using ZXBasicStudio.DocumentEditors.ZXGraphics.neg;
+﻿using Avalonia.Controls.Shapes;
+using Avalonia.Metadata;
+using Avalonia.Platform.Storage;
+using AvaloniaEdit;
+using Newtonsoft.Json;
+using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Runtime;
 using ZXBasicStudio.Classes;
 using ZXBasicStudio.Common;
-using System.Runtime;
-using Newtonsoft.Json;
 using ZXBasicStudio.Common.TAPTools;
+using ZXBasicStudio.DocumentEditors.ZXGraphics.dat;
+using ZXBasicStudio.DocumentEditors.ZXGraphics.neg;
 using ZXBasicStudio.DocumentModel.Classes;
-using ZXBasicStudio.IntegratedDocumentTypes.ZXGraphics;
 using ZXBasicStudio.IntegratedDocumentTypes.CodeDocuments.Basic;
-using System.Drawing.Imaging;
-using Avalonia.Metadata;
-using Avalonia.Controls.Shapes;
-using AvaloniaEdit;
-using System.Diagnostics;
+using ZXBasicStudio.IntegratedDocumentTypes.ZXGraphics;
 
 namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
 {
@@ -688,7 +690,6 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         #endregion
 
 
-
         #region Tools
 
         public static int GetColor(byte r, byte g, byte b, PaletteColor[] palette, byte cutOff = 5)
@@ -762,6 +763,101 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
             int gDiff = c1.Green - c2.Green;
             int bDiff = c1.Blue - c2.Blue;
             return Math.Sqrt(rDiff * rDiff + gDiff * gDiff + bDiff * bDiff);
+        }
+
+        #endregion
+
+
+        #region Screen
+
+        /// <summary>
+        /// Obtiene el offset dentro de la memoria de pantalla del ZX Spectrum
+        /// para el byte que contiene el píxel (x,y).
+        /// </summary>
+        /// <param name="x">Coordenada X (0-255)</param>
+        /// <param name="y">Coordenada Y (0-191)</param>
+        /// <returns>Offset (0-6143)</returns>
+        public static int GetSpectrumScreenOffset(int x, int y)
+        {
+            if (x < 0 || x > 255 || y<0 || y>191)
+            {
+                return -1;
+            }
+
+            int offset =
+                ((y & 0b11000000) << 5) |   // Bits 6-7 -> 11-12
+                ((y & 0b00000111) << 8) |   // Bits 0-2 -> 8-10
+                ((y & 0b00111000) << 2) |   // Bits 3-5 -> 5-7
+                (x >> 3);                   // Columna (0-31)
+            return offset;
+        }
+
+        #endregion
+
+
+        #region Images
+
+        public static SixLabors.ImageSharp.Image<Rgba32> LoadImage(IStorageFile file)
+        {
+            try
+            {
+                SixLabors.ImageSharp.Image<Rgba32> imageData = null;
+
+                using (var stream = file.OpenReadAsync().Result)
+                {
+                    if (file.Name.ToLower().EndsWith(".scr"))
+                    {
+                        // Load SCR file
+                        var scrData = new byte[6912];
+                        stream.ReadAsync(scrData, 0, 6912).GetAwaiter();
+                        imageData = new SixLabors.ImageSharp.Image<Rgba32>(256, 192);
+                        var palete = ZXGraphics.log.ServiceLayer.GetPalette(GraphicsModes.ZXSpectrum);
+                        for (int y = 0; y < 192; y++)
+                        {
+                            for (int cx = 0; cx < 32; cx++)
+                            {
+                                int pixelIndex = ZXGraphics.log.ServiceLayer.GetSpectrumScreenOffset(cx * 8, y);
+                                int attrIndex = 6144 + (((y / 8) * 32) + cx);
+                                var attr = new AttributeColor()
+                                {
+                                    Attribute = scrData[attrIndex]
+                                };
+                                var paper = palete[attr.Paper];
+                                var colorOFF = new Rgba32(paper.Red, paper.Green, paper.Blue);
+                                var ink = palete[attr.Ink];
+                                var colorON = new Rgba32(ink.Red, ink.Green, ink.Blue);
+
+                                byte byteData = scrData[pixelIndex];
+                                string bits = $"{byteData:B8}";
+                                for (int bx = 0; bx < 8; bx++)
+                                {
+                                    Rgba32 color = new Rgba32(0);
+                                    if (bits.Substring(bx, 1) == "0")
+                                    {
+                                        color = colorOFF;
+                                    }
+                                    else
+                                    {
+                                        color = colorON;
+                                    }
+                                    int x = (cx * 8) + bx;
+                                    imageData[x, y] = color;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Load other image formats
+                        imageData = SixLabors.ImageSharp.Image.Load<Rgba32>(stream);
+                    }
+                }
+                return imageData;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
 
         #endregion

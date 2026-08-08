@@ -64,7 +64,6 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             }
         }
 
-
         /// <summary>
         /// Color index of the primary color
         /// </summary>
@@ -167,6 +166,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
             btnPaper.Tapped += BtnPaper_Click;
             btnInk.Tapped += BtnInk_Tapped;
+
             UpdateColorPanel();
         }
 
@@ -207,6 +207,8 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                         var i = new ZXGridImageView();
                         i.Show8x8Grid = false;
                         i.ViewAttributes = false;
+                        i.ShowTileGrid = true;
+
                         //i.PointerEntered += I_PointerEntered;
                         //i.PointerExited += I_PointerExited;
                         //i.PointerPressed += I_PointerPressed;
