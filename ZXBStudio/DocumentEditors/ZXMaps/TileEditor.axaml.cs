@@ -869,6 +869,10 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                             }
                         }
                         break;
+
+                    case "IMPORT":
+                        Import();
+                        break;
                 }
             }
             catch { }
@@ -975,6 +979,41 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             {
                 ctrlMapEditor.Refresh(false);
             }
+        }
+
+        #endregion
+
+
+        #region Import tiles
+
+        private void Import()
+        {
+            var dlg = new TileImportDialog();
+            dlg.Initialize(TilePatternsList.Select(d => d.TileData), Import_Command);
+            dlg.ShowDialog(this.VisualRoot as Window);
+        }
+
+
+        private void Import_Command(ZXMapsTile Tile, string command)
+        {
+            try
+            {
+                switch (command)
+                {
+                    case "ADD":
+                        //TileData = Tile;
+                        //CallBackCommand?.Invoke(this, "ADD");
+                        break;
+                    case "UPDATE":
+                        //var spr = TilePatternsList.FirstOrDefault(d => d.Name == Tile.Name);
+                        //if (spr != null)
+                        //{
+                        //    TileList_Modified(Tile);
+                        //}
+                        break;
+                }
+            }
+            catch { }
         }
 
         #endregion

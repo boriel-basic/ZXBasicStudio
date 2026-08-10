@@ -140,65 +140,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         public async void LoadImage(IStorageFile file)
         {
             imageData = ZXGraphics.log.ServiceLayer.LoadImage(file);
-            this.InvalidateVisual();
-            return;
-
-            try
-            {
-                await using (var stream = await file.OpenReadAsync())
-                {
-                    if (file.Name.ToLower().EndsWith(".scr"))
-                    {
-                        // Load SCR file
-                        var scrData = new byte[6912];
-                        await stream.ReadAsync(scrData, 0, 6912);
-                        imageData = new SixLabors.ImageSharp.Image<Rgba32>(256, 192);
-                        var palete = ZXGraphics.log.ServiceLayer.GetPalette(GraphicsModes.ZXSpectrum);
-                        for (int y = 0; y < 192; y++)
-                        {
-                            for (int cx = 0; cx < 32; cx++)
-                            {
-                                int pixelIndex = ZXGraphics.log.ServiceLayer.GetSpectrumScreenOffset(cx * 8, y);
-                                int attrIndex = 6144 + (((y/8) * 32) + cx);
-                                var attr = new AttributeColor()
-                                {
-                                    Attribute = scrData[attrIndex]
-                                };
-                                var paper = palete[attr.Paper];
-                                var colorOFF =new Rgba32(paper.Red, paper.Green, paper.Blue);
-                                var ink = palete[attr.Ink];
-                                var colorON = new Rgba32(ink.Red, ink.Green, ink.Blue);
-
-                                byte byteData = scrData[pixelIndex];
-                                string bits = $"{byteData:B8}";
-                                for (int bx = 0; bx < 8; bx++)
-                                {
-                                    Rgba32 color = new Rgba32(0);
-                                    if (bits.Substring(bx,1) == "0")
-                                    {
-                                        color = colorOFF;
-                                    }
-                                    else
-                                    {
-                                        color = colorON;
-                                    }
-                                    int x = (cx * 8) + bx;
-                                    imageData[x, y] = color;
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // Load other image formats
-                        imageData = SixLabors.ImageSharp.Image.Load<Rgba32>(stream);
-                    }
-                    this.InvalidateVisual();
-                }
-            }
-            catch (Exception ex)
-            {
-            }
+            this.InvalidateVisual();            
         }
 
 

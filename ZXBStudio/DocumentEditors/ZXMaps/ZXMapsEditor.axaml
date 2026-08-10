@@ -12,7 +12,7 @@
 	<Grid Name="grdMain" RowDefinitions="*,Auto">
 		<Grid Name="grdEditor" Grid.RowSpan="2" ColumnDefinitions="180,4,*,4,300" Margin="0,8,0,0">
 			<zxd:ZXDockingContainer Name="dockLeft" DockingGroup="Tiles" RowDefinitions="*">
-				<zxd:ZXDockingControl Name="dockPatterns" Title="Tile list" DockingGroup="Tiles" DesiredFloatingSize="">
+				<zxd:ZXDockingControl Name="dockPatterns" Title="Tile list" DockingGroup="Tiles">
 					<zxd:ZXDockingControl.DockedControl>
 						<ScrollViewer VerticalScrollBarVisibility="Auto">
 							<WrapPanel Orientation="Horizontal" Name="wpTiles" Height="NaN" MinWidth="40" Background="#282828"/>

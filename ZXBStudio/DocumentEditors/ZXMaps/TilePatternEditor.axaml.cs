@@ -1649,7 +1649,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
         private void BtnImport_Tapped(object? sender, TappedEventArgs e)
         {
-            Import();
+            CallBackCommand(this, "IMPORT");
         }
 
 
@@ -1666,43 +1666,5 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
         #endregion
 
-
-
-        #region Import
-
-        private void Import()
-        {
-            /*
-            var dlg = new TileImportDialog();
-            dlg.Initialize(FileName, TilePatternsList.Select(d => d.TileData), Import_Command);
-            dlg.ShowDialog(this.VisualRoot as Window);
-            */
-        }
-
-
-        private void Import_Command(ZXMapsTile Tile, string command)
-        {
-            try
-            {
-                switch (command)
-                {
-                    case "ADD":
-                        TileData = Tile;
-                        CallBackCommand?.Invoke(this, "ADD");
-                        break;
-                    case "UPDATE":
-                        //var spr = TilePatternsList.FirstOrDefault(d => d.Name == Tile.Name);
-                        //if (spr != null)
-                        //{
-                        //    TileList_Modified(Tile);
-                        //}
-                        break;
-                }
-            }
-            catch { }
-        }
-
-
-        #endregion
     }
 }
