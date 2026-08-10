@@ -293,106 +293,136 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
                 tileFrames = maxX * maxY;
 
-                for (int n = 0; n < tileFrames; n++)
-                {
-                    var attrs = attrsDefault.Clonar<AttributeColor[]>();
-                    var pattern = new Pattern();
-                    pattern.Attributes = attrs; // new AttributeColor[(tileWidth / 8) * (tileHeight / 8)];
-                    pattern.Id = n;
-                    pattern.Name = "";
-                    pattern.Number = n.ToString();
-                    pattern.RawData = new int[tileWidth * tileHeight];
+                int frameNumber = 0;
+                int framesX = imgData.Width / tileWidth;
+                int framesY = imgData.Height / tileHeight;
 
-                    int dir = 0;
-                    for (int cy = 0; cy < sh; cy++)
+                for (int fy = 0; fy < framesY; fy++)
+                {
+                    cnvSource.OffsetY = fy * tileHeight;
+                    for (int fx = 0; fx < framesX; fx++)
                     {
-                        py = cy * 8;
-                        for (int cx = 0; cx < sw; cx++)
+                        cnvSource.OffsetX = fx * tileWidth;
+
+                        var attrs = attrsDefault.Clonar<AttributeColor[]>();
+                        var pattern = new Pattern();
+                        pattern.Attributes = attrs; // new AttributeColor[(tileWidth / 8) * (tileHeight / 8)];
+                        pattern.Id = frameNumber;
+                        pattern.Name = "";
+                        pattern.Number = frameNumber.ToString();
+                        pattern.RawData = new int[tileWidth * tileHeight];
+
+                        int dir = 0;
+                        for (int cy = 0; cy < sh; cy++)
                         {
-                            ys = cnvSource.OffsetY + py;
-                            px = cx * 8;
-                            paper = -1;
-                            ink = -1;
-                            for (int y = 0; y < 8; y++)
+                            py = cy * 8;
+                            for (int cx = 0; cx < sw; cx++)
                             {
-                                xs = (cnvSource.OffsetX + (n * tileWidth)) + px;
-                                dir = (((cy * 8) + y) * tileWidth) + (cx * 8);
-                                for (int x = 0; x < 8; x++)
+                                //ys = cnvSource.OffsetY + py;
+                                ys = (fy * tileHeight) + py;
+
+                                px = cx * 8;
+                                paper = -1;
+                                ink = -1;
+                                for (int y = 0; y < 8; y++)
                                 {
-                                    if (xs >= 0 && xs < imgData.Width &&
-                                        ys >= 0 && ys < imgData.Height)
+                                    //xs = (cnvSource.OffsetX /*+ (n * tileWidth)*/) + px;
+                                    xs = (fx * tileWidth) + px;
+
+                                    dir = (((cy * 8) + y) * tileWidth) + (cx * 8);
+                                    for (int x = 0; x < 8; x++)
                                     {
-                                        var c = imgData[xs, ys];
-                                        var idxAttr = GetColor(c.R, c.G, c.B, s.Palette);
-                                        if (tileMode == GraphicsModes.ZXSpectrum)
+                                        if (xs >= 0 && xs < imgData.Width &&
+                                            ys >= 0 && ys < imgData.Height)
                                         {
-                                            // Fijar el color
-                                            var dirAttr = (cy * sw) + cx;
-                                            var attr = pattern.Attributes[dirAttr];
-                                            attr.Bright = attr.Bright | (idxAttr > 7);
-                                            byte cCol = (byte)(idxAttr /*& 0b111*/);
-                                            if (paper == -1)
+                                            var c = imgData[xs, ys];
+                                            var idxAttr = GetColor(c.R, c.G, c.B, s.Palette);
+                                            if (tileMode == GraphicsModes.ZXSpectrum)
                                             {
-                                                attr.Paper = cCol;
-                                                paper = cCol;
+                                                // Fijar el color
+                                                var dirAttr = (cy * sw) + cx;
+                                                var attr = pattern.Attributes[dirAttr];
+                                                attr.Bright = attr.Bright | (idxAttr > 7);
+                                                byte cCol = (byte)(idxAttr /*& 0b111*/);
+                                                if (paper == -1)
+                                                {
+                                                    attr.Paper = cCol;
+                                                    paper = cCol;
+                                                }
+                                                else if (ink == -1 && paper != cCol)
+                                                {
+                                                    attr.Ink = cCol;
+                                                    ink = cCol;
+                                                }
+                                                if (cCol == paper)
+                                                {
+                                                    idxAttr = 0;
+                                                }
+                                                else
+                                                {
+                                                    idxAttr = 7;
+                                                }
                                             }
-                                            else if (ink == -1 && paper != cCol)
-                                            {
-                                                attr.Ink = cCol;
-                                                ink = cCol;
-                                            }
-                                            if (cCol == paper)
-                                            {
-                                                idxAttr = 0;
-                                            }
-                                            else
-                                            {
-                                                idxAttr = 7;
-                                            }
+                                            pattern.RawData[dir] = idxAttr;
                                         }
-                                        pattern.RawData[dir] = idxAttr;
+                                        else
+                                        {
+                                            pattern.RawData[dir] = 0;
+                                        }
+                                        dir++;
+                                        xs++;
                                     }
-                                    else
-                                    {
-                                        pattern.RawData[dir] = 0;
-                                    }
-                                    dir++;
-                                    xs++;
+                                    ys++;
                                 }
-                                ys++;
                             }
                         }
-                    }
-                    s.Patterns.Add(pattern);
 
-                    var prev = new ZXGraphics.ZXSpriteImage();
-                    var img = new Avalonia.Controls.Image();
-                    img.Width = tileWidth * tileZoom;
-                    img.Height = tileHeight * tileZoom;
-                    img.Source = prev;
-                    pnlPreview.Children.Add(img);
-
-                    Canvas.SetLeft(img, prevX);
-                    Canvas.SetTop(img, prevY);
-                    prevX += (tileWidth * 4);
-
-                    if (anchoPreview < prevX)
-                    {
-                        anchoPreview = prevX;
-                    }
-                    if ((prevX + sw) > w)
-                    {
-                        prevY += (tileHeight * 4);
-                        prevX = 0;
-                        if (altoPreview < prevY)
+                        bool addToPatterns = true;
+                        if (removeDuplicatedTiles)
                         {
-                            altoPreview = prevY;
+                            if (PatternExists(s.Patterns, pattern))
+                            {
+                                addToPatterns = false;
+                            }
+                        }
+                        if (addToPatterns)
+                        {
+                            s.Patterns.Add(pattern);
+
+                            var prev = new ZXGraphics.ZXSpriteImage();
+                            var img = new Avalonia.Controls.Image();
+                            img.Width = tileWidth * tileZoom;
+                            img.Height = tileHeight * tileZoom;
+                            img.Source = prev;
+                            pnlPreview.Children.Add(img);
+
+                            Canvas.SetLeft(img, prevX);
+                            Canvas.SetTop(img, prevY);
+                            prevX += (tileWidth * 4);
+
+                            if (anchoPreview < prevX)
+                            {
+                                anchoPreview = prevX;
+                            }
+                            if ((prevX + sw) > w)
+                            {
+                                prevY += (tileHeight * 4);
+                                prevX = 0;
+                                if (altoPreview < prevY)
+                                {
+                                    altoPreview = prevY;
+                                }
+                            }
+
+                            prev.RenderSprite(s, frameNumber);
+                            frameNumber++;
                         }
                     }
-
-                    prev.RenderSprite(s, n);
-
                 }
+
+                cnvSource.OffsetX = 0;
+                cnvSource.OffsetY = 0;
+
                 tile = s;
                 pnlPreview.Width = anchoPreview + (tileWidth * 4);
                 pnlPreview.Height = altoPreview + (tileHeight * 4);
@@ -403,6 +433,26 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             }
         }
 
+        private bool PatternExists(List<Pattern> patterns, Pattern pattern)
+        {
+            foreach (var p1 in patterns)
+            {
+                bool igual = true;
+                for (int n = 0; n < p1.RawData.Count(); n++)
+                {
+                    if (p1.RawData[n] != pattern.RawData[n])
+                    {
+                        igual = false;
+                        break;
+                    }
+                }
+                if (igual)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
 
         private int GetColor(byte r, byte g, byte b, PaletteColor[] palette)
         {
@@ -559,14 +609,13 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
                 ReadProperties();
 
-                /*
-
                 for (int n = 0; n < tile.Patterns.Count(); n++)
                 {
                     var spr = tile.Clonar<ZXMapsTile>();
+                    spr.Id = n;
                     spr.Patterns = spr.Patterns.Skip(n).Take(1).ToList();
                     spr.Frames = 1;
-                    spr.Name = sprName + "_" + n.ToString();
+                    spr.Name = n.ToString();
                     var spr2 = tiles.FirstOrDefault(d => d != null && d.Name == spr.Name);
                     if (spr2 == null)
                     {
@@ -584,7 +633,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                         CallBackCommand?.Invoke(tile, "UPDATE");
                     }
                 }
-                */
+
                 this.Close();
                 this.Dispose();
             }

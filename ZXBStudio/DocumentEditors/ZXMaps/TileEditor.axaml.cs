@@ -1001,7 +1001,8 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                 switch (command)
                 {
                     case "ADD":
-                        //TileData = Tile;
+                        //TileMain.Tiles.Add(Tile);
+                        
                         //CallBackCommand?.Invoke(this, "ADD");
                         break;
                     case "UPDATE":
