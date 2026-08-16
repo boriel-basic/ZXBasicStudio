@@ -309,7 +309,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             btnTileMoveRight.Tapped += BtnTileMoveRight_Tapped;
             btnTileInfoHide.Tapped += BtnTileInfoHide_Tapped;
             btnTileInfoShow.Tapped += BtnTileInfoShow_Tapped;
-
+            btnTileDelete.Tapped += BtnTileDelete_Tapped;
             Refresh();
 
             if (TilePatternsList.Count > 1)
@@ -334,6 +334,15 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             tileHeight = TileMain.Height;
         }
 
+        private void BtnTileDelete_Tapped(object? sender, TappedEventArgs e)
+        {
+            var ctrl = TilePatternsList.FirstOrDefault(d => d.TileData.Id == selectedTileId);
+            if (ctrl!=null)
+            {
+                TileList_Delete(ctrl);
+                Tiles_Renum();
+            }
+        }
 
         public void Refresh()
         {
@@ -1001,16 +1010,12 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                 switch (command)
                 {
                     case "ADD":
-                        //TileMain.Tiles.Add(Tile);
-                        
-                        //CallBackCommand?.Invoke(this, "ADD");
-                        break;
-                    case "UPDATE":
-                        //var spr = TilePatternsList.FirstOrDefault(d => d.Name == Tile.Name);
-                        //if (spr != null)
-                        //{
-                        //    TileList_Modified(Tile);
-                        //}
+                        Tile.Id = TilePatternsList.Count-1;
+                        TileList_AddTile(Tile);
+                        ctrlEditor.TileData = Tile;
+                        ctrlPreview.TileData = Tile;
+                        ctrlPreview.Refresh();
+                        ctrlMapEditor.Refresh(false);
                         break;
                 }
             }

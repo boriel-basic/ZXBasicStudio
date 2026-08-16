@@ -66,6 +66,11 @@
 				<TextBlock Classes="dialog" VerticalAlignment="Center">Remove duplicated tiles</TextBlock>
 			</StackPanel>
 
+			<StackPanel Name="pnlInvert" Orientation="Horizontal" Grid.Row="6" Grid.Column="1" Margin="4,0,0,0">
+				<CheckBox Name="chkInvert" IsChecked="True"/>
+				<TextBlock Classes="dialog" VerticalAlignment="Center">Invert palette (only in monochrome mode)</TextBlock>
+			</StackPanel>
+
 			<!--
 			<CheckBox Name="chkFillMap" Grid.Column="1" Grid.Row="6" IsChecked="True"/>
 			<TextBlock Grid.Column="2" Grid.Row="6" Classes="dialog" VerticalAlignment="Center" HorizontalAlignment="Right">Fill actual map</TextBlock>

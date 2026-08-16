@@ -59,7 +59,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         private bool removeDuplicatedTiles = true;
         private DispatcherTimer tmr = null;
         private bool resetFocus = false;
-
+        private bool invert = true;
 
         public TileImportDialog()
         {
@@ -363,6 +363,17 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                                                     idxAttr = 7;
                                                 }
                                             }
+                                            else if (tileMode == GraphicsModes.Monochrome && invert)
+                                            {
+                                                if (idxAttr == 0)
+                                                {
+                                                    idxAttr = 1;
+                                                }
+                                                else
+                                                {
+                                                    idxAttr = 0;
+                                                }
+                                            }
                                             pattern.RawData[dir] = idxAttr;
                                         }
                                         else
@@ -543,6 +554,13 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         private void CmbMode_SelectionChanged(object? sender, SelectionChangedEventArgs e)
         {
             resetFocus = true;
+            if (cmbMode.SelectedIndex == 0)
+            {
+                pnlInvert.IsEnabled = true;
+            }else
+            {
+                pnlInvert.IsEnabled = false;
+            }
             //btnFile.Focus();
         }
 
@@ -646,11 +664,17 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
         private void ReadProperties()
         {
+            tileMode = (GraphicsModes)cmbMode.SelectedIndex;
             tileWidth = txtWidth.Text.ToInteger();
             tileHeight = txtHeight.Text.ToInteger();
             appendToTiles = chkAppend.IsChecked.ToBoolean();
             insertBlankAtStart = chkInsertBlank.IsChecked.ToBoolean();
             removeDuplicatedTiles = chkRemoveDuplicated.IsChecked.ToBoolean();
+            invert = chkInvert.IsChecked.ToBoolean();
+            if (tileMode != GraphicsModes.Monochrome)
+            {
+                invert = false;
+            }
         }
 
         #endregion
