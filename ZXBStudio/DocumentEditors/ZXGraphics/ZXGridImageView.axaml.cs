@@ -64,6 +64,18 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             }
         }
 
+
+        public SKColor Grid8x8Color
+        {
+            get => grid8x8Color;
+            set
+            {
+                grid8x8Color = value;
+                InvalidateVisual();
+            }
+        }
+
+
         public IZXBitmap? BackgroundImage
         {
             get => backgroundImage;

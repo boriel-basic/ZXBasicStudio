@@ -7,7 +7,7 @@
 			 xmlns:local="clr-namespace:ZXBasicStudio.DocumentEditors.ZXGraphics"
 			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
 			 x:Class="ZXBasicStudio.DocumentEditors.ZXMaps.MapPatternEditor">
-	<Grid RowDefinitions="Auto,*,Auto">
+	<Grid RowDefinitions="Auto,*,Auto,Auto">
 		<WrapPanel Orientation="Horizontal" Margin="10" Background="#ff202020" Height="NaN">
 
 			<Button Classes="toolbar" Name="btnUndo" ToolTip.Tip="Undo last action">
@@ -116,7 +116,7 @@
 			<Canvas Name="cnvEditor"></Canvas>
 		</ScrollViewer>
 
-		<WrapPanel Orientation="Horizontal" Background="#ff202020" Grid.Row="2" Margin="10,5,10,5" Height="NaN">
+		<WrapPanel Orientation="Horizontal" Background="#ff202020" Grid.Row="3" Margin="10,5,10,5" Height="NaN">
 			<TextBlock Name="txtZoom" Classes="dialog" Width="54">Zoom 24x</TextBlock>
 			<Slider Name="sldZoom" Width="100" Minimum="1" Maximum="9" Value="0" VerticalAlignment="Center"/>
 
@@ -144,7 +144,7 @@
 			</Grid>
 		</WrapPanel>
 
-		<zxgraphics:ColorPickerControl Name="ctrlColorPicker" Grid.Row="1" IsVisible="false"/>
+		<zxgraphics:ColorPickerControl Name="ctrlColorPicker" Grid.Row="2" IsVisible="False"/>
 
 	</Grid>
 </UserControl>

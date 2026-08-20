@@ -304,12 +304,14 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             ctrlMapFileSelector.Initialize(TileMain.DefaultMap, MapFileSelector_Command);
             ctrlMapProperties.Initialize(ctrlMapFileSelector.Map, TileMain, MapProperties_Command);
             ctrlMapEditor.Initialize(ctrlMapFileSelector.Map, TileMain, MapEditor_Command);
-            
+
             btnTileMoveLeft.Tapped += BtnTileMoveLeft_Tapped;
             btnTileMoveRight.Tapped += BtnTileMoveRight_Tapped;
             btnTileInfoHide.Tapped += BtnTileInfoHide_Tapped;
             btnTileInfoShow.Tapped += BtnTileInfoShow_Tapped;
             btnTileDelete.Tapped += BtnTileDelete_Tapped;
+
+            Tiles_Renum();
             Refresh();
 
             if (TilePatternsList.Count > 1)
@@ -337,10 +339,9 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         private void BtnTileDelete_Tapped(object? sender, TappedEventArgs e)
         {
             var ctrl = TilePatternsList.FirstOrDefault(d => d.TileData.Id == selectedTileId);
-            if (ctrl!=null)
+            if (ctrl != null)
             {
                 TileList_Delete(ctrl);
-                Tiles_Renum();
             }
         }
 
@@ -359,7 +360,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                 case "ADD":
                     if (sender.TileData != null)
                     {
-                        sender.TileData.Id = TilePatternsList.Count-1;
+                        sender.TileData.Id = TilePatternsList.Count - 1;
                     }
                     TileList_AddTile(null);
                     ctrlEditor.TileData = sender.TileData;
@@ -435,6 +436,8 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             {
                 if (TilePatternsList[n].TileData == null || TileMain.Tiles[n] == null)
                 {
+                    TilePatternsList[n].TileData = null;
+                    TileMain.Tiles[n] = null;
                     continue;
                 }
 
@@ -459,7 +462,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
 
         private void BtnTileInfoHide_Tapped(object? sender, TappedEventArgs e)
-        {            
+        {
             btnTileInfoShow.IsVisible = true;
             btnTileInfoHide.IsVisible = false;
             foreach (var ctrl in TilePatternsList)
@@ -481,7 +484,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
 
         private void TileList_AddTile(ZXMapsTile TileData)
-        {            
+        {
+            if (TileData!=null && TileData.Palette == null)
+            {
+                TileData.Palette = ServiceLayer.GetPalette(TileData.GraphicMode);
+            }
             TileMain.Tiles.Add(TileData);
 
             TilePatternControl selectedTile = null;
@@ -517,13 +524,12 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             }
 
             // Add void Tile
-            var TilePattern = new TilePatternControl();            
+            var TilePattern = new TilePatternControl();
             TilePatternsList.Add(TilePattern);
             wpTileList.Children.Add(TilePattern);
             TilePattern.Initialize(null, TileList_Command, TileMain.Width, TileMain.Height);
             wpTileList.InvalidateMeasure();
             CalculateWrapPanelHeight();
-
             TileList_Unselect(selectedTile);
         }
 
@@ -546,13 +552,23 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
         private void TileList_Delete(TilePatternControl control)
         {
-            TilePatternsList.Remove(control);
-            wpTileList.Children.Remove(control);
-            ctrlEditor.TileData = null;
-            ctrlPreview.TileData = null;
-            ctrlTileProperties.TileData = null;
-            control = null;
-            CalculateWrapPanelHeight();
+            try
+            {
+                var t = TileMain.Tiles.FirstOrDefault(d => d.Id == control.TileData.Id);
+                if (t != null)
+                {
+                    TileMain.Tiles.Remove(t);
+                }
+                TilePatternsList.Remove(control);
+                wpTileList.Children.Remove(control);
+                ctrlEditor.TileData = null;
+                ctrlPreview.TileData = null;
+                ctrlTileProperties.TileData = null;
+                control = null;
+                CalculateWrapPanelHeight();
+                Tiles_Renum();
+            }
+            catch { }
         }
 
 
@@ -593,8 +609,8 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                 ctrl.TileData = TileData;
                 ctrl.Refresh();
             }
-            
-            var td=TileMain.Tiles.FirstOrDefault(d =>d!=null && d.Id == TileData.Id);
+
+            var td = TileMain.Tiles.FirstOrDefault(d => d != null && d.Id == TileData.Id);
             if (td != null)
             {
                 td = TileData;
@@ -836,7 +852,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         }
 
 
-        
+
 
 
         #region Tile editor
@@ -1010,7 +1026,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                 switch (command)
                 {
                     case "ADD":
-                        Tile.Id = TilePatternsList.Count-1;
+                        Tile.Id = TilePatternsList.Count - 1;
                         TileList_AddTile(Tile);
                         ctrlEditor.TileData = Tile;
                         ctrlPreview.TileData = Tile;
@@ -1064,9 +1080,19 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
         #region MapEditor
 
-        private void MapEditor_Command(MapPatternEditor editor, string arg2)
+        private void MapEditor_Command(MapPatternEditor editor, string comando)
         {
-
+            switch (comando)
+            {
+                case "REFRESH":
+                    {
+                        foreach(var tc in TilePatternsList)
+                        {
+                            tc.Refresh();
+                        }
+                    }
+                    break;
+            }
         }
 
         #endregion

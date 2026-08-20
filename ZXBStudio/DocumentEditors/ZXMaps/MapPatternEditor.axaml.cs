@@ -124,7 +124,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         private Action<MapPatternEditor, string> CallBackCommand = null;
         private int? lastId = null;
         private ZXGridImageView[,] images = null;
-
+        private PaletteColor[] ZXSpectrumPalette = null;
 
         /// <summary>
         /// True when mouse left button is pressed
@@ -149,8 +149,9 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         {
             InitializeComponent();
 
-            PrimaryColorIndex = 1;
-            SecondaryColorIndex = 0;
+            ZXSpectrumPalette = ServiceLayer.GetPalette(GraphicsModes.ZXSpectrum);
+            PrimaryColorIndex = 0;
+            SecondaryColorIndex = 7;
 
             cnvEditor.PointerMoved += CnvEditor_PointerMoved;
             cnvEditor.PointerPressed += CnvEditor_PointerPressed;
@@ -197,6 +198,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                 return;
             }
 
+
             if (images == null)
             {
                 images = new ZXGridImageView[_map.Width, _map.Height];
@@ -208,6 +210,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                         i.Show8x8Grid = false;
                         i.ViewAttributes = false;
                         i.ShowTileGrid = true;
+                        i.Grid8x8Color = new SkiaSharp.SKColor(64, 0, 0);                        
 
                         //i.PointerEntered += I_PointerEntered;
                         //i.PointerExited += I_PointerExited;
@@ -257,6 +260,9 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                         if (td != null)
                         {
                             var tile = _tiles.Tiles.FirstOrDefault(d => d != null && d.Id == td.TileId);
+                            //tile.Palette[0] = new PaletteColor() { Red = 0x00, Green = 0x00, Blue = 0x00 };
+                            //tile.Palette[1]= new PaletteColor() { Red = 0x00, Green = 0x00, Blue = 0xa0 };
+
                             var aspect = new TileImage();
                             aspect.RenderTile(tile, 0);
                             i.BackgroundImage = aspect;
@@ -394,7 +400,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                 return;
             }
 
-            if(lastX==x && lastY==y && lastValue == value)
+            if (lastX == x && lastY == y && lastValue == value)
             {
                 return;
             }
@@ -447,74 +453,76 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
         private void BtnPaper_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
         {
-            //if (ctrlColorPicker.IsVisible)
-            //{
-            //    ctrlColorPicker.IsVisible = false;
-            //    return;
-            //}
-            //var Tile = TileData;
-            //if (Tile.GraphicMode == GraphicsModes.Monochrome)
-            //{
-            //    return;
-            //}
-            //ctrlColorPicker.IsVisible = true;
-            //ctrlColorPicker.Inicialize(Tile.GraphicMode, Tile.Palette, SecondaryColorIndex, ColorPickerPaper_Action);
+            if (ctrlColorPicker.IsVisible)
+            {
+                ctrlColorPicker.IsVisible = false;
+                return;
+            }
+            var Tile = Tiles.Tiles[0];
+            //Tile.GraphicMode = GraphicsModes.ZXSpectrum;
+            //Tile.Palette=ZXGraphics.log.ServiceLayer.GetPalette(Tile.GraphicMode);
+            ctrlColorPicker.IsVisible = true;
+            var p = ServiceLayer.GetPalette(GraphicsModes.ZXSpectrum);
+            ctrlColorPicker.Inicialize(GraphicsModes.ZXSpectrum, p, SecondaryColorIndex, ColorPickerPaper_Action);
         }
 
 
         private void BtnInk_Tapped(object? sender, TappedEventArgs e)
         {
-            //if (ctrlColorPicker.IsVisible)
-            //{
-            //    ctrlColorPicker.IsVisible = false;
-            //    return;
-            //}
-            //var Tile = TileData;
-            //if (Tile.GraphicMode == GraphicsModes.Monochrome)
-            //{
-            //    return;
-            //}
-            //ctrlColorPicker.IsVisible = true;
-            //ctrlColorPicker.Inicialize(Tile.GraphicMode, Tile.Palette, PrimaryColorIndex, ColorPickerInk_Action);
+            if (ctrlColorPicker.IsVisible)
+            {
+                ctrlColorPicker.IsVisible = false;
+                return;
+            }
+            var Tile = Tiles.Tiles[0];
+            //Tile.GraphicMode = GraphicsModes.ZXSpectrum;
+            //Tile.Palette=ZXGraphics.log.ServiceLayer.GetPalette(Tile.GraphicMode);
+            ctrlColorPicker.IsVisible = true;
+            var p = ServiceLayer.GetPalette(GraphicsModes.ZXSpectrum);
+            ctrlColorPicker.Inicialize(GraphicsModes.ZXSpectrum, p, PrimaryColorIndex, ColorPickerInk_Action);
         }
 
 
         public void UpdateColorPanel()
         {
-            //var Tile = TileData;
-            //if (Tile == null)
-            //{
-            //    return;
-            //}
-            //switch (Tile.GraphicMode)
-            //{
-            //    case GraphicsModes.Monochrome:
-            //        {
-            //            var ink = Tile.Palette[1];
-            //            var paper = Tile.Palette[0];
-            //            grdPaper.Background = new SolidColorBrush(Color.FromRgb(paper.Red, paper.Green, paper.Blue));
-            //            txtPaper.Foreground = new SolidColorBrush(Color.FromRgb(ink.Red, ink.Green, ink.Blue));
-            //            txtPaper.Text = "0";
-            //            grdInk.Background = new SolidColorBrush(Color.FromRgb(ink.Red, ink.Green, ink.Blue));
-            //            txtInk.Foreground = new SolidColorBrush(Color.FromRgb(paper.Red, paper.Green, paper.Blue));
-            //            txtInk.Text = "1";
-            //        }
-            //        break;
+            if (Tiles == null)
+            {
+                return;
+            }
+            
+            switch (Tiles.GraphicMode)
+            {
+                case GraphicsModes.Monochrome:
+                    {
+                        if (Tiles.Tiles[0].Palette == null)
+                        {
+                            Tiles.Tiles[0].Palette = ServiceLayer.GetPalette(Tiles.GraphicMode);
+                        }
+                        var ink = Tiles.Tiles[0].Palette[1];
+                        var paper = Tiles.Tiles[0].Palette[0];
+                        grdPaper.Background = new SolidColorBrush(Color.FromRgb(paper.Red, paper.Green, paper.Blue));
+                        txtPaper.Foreground = new SolidColorBrush(Color.FromRgb(ink.Red, ink.Green, ink.Blue));
+                        txtPaper.Text = "0";
+                        grdInk.Background = new SolidColorBrush(Color.FromRgb(ink.Red, ink.Green, ink.Blue));
+                        txtInk.Foreground = new SolidColorBrush(Color.FromRgb(paper.Red, paper.Green, paper.Blue));
+                        txtInk.Text = "1";
+                    }
+                    break;
 
-            //    case GraphicsModes.ZXSpectrum:
-            //    case GraphicsModes.Next:
-            //        {
-            //            var ink = Tile.Palette[PrimaryColorIndex];
-            //            var paper = Tile.Palette[SecondaryColorIndex];
-            //            grdPaper.Background = new SolidColorBrush(Color.FromRgb(paper.Red, paper.Green, paper.Blue));
-            //            txtPaper.Foreground = new SolidColorBrush(Color.FromRgb(ink.Red, ink.Green, ink.Blue));
-            //            txtPaper.Text = SecondaryColorIndex.ToString();
-            //            grdInk.Background = new SolidColorBrush(Color.FromRgb(ink.Red, ink.Green, ink.Blue));
-            //            txtInk.Foreground = new SolidColorBrush(Color.FromRgb(paper.Red, paper.Green, paper.Blue));
-            //            txtInk.Text = PrimaryColorIndex.ToString();
-            //        }
-            //        break;
-            //}
+                case GraphicsModes.ZXSpectrum:
+                case GraphicsModes.Next:
+                    {
+                        var ink = Tiles.Tiles[0].Palette[PrimaryColorIndex];
+                        var paper = Tiles.Tiles[0].Palette[SecondaryColorIndex];
+                        grdPaper.Background = new SolidColorBrush(Color.FromRgb(paper.Red, paper.Green, paper.Blue));
+                        txtPaper.Foreground = new SolidColorBrush(Color.FromRgb(ink.Red, ink.Green, ink.Blue));
+                        txtPaper.Text = SecondaryColorIndex.ToString();
+                        grdInk.Background = new SolidColorBrush(Color.FromRgb(ink.Red, ink.Green, ink.Blue));
+                        txtInk.Foreground = new SolidColorBrush(Color.FromRgb(paper.Red, paper.Green, paper.Blue));
+                        txtInk.Text = PrimaryColorIndex.ToString();
+                    }
+                    break;
+            }
         }
 
 
@@ -522,14 +530,38 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         private void ColorPickerPaper_Action(string command, int indexColor)
         {
             SecondaryColorIndex = indexColor;
+            UpdatePalette();
             UpdateColorPanel();
+            CallBackCommand(this, "REFRESH");
         }
 
 
         private void ColorPickerInk_Action(string command, int indexColor)
         {
             PrimaryColorIndex = indexColor;
+            UpdatePalette();
             UpdateColorPanel();
+            CallBackCommand(this, "REFRESH");
+        }
+
+
+        private void UpdatePalette()
+        {
+            if (Tiles.GraphicMode == GraphicsModes.Monochrome)
+            {
+                var p = ServiceLayer.GetPalette(GraphicsModes.ZXSpectrum);
+                foreach (var t in Tiles.Tiles)
+                {
+                    if (t == null)
+                    {
+                        continue;
+                    }
+                    t.Palette[0] = p[SecondaryColorIndex];
+                    t.Palette[1] = p[PrimaryColorIndex];
+                }
+                UpdateColorPanel();
+            }
+            Refresh(true);
         }
 
         #endregion

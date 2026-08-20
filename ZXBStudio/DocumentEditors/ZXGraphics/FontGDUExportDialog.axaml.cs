@@ -175,7 +175,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             {
                 case FileTypes.Font:
                     sb.AppendLine("' Example of use of custom font type");
-                    sb.AppendLine("POKE (uinteger 23606, @MyFont-256)");
+                    sb.AppendLine("POKE (uinteger 23606, @MyFont(0,0)-256)");
                     sb.AppendLine("PRINT \"Hello World!\"");
                     sb.AppendLine("STOP");
                     sb.AppendLine("");
@@ -189,7 +189,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                     break;
                 case FileTypes.UDG:
                     sb.AppendLine("' Example of use of UDG/GDU");
-                    sb.AppendLine("POKE (uinteger 23675, @MyUDG)");
+                    sb.AppendLine("POKE (uinteger 23675, @MyUDG(0,0))");
                     sb.AppendLine("PRINT \"UDG/GDU Table\"");
                     sb.AppendLine("FOR n=0 TO 20");
                     sb.AppendLine("     PRINT (144+n);\" - \";CHR(n+65);\": \";CHR(144+n)");
@@ -245,13 +245,13 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             sb.AppendLine("' Example of use of the asm format");
             if (fileType.FileType == FileTypes.Font)
             {
-                sb.AppendLine(string.Format("POKE (uinteger 23606, @{0}-256)", txtLabelName.Text));
+                sb.AppendLine(string.Format("POKE (uinteger 23606, @{0}(0,0)-256)", txtLabelName.Text));
                 sb.AppendLine("PRINT \"Hello World!\"");
                 sb.AppendLine("STOP");
             }
             else
             {
-                sb.AppendLine(string.Format("POKE (uinteger 23675, @{0})", txtLabelName.Text));
+                sb.AppendLine(string.Format("POKE (uinteger 23675, @{0}(0,0))", txtLabelName.Text));
                 sb.AppendLine("PRINT \"UDG/GDU Table\"");
                 sb.AppendLine("FOR n=0 TO 20");
                 sb.AppendLine("     PRINT (144+n);\" - \";CHR(n+65);\": \";CHR(144+n)");
@@ -275,7 +275,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             switch (fileType.FileType)
             {
                 case FileTypes.UDG:
-                    sb.AppendLine(string.Format("POKE (uinteger 23675, @{0})", txtLabelName.Text));
+                    sb.AppendLine(string.Format("POKE (uinteger 23675, @{0}(0))", txtLabelName.Text));
                     sb.AppendLine("PRINT \"UDG/GDU Table\"");
                     sb.AppendLine("FOR n=0 TO 20");
                     sb.AppendLine("     PRINT (144+n);\" - \";CHR(n+65);\": \";CHR(144+n)");
@@ -283,7 +283,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                     sb.AppendLine("STOP");
                     break;
                 case FileTypes.Font:
-                    sb.AppendLine(string.Format("POKE (uinteger 23606, @{0}-256)", txtLabelName.Text));
+                    sb.AppendLine(string.Format("POKE (uinteger 23606, @{0}(0,0)-256)", txtLabelName.Text));
                     sb.AppendLine("PRINT \"Hello World!\"");
                     sb.AppendLine("STOP");
                     break;

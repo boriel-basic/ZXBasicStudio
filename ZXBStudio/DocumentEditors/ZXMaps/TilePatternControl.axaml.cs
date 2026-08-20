@@ -172,6 +172,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                 {
                     btnNew.IsVisible = true;
                     cnvPoints.IsVisible = false;
+                    lblNumber.IsVisible = false;
                     return;
                 }                
 
