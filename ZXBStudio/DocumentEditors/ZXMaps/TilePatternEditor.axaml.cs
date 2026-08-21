@@ -1639,11 +1639,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
         public void Export()
         {
-            /*
-            var dlg = new TileExportDialog();
-            dlg.Initialize(FileName, TilePatternsList.Select(d => d.TileData));
-            dlg.ShowDialog(this.VisualRoot as Window);
-            */
+            CallBackCommand(this, "EXPORT");
         }
 
 

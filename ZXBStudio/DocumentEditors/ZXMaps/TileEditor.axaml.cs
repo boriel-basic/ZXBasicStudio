@@ -898,9 +898,21 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                     case "IMPORT":
                         Import();
                         break;
+
+                    case "EXPORT":
+                        Export();
+                        break;
                 }
             }
             catch { }
+        }
+
+
+        private void Export()
+        {
+            var dlg = new TileExportDialog();
+            dlg.Initialize(FileName, TilePatternsList.Select(d => d.TileData));
+            dlg.ShowDialog(this.VisualRoot as Window);
         }
 
         #endregion

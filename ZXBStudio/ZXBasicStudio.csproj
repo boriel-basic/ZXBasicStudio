@@ -654,6 +654,9 @@
     <Compile Update="DocumentEditors\ZXMaps\MapPatternEditor.axaml.cs">
       <DependentUpon>MapPatternEditor.axaml</DependentUpon>
     </Compile>
+    <Compile Update="DocumentEditors\ZXMaps\TileExportDialog.axaml.cs">
+      <DependentUpon>TileExportDialog.axaml</DependentUpon>
+    </Compile>
     <Compile Update="DocumentEditors\ZXMaps\TileImportDialog.axaml.cs">
       <DependentUpon>TileImportDialog.axaml</DependentUpon>
     </Compile>
