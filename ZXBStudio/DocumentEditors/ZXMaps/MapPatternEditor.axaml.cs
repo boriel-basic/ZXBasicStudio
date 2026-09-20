@@ -271,8 +271,12 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                 }
             }
 
-            cnvEditor.Width = images[0, 0].Width * _map.Width;
-            cnvEditor.Height = images[0, 0].Height * _map.Height;
+            try
+            {
+                cnvEditor.Width = images[0, 0].Width * _map.Width;
+                cnvEditor.Height = images[0, 0].Height * _map.Height;
+            }
+            catch { }
 
             this.InvalidateVisual();
 
@@ -675,11 +679,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
         public void Export()
         {
-            /*
-            var dlg = new TileExportDialog();
-            dlg.Initialize(FileName, TilePatternsList.Select(d => d.TileData));
-            dlg.ShowDialog(this.VisualRoot as Window);
-            */
+            CallBackCommand(this, "EXPORT");
         }
 
         #endregion        

@@ -23,7 +23,13 @@
 
 			<GridSplitter ResizeDirection="Columns" Grid.Column="1" Classes="vertical"></GridSplitter>
 
-			<Grid Grid.Column="2" Grid.Row="1" RowDefinitions="Auto,*,Auto">
+			<Grid Grid.Column="2" Grid.Row="1">
+				<TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="20">
+					Open .zxtil and use tile editor to edit map
+				</TextBlock>
+			</Grid>
+
+			<Grid Grid.Column="2" Grid.Row="1" RowDefinitions="Auto,*,Auto" IsVisible="False">
 				<WrapPanel Orientation="Horizontal" Grid.ColumnSpan="5" Margin="10" Background="#ff202020" Height="NaN">
 					<Button Classes="toolbar" Name="btnClear" ToolTip.Tip="Clear active patterns">
 						<svg:Svg Path="/Svg/Cancel.svg"></svg:Svg>
@@ -124,7 +130,7 @@
 					<zxd:ZXDockingControl.DockedControl>
 						<Grid Height="200" Background="#282828">
 							<TextBlock Name="txtPreview" HorizontalAlignment="Center" VerticalAlignment="Center">Preview</TextBlock>
-						<!--<local:SpritePreviewControl Name="ctrlPreview"></local:SpritePreviewControl>-->
+							<!--<local:SpritePreviewControl Name="ctrlPreview"></local:SpritePreviewControl>-->
 						</Grid>
 					</zxd:ZXDockingControl.DockedControl>
 				</zxd:ZXDockingControl>

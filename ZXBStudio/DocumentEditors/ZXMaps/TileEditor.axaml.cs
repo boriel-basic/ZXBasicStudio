@@ -900,7 +900,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                         break;
 
                     case "EXPORT":
-                        Export();
+                        Tiles_Export();
                         break;
                 }
             }
@@ -908,7 +908,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         }
 
 
-        private void Export()
+        private void Tiles_Export()
         {
             var dlg = new TileExportDialog();
             dlg.Initialize(FileName, TilePatternsList.Select(d => d.TileData));
@@ -1104,7 +1104,18 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                         }
                     }
                     break;
+                case "EXPORT":
+                    Map_Export();
+                    break;
             }
+        }
+
+
+        private void Map_Export()
+        {
+            var dlg = new MapExportDialog();
+            dlg.Initialize(FileName, Map);
+            dlg.ShowDialog(this.VisualRoot as Window);
         }
 
         #endregion

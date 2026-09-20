@@ -20,10 +20,13 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.neg
         Dim,
         Data,
 
-        // Sprites
+        // Sprites and tiles
         PutChars,
         MaskedSprites,
         GUSprite,
-        FourSprites
+        FourSprites,
+
+        // Maps
+        Array,
     }
 }

@@ -13,7 +13,7 @@
     <Title>ZX Basic Studio</Title>
     <AssemblyVersion></AssemblyVersion>
     <Deterministic>False</Deterministic>
-    <Version>1.8.0.5</Version>
+    <Version>1.8.0.6</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -653,6 +653,9 @@
     </Compile>
     <Compile Update="DocumentEditors\ZXMaps\MapPatternEditor.axaml.cs">
       <DependentUpon>MapPatternEditor.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="DocumentEditors\ZXMaps\MapExportDialog.axaml.cs">
+      <DependentUpon>MapExportDialog.axaml</DependentUpon>
     </Compile>
     <Compile Update="DocumentEditors\ZXMaps\TileExportDialog.axaml.cs">
       <DependentUpon>TileExportDialog.axaml</DependentUpon>

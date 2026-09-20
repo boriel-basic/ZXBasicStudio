@@ -526,6 +526,24 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         }
 
 
+        /// <summary>
+        /// Creates the default export config for a map document
+        /// </summary>
+        /// <param name="fileName">Document file name</param>
+        /// <returns>The new export configuration</returns>
+        public static ExportConfig Export_Map_GetDefaultConfig(string fileName)
+        {
+            var docType = ZXDocumentProvider.GetDocumentTypeInstance(typeof(ZXBasicDocument));
+            var exportConfig = new ExportConfig();
+            exportConfig.ArrayBase = 0;
+            exportConfig.AutoExport = true;
+            exportConfig.ExportFilePath = fileName + ".bas";
+            exportConfig.ExportType = ExportTypes.Array;
+            exportConfig.LabelName = System.IO.Path.GetFileNameWithoutExtension(fileName).Replace(" ", "_");
+            return exportConfig;
+        }
+
+
         public static bool Export_SetConfigFile(string fileName, ExportConfig exportConfig)
         {
             try

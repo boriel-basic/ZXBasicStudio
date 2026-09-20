@@ -62,6 +62,22 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         }
 
 
+        public bool InitializeMap()
+        {
+            ExportTypesList = new List<ExportTypeDescrioptionItem>();
+            ExportTypesList.Add(new ExportTypeDescrioptionItem()
+            {
+                Description = "Raw array of bytes, one byte for tile",
+                ExportType = ExportTypes.Array,
+                Image = "/Svg/boxes-stacked-solid.svg",
+                Name = "Array"
+            });
+            lstOptions.ItemsSource = ExportTypesList;
+            lstOptions.SelectionChanged += LstOptions_SelectionChanged;
+            return true;
+        }
+
+
         public bool InitializeSprite()
         {
             ExportTypesList = new List<ExportTypeDescrioptionItem>();
