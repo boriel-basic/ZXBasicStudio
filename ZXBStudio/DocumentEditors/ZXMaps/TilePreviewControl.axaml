@@ -1,0 +1,17 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:svg="using:Avalonia.Svg.Skia"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="ZXBasicStudio.DocumentEditors.ZXMaps.TilePreviewControl">
+  <Grid HorizontalAlignment="Stretch" RowDefinitions="Auto,*" ColumnDefinitions="Auto,*">
+    <TextBlock Classes="dialog" Grid.Column="0" Grid.Row="0" VerticalAlignment="Center">.zxmap file</TextBlock>
+    <ComboBox Classes="dialog" Name="cmbZXMAPFile" Grid.Column="1" Grid.Row="0" SelectedIndex="2">
+      <ComboBoxItem>None</ComboBoxItem>
+    </ComboBox>
+    <ScrollViewer Grid.ColumnSpan="2" Grid.Row="1" ScrollViewer.VerticalScrollBarVisibility="Auto" ScrollViewer.HorizontalScrollBarVisibility="Auto">
+      <Image Name="imgPreview" Grid.ColumnSpan="2" Grid.Row="1" Width="32" Height="32" RenderOptions.BitmapInterpolationMode="None" HorizontalAlignment="Center" VerticalAlignment="Center"></Image>
+    </ScrollViewer>
+  </Grid>
+</UserControl>

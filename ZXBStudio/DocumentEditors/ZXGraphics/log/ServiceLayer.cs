@@ -1,22 +1,24 @@
-﻿using ZXBasicStudio.DocumentEditors.ZXGraphics.dat;
-using ZXBasicStudio.DocumentEditors.ZXGraphics.neg;
+﻿using Avalonia.Controls.Shapes;
+using Avalonia.Metadata;
+using Avalonia.Platform.Storage;
+using AvaloniaEdit;
+using Newtonsoft.Json;
+using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Runtime;
 using ZXBasicStudio.Classes;
 using ZXBasicStudio.Common;
-using System.Runtime;
-using Newtonsoft.Json;
 using ZXBasicStudio.Common.TAPTools;
+using ZXBasicStudio.DocumentEditors.ZXGraphics.dat;
+using ZXBasicStudio.DocumentEditors.ZXGraphics.neg;
 using ZXBasicStudio.DocumentModel.Classes;
-using ZXBasicStudio.IntegratedDocumentTypes.ZXGraphics;
 using ZXBasicStudio.IntegratedDocumentTypes.CodeDocuments.Basic;
-using System.Drawing.Imaging;
-using Avalonia.Metadata;
-using Avalonia.Controls.Shapes;
-using AvaloniaEdit;
-using System.Diagnostics;
+using ZXBasicStudio.IntegratedDocumentTypes.ZXGraphics;
 
 namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
 {
@@ -506,6 +508,42 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         }
 
 
+        /// <summary>
+        /// Creates the default export config for a tile document
+        /// </summary>
+        /// <param name="fileName">Document file name</param>
+        /// <returns>The new export configuration</returns>
+        public static ExportConfig Export_Tile_GetDefaultConfig(string fileName)
+        {
+            var docType = ZXDocumentProvider.GetDocumentTypeInstance(typeof(ZXBasicDocument));
+            var exportConfig = new ExportConfig();
+            exportConfig.ArrayBase = 0;
+            exportConfig.AutoExport = true;
+            exportConfig.ExportFilePath = fileName + ".bas";
+            exportConfig.ExportType = ExportTypes.PutChars;
+            exportConfig.LabelName = System.IO.Path.GetFileNameWithoutExtension(fileName).Replace(" ", "_");
+            return exportConfig;
+        }
+
+
+        /// <summary>
+        /// Creates the default export config for a map document
+        /// </summary>
+        /// <param name="fileName">Document file name</param>
+        /// <returns>The new export configuration</returns>
+        public static ExportConfig Export_Map_GetDefaultConfig(string fileName)
+        {
+            var docType = ZXDocumentProvider.GetDocumentTypeInstance(typeof(ZXBasicDocument));
+            var exportConfig = new ExportConfig();
+            exportConfig.ArrayBase = 0;
+            exportConfig.AutoExport = true;
+            exportConfig.ExportFilePath = fileName + ".bas";
+            exportConfig.ExportType = ExportTypes.Array;
+            exportConfig.LabelName = System.IO.Path.GetFileNameWithoutExtension(fileName).Replace(" ", "_");
+            return exportConfig;
+        }
+
+
         public static bool Export_SetConfigFile(string fileName, ExportConfig exportConfig)
         {
             try
@@ -615,7 +653,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         /// <param name="oldWidth">Old Width of the sprite, the new must set in sprite parameter</param>
         /// <param name="oldHeight">Old Height of the spritye, the new must set in sprite parameter</param>
         /// <returns>True if OK or False if error</returns>
-        public static bool SpriteData_Resize(ref Sprite sprite, int oldWidth, int oldHeight)
+        public static bool SpriteData_Resize(ref ZXMapsTile sprite, int oldWidth, int oldHeight)
         {
             for (int p = 0; p < sprite.Patterns.Count; p++)
             {
@@ -653,7 +691,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         /// <param name="sprite">Old sprite with new graphic mode property set to target. Patterns will be updated.</param>
         /// <param name="oldMode">Old graphic mode, the new must set in sprite parameter</param>
         /// <returns>True if OK or False if error</returns>
-        public static bool SpriteData_ChangeMode(ref Sprite sprite, GraphicsModes oldMode)
+        public static bool SpriteData_ChangeMode(ref ZXMapsTile sprite, GraphicsModes oldMode)
         {
             // TODO: Do it!!!
             return true;
@@ -666,7 +704,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         /// <param name="sprite">Old sprite with new mask status property set to target. Patterns will be updated.</param>
         /// <param name="oldMasked">Old mask value, the new must set in sprite parameter</param>
         /// <returns>True if OK or False if error</returns>
-        public static bool SpriteData_ChangeMasked(ref Sprite sprite, bool oldMasked)
+        public static bool SpriteData_ChangeMasked(ref ZXMapsTile sprite, bool oldMasked)
         {
             // TODO: Do it!!!
             return true;
@@ -679,14 +717,13 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         /// <param name="sprite">Old sprite with new Frames property set to target. Patterns will be updated.</param>
         /// <param name="oldFrames">Old Frames value, the new must set in sprite parameter</param>
         /// <returns>True if OK or False if error</returns>
-        public static bool SpriteData_ChangeFrames(ref Sprite sprite, byte oldFrames)
+        public static bool SpriteData_ChangeFrames(ref ZXMapsTile sprite, byte oldFrames)
         {
             // TODO: Do it!!!
             return true;
         }
 
         #endregion
-
 
 
         #region Tools
@@ -762,6 +799,101 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
             int gDiff = c1.Green - c2.Green;
             int bDiff = c1.Blue - c2.Blue;
             return Math.Sqrt(rDiff * rDiff + gDiff * gDiff + bDiff * bDiff);
+        }
+
+        #endregion
+
+
+        #region Screen
+
+        /// <summary>
+        /// Obtiene el offset dentro de la memoria de pantalla del ZX Spectrum
+        /// para el byte que contiene el píxel (x,y).
+        /// </summary>
+        /// <param name="x">Coordenada X (0-255)</param>
+        /// <param name="y">Coordenada Y (0-191)</param>
+        /// <returns>Offset (0-6143)</returns>
+        public static int GetSpectrumScreenOffset(int x, int y)
+        {
+            if (x < 0 || x > 255 || y<0 || y>191)
+            {
+                return -1;
+            }
+
+            int offset =
+                ((y & 0b11000000) << 5) |   // Bits 6-7 -> 11-12
+                ((y & 0b00000111) << 8) |   // Bits 0-2 -> 8-10
+                ((y & 0b00111000) << 2) |   // Bits 3-5 -> 5-7
+                (x >> 3);                   // Columna (0-31)
+            return offset;
+        }
+
+        #endregion
+
+
+        #region Images
+
+        public static SixLabors.ImageSharp.Image<Rgba32> LoadImage(IStorageFile file)
+        {
+            try
+            {
+                SixLabors.ImageSharp.Image<Rgba32> imageData = null;
+
+                using (var stream = file.OpenReadAsync().Result)
+                {
+                    if (file.Name.ToLower().EndsWith(".scr"))
+                    {
+                        // Load SCR file
+                        var scrData = new byte[6912];
+                        stream.ReadAsync(scrData, 0, 6912).GetAwaiter();
+                        imageData = new SixLabors.ImageSharp.Image<Rgba32>(256, 192);
+                        var palete = ZXGraphics.log.ServiceLayer.GetPalette(GraphicsModes.ZXSpectrum);
+                        for (int y = 0; y < 192; y++)
+                        {
+                            for (int cx = 0; cx < 32; cx++)
+                            {
+                                int pixelIndex = ZXGraphics.log.ServiceLayer.GetSpectrumScreenOffset(cx * 8, y);
+                                int attrIndex = 6144 + (((y / 8) * 32) + cx);
+                                var attr = new AttributeColor()
+                                {
+                                    Attribute = scrData[attrIndex]
+                                };
+                                var paper = palete[attr.Paper];
+                                var colorOFF = new Rgba32(paper.Red, paper.Green, paper.Blue);
+                                var ink = palete[attr.Ink];
+                                var colorON = new Rgba32(ink.Red, ink.Green, ink.Blue);
+
+                                byte byteData = scrData[pixelIndex];
+                                string bits = $"{byteData:B8}";
+                                for (int bx = 0; bx < 8; bx++)
+                                {
+                                    Rgba32 color = new Rgba32(0);
+                                    if (bits.Substring(bx, 1) == "0")
+                                    {
+                                        color = colorOFF;
+                                    }
+                                    else
+                                    {
+                                        color = colorON;
+                                    }
+                                    int x = (cx * 8) + bx;
+                                    imageData[x, y] = color;
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        // Load other image formats
+                        imageData = SixLabors.ImageSharp.Image.Load<Rgba32>(stream);
+                    }
+                }
+                return imageData;
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
 
         #endregion

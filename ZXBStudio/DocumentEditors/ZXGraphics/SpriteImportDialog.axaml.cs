@@ -44,9 +44,9 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         private ExportConfig exportConfig = null;
         */
 
-        private Action<Sprite, string> CallBackCommand = null;
-        private IEnumerable<Sprite> sprites = null;
-        private Sprite sprite = null;
+        private Action<ZXMapsTile, string> CallBackCommand = null;
+        private IEnumerable<ZXMapsTile> sprites = null;
+        private ZXMapsTile sprite = null;
 
         private string spriteName = "";
         private GraphicsModes spriteMode = GraphicsModes.Monochrome;
@@ -80,7 +80,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             btnImport.Tapped += BtnImport_Tapped;
         }
 
-        public bool Initialize(string fileName, IEnumerable<Sprite> sprites, Action<Sprite, string> callBackCommand)
+        public bool Initialize(string fileName, IEnumerable<ZXMapsTile> sprites, Action<ZXMapsTile, string> callBackCommand)
         {
             this.CallBackCommand = callBackCommand;
             this.sprites = sprites;
@@ -119,12 +119,13 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         private async void BtnFile_Tapped(object? sender, Avalonia.Input.TappedEventArgs e)
         {
-            var fileTypes = new FilePickerFileType[4];
+            var fileTypes = new FilePickerFileType[5];
             fileTypes[0] = new FilePickerFileType("All files") { Patterns = new[] { "*", "*.*" } };
             fileTypes[1] = new FilePickerFileType("BMP files") { Patterns = new[] { "*.bmp" } };
             fileTypes[2] = new FilePickerFileType("JPG files") { Patterns = new[] { "*.jpg", "*.jpeg" } };
             fileTypes[3] = new FilePickerFileType("PNG files") { Patterns = new[] { "*.png" } };
-            /*fileTypes[4] = new FilePickerFileType("SCR Spectrum screen files") { Patterns = new[] { "*.scr" } };*/
+            fileTypes[4] = new FilePickerFileType("ZX Paintbrush SCR files") { Patterns = new[] { "*.scr" } };
+            /*fileTypes[5] = new FilePickerFileType("SCR Spectrum screen files") { Patterns = new[] { "*.scr" } };*/
 
             var select = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
@@ -247,7 +248,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
                 GetProperties();
 
-                var s = new Sprite();
+                var s = new ZXMapsTile();
                 s.CurrentFrame = 0;
                 s.DefaultColor = 7;
                 s.Export = true;
@@ -622,7 +623,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
                     for (int n = 0; n < sprite.Patterns.Count(); n++)
                     {
-                        var spr = sprite.Clonar<Sprite>();
+                        var spr = sprite.Clonar<ZXMapsTile>();
                         spr.Patterns = spr.Patterns.Skip(n).Take(1).ToList();
                         spr.Frames = 1;
                         spr.Name = sprName + "_" + n.ToString();

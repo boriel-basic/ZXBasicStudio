@@ -30,7 +30,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
             Clear(Colors.White);
         }
-        public ZXSpriteImage(Sprite Sprite, int FrameNumber)
+        public ZXSpriteImage(ZXMapsTile Sprite, int FrameNumber)
         {
             bitmap = new WriteableBitmap(new PixelSize(Sprite.Width, Sprite.Height), new Vector(72, 72), Avalonia.Platform.PixelFormat.Rgba8888, Avalonia.Platform.AlphaFormat.Opaque);
 
@@ -60,7 +60,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             IsEmpty = true;
         }
 
-        public unsafe void RenderSprite(Sprite Sprite, int FrameNumber)
+        public unsafe void RenderSprite(ZXMapsTile Sprite, int FrameNumber)
         {
             try
             {
@@ -151,7 +151,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         {
             return (uint)((255 << 24) | (Color.B << 16) | (Color.G << 8) | Color.R);
         }
-        private AttributeColor GetAttribute(Sprite Sprite, Pattern Pattern, int X, int Y)
+        private AttributeColor GetAttribute(ZXMapsTile Sprite, Pattern Pattern, int X, int Y)
         {
             int cW = Sprite.Width / 8;
             int cX = X / 8;

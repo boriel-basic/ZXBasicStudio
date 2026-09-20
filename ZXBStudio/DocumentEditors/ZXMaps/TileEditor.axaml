@@ -1,0 +1,105 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:svg="using:Avalonia.Svg.Skia"
+			 xmlns:local="using:ZXBasicStudio.DocumentEditors.ZXMaps"
+			 xmlns:zxgraphics="using:ZXBasicStudio.DocumentEditors.ZXGraphics"
+			 xmlns:zxd="using:ZXBasicStudio.Controls.DockSystem"
+			 mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+			 Focusable="True"
+			 Background="#ff202020"
+			 x:Class="ZXBasicStudio.DocumentEditors.ZXMaps.TileEditor">
+	<Grid Name="grdMain" RowDefinitions="*,Auto">
+		<Grid Name="grdEditor" Grid.RowSpan="2" ColumnDefinitions="180,4,*,4,300" Margin="0,8,0,0">
+
+			<zxd:ZXDockingContainer Name="dockLeft" DockingGroup="ZXGraphics" RowDefinitions="*">
+				<zxd:ZXDockingControl Name="dockPatterns" Title="Tile list" DockingGroup="ZXGraphics">
+					<zxd:ZXDockingControl.DockedControl>
+						<Grid RowDefinitions="Auto,Auto,*">
+
+
+
+							<WrapPanel Grid.Row="1" Orientation="Horizontal" MinWidth="40" Background="#282828" Margin="2">
+								<Button Classes="toolbar" Name="btnTileMoveLeft" ToolTip.Tip="Move actual tile to the left">
+									<svg:Svg Path="/Svg/backward-solid.svg"></svg:Svg>
+								</Button>
+								<Button Classes="toolbar" Name="btnTileMoveRight" ToolTip.Tip="Move actual tile to the right">
+									<svg:Svg Path="/Svg/forward-solid.svg"></svg:Svg>
+								</Button>
+								<Line StartPoint="0,0" EndPoint="0,26" Stroke="White" Margin="5,0,5,0"></Line>
+								<Button Classes="toolbar" Name="btnTileInfoShow" ToolTip.Tip="Show tile number"  IsVisible="False">
+									<svg:Svg Path="/Svg/circle-info-solid.svg"></svg:Svg>
+								</Button>
+								<Button Classes="toolbar" Name="btnTileInfoHide" ToolTip.Tip="Move actual tile to the right">
+									<svg:Svg Path="/Svg/comment-slash-solid.svg"></svg:Svg>
+								</Button>
+								<Line StartPoint="0,0" EndPoint="0,26" Stroke="White" Margin="5,0,5,0"></Line>
+								<Button Classes="toolbar" Name="btnTileDelete" ToolTip.Tip="Delete actual Tile" >
+									<svg:Svg Path="/Svg/Cancel.svg"></svg:Svg>
+								</Button>
+							</WrapPanel>
+
+							<ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Visible" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+								<WrapPanel Orientation="Horizontal" Name="wpTileList" VerticalAlignment="Top" Background="#282828" />
+							</ScrollViewer>
+						</Grid>
+					</zxd:ZXDockingControl.DockedControl>
+				</zxd:ZXDockingControl>
+			</zxd:ZXDockingContainer>
+
+			<GridSplitter ResizeDirection="Columns" Grid.Column="1" Classes="vertical"></GridSplitter>
+
+			<Grid Grid.Column="2" Grid.Row="1">
+				<TabControl Name="tabControlEditor" SelectionChanged="tabControlEditor_SelectionChanged">
+
+					<TabItem Header="Tile editor">
+						<local:TilePatternEditor Name="ctrlEditor" Background="#303030"/>
+					</TabItem>
+
+					<TabItem Header="Map editor">
+						<local:MapPatternEditor Name="ctrlMapEditor" Background="#303030"/>
+					</TabItem>
+
+				</TabControl>
+			</Grid>
+
+			<GridSplitter ResizeDirection="Columns" Grid.Column="3" Classes="vertical"></GridSplitter>
+
+			<zxd:ZXDockingContainer Name="dockRight" DockingGroup="ZXGraphics" Grid.Column="4"
+									RowDefinitions="Auto,4,Auto,4,*">
+
+				<zxd:ZXDockingControl Grid.Row="0" Name="dockTileProperties" Title="Tiles Properties" DockingGroup="ZXGraphics" DesiredFloatingSize="200,400">
+					<zxd:ZXDockingControl.DockedControl>
+						<local:TilePropertiesControl Name="ctrlTileProperties"/>
+					</zxd:ZXDockingControl.DockedControl>
+				</zxd:ZXDockingControl>
+
+				<GridSplitter ResizeDirection="Rows" Grid.Row="1" Classes="horizontal"></GridSplitter>
+
+				<zxd:ZXDockingControl Grid.Row="2" Name="dockMapProperties" Title="Map Properties" DockingGroup="ZXGraphics" DesiredFloatingSize="200,400">
+					<zxd:ZXDockingControl.DockedControl>
+						<StackPanel Orientation="Vertical">
+							<local:MapFileSelectorControl Name="ctrlMapFileSelector"/>
+							<local:MapPropertiesControl Name="ctrlMapProperties"/>
+						</StackPanel>
+					</zxd:ZXDockingControl.DockedControl>
+				</zxd:ZXDockingControl>
+
+				<GridSplitter ResizeDirection="Rows" Grid.Row="3" Classes="horizontal"></GridSplitter>
+
+				<zxd:ZXDockingControl Grid.Row="4" Name="dockPreview" Title="Tile Preview" DockingGroup="ZXGraphics" DesiredFloatingSize="200,400" IsVisible="False">
+					<zxd:ZXDockingControl.DockedControl>
+						<local:TilePreviewControl Name="ctrlPreview"></local:TilePreviewControl>
+					</zxd:ZXDockingControl.DockedControl>
+				</zxd:ZXDockingControl>
+			</zxd:ZXDockingContainer>
+
+		</Grid>
+
+		<Grid Name="grdProcesando" Grid.RowSpan="2">
+			<ProgressBar IsIndeterminate="True"/>
+			<TextBlock FontSize="32" Text="Loading..." HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Red"/>
+		</Grid>
+	</Grid>
+</UserControl>

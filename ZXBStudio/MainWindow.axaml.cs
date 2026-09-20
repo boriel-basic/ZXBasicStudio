@@ -1485,7 +1485,7 @@ namespace ZXBasicStudio
                         try
                         {
                             var emulatorName = Path.GetFileNameWithoutExtension(emulatorPath);
-                            if (emulatorName.ToLower()=="apprun")
+                            if (emulatorName.ToLower() == "apprun")
                             {
                                 emulatorName = "mame";
                             }
@@ -2532,19 +2532,19 @@ namespace ZXBasicStudio
             //    emulatorPath = emulatorPath.Replace("/AppRun", "");
             //}
 
-            var basePath =Directory.GetParent(Directory.GetParent(emulatorPath).FullName).FullName;
-            var sdimagePath= Path.Combine(basePath, "nextsdimage", "cspect-next-2gb.img");
+            var basePath = Directory.GetParent(Directory.GetParent(emulatorPath).FullName).FullName;
+            var sdimagePath = Path.Combine(basePath, "nextsdimage", "cspect-next-2gb.img");
 
             // Delete /nextzxos/autoexec.1st
             Hdfmonkey($"rm \"{sdimagePath}\" /nextzxos/autoexec.1st", basePath);
 
             // Create autoexec.bas
-            var nextPath =Path.GetFileNameWithoutExtension(project.GetMainFile());
+            var nextPath = Path.GetFileNameWithoutExtension(project.GetMainFile());
             string autoexec = $@"#autostart 10
 10 CD ""{nextPath}""
 20 .nexload {nextPath}.nex
 ";
-            var bytes=Common.Txt2Bas.Txt2BasConverter.Text2Bas(autoexec);
+            var bytes = Common.Txt2Bas.Txt2BasConverter.Text2Bas(autoexec);
             var autoexecPath = Path.Combine(basePath, "hdfmonkey", "autoexec.bas");
             File.WriteAllBytes(autoexecPath, bytes);
 
@@ -2607,17 +2607,17 @@ namespace ZXBasicStudio
         private bool Hdfmonkey(string parameters, string basePath)
         {
             var hdfPath = Path.Combine(basePath, "hdfmonkey");
+            string hdfmonkeyExe = Path.Combine(hdfPath, "hdfmonkey.exe");
 
-            string hdfmonkeyExe = "hdfmonkey.exe";
-            if (!OperatingSystem.IsWindows())
+            if (!File.Exists(hdfmonkeyExe))
             {
-                hdfmonkeyExe = "hdfmonkey";
+                hdfmonkeyExe = Path.Combine(hdfPath, "hdfmonkey");
             }
 
             outLog.Writer.WriteLine($"> hdfmonkey {parameters}");
             var psi = new ProcessStartInfo()
             {
-                FileName = Path.Combine(hdfPath, hdfmonkeyExe),
+                FileName =  hdfmonkeyExe,
                 Arguments = parameters,
                 WorkingDirectory = hdfPath,
                 UseShellExecute = false,

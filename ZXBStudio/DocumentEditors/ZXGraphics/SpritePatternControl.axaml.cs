@@ -18,7 +18,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// <summary>
         /// Sprite data
         /// </summary>
-        public Sprite SpriteData
+        public ZXMapsTile SpriteData
         {
             get
             {
@@ -82,7 +82,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         private bool _SettingsChanged = false;
         private bool refreshing = false;
         private bool newSprite = true;
-        private Sprite _SpriteData = null;
+        private ZXMapsTile _SpriteData = null;
 
         #endregion
 
@@ -101,7 +101,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// <param name="spriteData">Data of the sprite, if is null, the "Add" icon is visible and no properties are shown</param>
         /// <param name="callBackCommand">CallBak for actions command, line "ADD", "CLONE", "DELETE" or "SELECTED"</param>
         /// <returns></returns>
-        public bool Initialize(Sprite spriteData, Action<SpritePatternControl, string> callBackCommand)
+        public bool Initialize(ZXMapsTile spriteData, Action<SpritePatternControl, string> callBackCommand)
         {
             this.SpriteData = spriteData;
             this.CallBackCommand = callBackCommand;
@@ -271,7 +271,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             }
             else
             {
-                var sp = _SpriteData.Clonar<Sprite>();                
+                var sp = _SpriteData.Clonar<ZXMapsTile>();                
 
                 if (sp.Width != _SpriteData.Width || sp.Height != _SpriteData.Height)
                 {
@@ -321,7 +321,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         private void AddNew()
         {
-            var sp = new Sprite()
+            var sp = new ZXMapsTile()
             {
                 CurrentFrame = 0,
                 DefaultColor = 0,

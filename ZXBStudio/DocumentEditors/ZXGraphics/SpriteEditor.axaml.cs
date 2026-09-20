@@ -133,12 +133,12 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             try
             {
                 var masterList = SpritePatternsList.Select(d => d.SpriteData).ToArray();
-                var sprList = new List<Sprite>();
+                var sprList = new List<ZXMapsTile>();
                 foreach (var spr in masterList)
                 {
                     sprList.Add(spr); //.Clonar<Sprite>());
                 }
-                foreach (Sprite spr in sprList)
+                foreach (ZXMapsTile spr in sprList)
                 {
                     if (spr == null)
                     {
@@ -259,7 +259,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 var dataS = Encoding.UTF8.GetString(data);
                 if (!string.IsNullOrEmpty(dataS))
                 {
-                    Sprite[] sprites = dataS.Deserializar<Sprite[]>();
+                    ZXMapsTile[] sprites = dataS.Deserializar<ZXMapsTile[]>();
 
                     foreach (var sprite in sprites)
                     {                        
@@ -560,7 +560,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         }
 
 
-        private void SpriteList_AddSprite(Sprite spriteData)
+        private void SpriteList_AddSprite(ZXMapsTile spriteData)
         {
             SpritePatternControl selectedSprite = null;
             int id = 0;
@@ -631,7 +631,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         }
 
 
-        private void SpriteList_Insert(Sprite spriteData)
+        private void SpriteList_Insert(ZXMapsTile spriteData)
         {
             var current = spriteData.CurrentFrame;
             var curPat = spriteData.Patterns[current];
@@ -650,7 +650,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         }
 
 
-        private void SpriteList_Clone(Sprite spriteData)
+        private void SpriteList_Clone(ZXMapsTile spriteData)
         {
             SpritePatternControl selectedSprite = null;
             int id = SpritePatternsList.Where(d => d.SpriteData != null).Max(d => d.SpriteData.Id) + 1;
@@ -659,7 +659,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             {
                 return;
             }
-            var sd = spriteData.Clonar<Sprite>();
+            var sd = spriteData.Clonar<ZXMapsTile>();
             sd.Id = id;
             sd.Name = spriteData.Name + " - copy";
             spc.SpriteData = sd;
@@ -673,7 +673,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         }
 
 
-        private void SpriteList_Modified(Sprite spriteData)
+        private void SpriteList_Modified(ZXMapsTile spriteData)
         {
             if (!_Modified)
             {
@@ -1174,7 +1174,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         }
 
 
-        private void Import_Command(Sprite sprite, string command)
+        private void Import_Command(ZXMapsTile sprite, string command)
         {
             switch (command)
             {

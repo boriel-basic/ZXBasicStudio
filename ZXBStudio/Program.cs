@@ -42,6 +42,8 @@ namespace ZXBasicStudio
         {
             SetVersion();
 
+            //var id= Guid.NewGuid();
+
             if (args.Contains("--version"))
             {
                 Console.WriteLine($"{Version}");

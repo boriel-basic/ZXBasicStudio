@@ -1,0 +1,15 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 xmlns:svg="using:Avalonia.Svg.Skia"
+			 mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="200"
+			 Focusable="True"
+			 Background="#ff202020"
+			 x:Class="ZXBasicStudio.DocumentEditors.ZXMaps.MapFileSelectorControl">
+	<Grid ColumnDefinitions="90,*">
+		<TextBlock Grid.Row="0" Classes="dialog" VerticalAlignment="Center" HorizontalAlignment="Right">File Name:</TextBlock>
+		<ComboBox Grid.Row="0" Grid.Column="1" Name="cmbFileName" Classes="dialog" HorizontalAlignment="Stretch" Margin="5,8,5,2" SelectionChanged="cmbFileName_SelectionChanged">
+		</ComboBox>
+	</Grid>
+</UserControl>

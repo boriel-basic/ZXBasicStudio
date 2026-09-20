@@ -1905,7 +1905,8 @@ cd ""$DEST_DIR"" || exit 1
             // All versions
             var v = new ExternalTools_Version()
             {
-                DownloadUrl = "https://github.com/Threetwosevensixseven/NexCreator/raw/master/bootroms/tbblue.zip",
+                //DownloadUrl = "https://github.com/Threetwosevensixseven/NexCreator/raw/master/bootroms/tbblue.zip",
+                DownloadUrl = "https://www.specnext.com/forum/download/file.php?id=1164",
                 OperatingSystem = OperatingSystems.All,
                 Version = "3.02.03",
             };

@@ -9,12 +9,15 @@ using Avalonia.Threading;
 using SixLabors.ImageSharp.PixelFormats;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ZXBasicStudio.DocumentEditors.NextDows.log;
+using ZXBasicStudio.DocumentEditors.ZXGraphics.neg;
 
 namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 {
@@ -136,18 +139,10 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         public async void LoadImage(IStorageFile file)
         {
-            try
-            {
-                await using (var stream = await file.OpenReadAsync())
-                {
-                    imageData = SixLabors.ImageSharp.Image.Load<Rgba32>(stream);
-                }
-                this.InvalidateVisual();
-            }
-            catch (Exception ex)
-            {
-            }
+            imageData = ZXGraphics.log.ServiceLayer.LoadImage(file);
+            this.InvalidateVisual();            
         }
+
 
 
         public void Refresh()
@@ -200,7 +195,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                             }
                             else
                             {
-                                context.FillRectangle(brushWhite, r0);                             
+                                context.FillRectangle(brushWhite, r0);
                             }
                             pair = !pair;
                         }
@@ -268,13 +263,13 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                     int x2 = SpriteWidth * _Zoom;
                     int y2 = SpriteHeight * _Zoom;
 
-                    var r0 = new Rect(x2, 0, 400-x2, 400);
+                    var r0 = new Rect(x2, 0, 400 - x2, 400);
                     context.FillRectangle(brushMask, r0);
-                    var r1 = new Rect(0, y2, x2, 400-y2);
+                    var r1 = new Rect(0, y2, x2, 400 - y2);
                     context.FillRectangle(brushMask, r1);
 
                     context.DrawRectangle(penRed, new Rect(-1, -1, x2, y2));
-                }              
+                }
             }
             catch (Exception ex)
             {
@@ -282,7 +277,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             }
         }
 
-#endregion
+        #endregion
 
 
         #region Mouse

@@ -23,7 +23,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// <summary>
         /// Sprite data
         /// </summary>
-        public Sprite? SpriteData { get; set; }
+        public ZXMapsTile? SpriteData { get; set; }
         public int Zoom { get; set; } = 4;
 
         #endregion
@@ -60,7 +60,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// <param name="spriteData">Data of the sprite, if is null, the "Add" icon is visible and no properties are shown</param>
         /// <param name="callBackCommand">CallBak for actions command, line "ADD", "CLONE", "DELETE" or "SELECTED"</param>
         /// <returns></returns>
-        public bool Initialize(Sprite spriteData)
+        public bool Initialize(ZXMapsTile spriteData)
         {
             this.SpriteData = spriteData;
 

@@ -1,5 +1,6 @@
 ﻿using CoreSpectrum.SupportClasses;
 using Newtonsoft.Json;
+using SixLabors.ImageSharp.Formats.Gif;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -11,6 +12,7 @@ using ZXBasicStudio.Classes;
 using ZXBasicStudio.Common;
 using ZXBasicStudio.Common.TAPTools;
 using ZXBasicStudio.DocumentEditors.ZXGraphics.neg;
+using ZXBasicStudio.DocumentEditors.ZXMaps.Neg;
 using ZXBasicStudio.DocumentModel.Enums;
 using ZXBasicStudio.DocumentModel.Interfaces;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -88,7 +90,24 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
                             }
                         }
                         break;
-
+                    case FileTypes.Tile:
+                        {
+                            var tiles = CreateTiles(fileData);
+                            if (!ExportTiles(exportConfig, tiles))
+                            {
+                                return false;
+                            }
+                        }
+                        break;
+                    case FileTypes.Map:
+                        {
+                            var map = CreateMap(fileData);
+                            if (!ExportMap(exportConfig, map))
+                            {
+                                return false;
+                            }
+                        }
+                        break;
                 }
 
             }
@@ -389,12 +408,12 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         #region Sprites
 
 
-        private Sprite[] CreateSprites(byte[] fileData)
+        private ZXMapsTile[] CreateSprites(byte[] fileData)
         {
             try
             {
                 var dataS = Encoding.UTF8.GetString(fileData);
-                var sprites = dataS.Deserializar<Sprite[]>();
+                var sprites = dataS.Deserializar<ZXMapsTile[]>();
 
                 // Check attributes for ZX Spectrum mode
                 foreach (var sprite in sprites)
@@ -433,7 +452,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         /// <param name="exportConfig">ExportConfig of the file</param>
         /// <param name="sprites">Sprites to convert</param>
         /// <returns></returns>
-        public bool ExportSprites(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        public bool ExportSprites(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             // Export depending on the type
             string exportedData = "";
@@ -480,7 +499,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         /// <param name="exportConfig">ExportConfig information</param>
         /// <param name="sprites">Sprites to convert</param>
         /// <returns>string with the conversion commands for the export dialog samble textbox</returns>
-        public static string Export_Sprite_PutChars(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        public static string Export_Sprite_PutChars(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             string res = Export_Sprite_PutChars_Check(exportConfig, sprites);
             if (res.StartsWith("ERROR:"))
@@ -506,7 +525,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
             }
         }
 
-        private static string Export_Sprite_PutChars_Check(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        private static string Export_Sprite_PutChars_Check(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             foreach (var sprite in sprites)
             {
@@ -529,7 +548,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
 
         #region DIM
 
-        public static string Export_Sprite_PutChars_DIM(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        public static string Export_Sprite_PutChars_DIM(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             int min = 0;
             switch (exportConfig.ArrayBase)
@@ -740,7 +759,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         }
 
 
-        private static string Export_Sprite_PutChars_Pattern(Sprite sprite, int n, ExportConfig exportConfig, int firstItem)
+        private static string Export_Sprite_PutChars_Pattern(ZXMapsTile sprite, int n, ExportConfig exportConfig, int firstItem)
         {
             var sb = new StringBuilder();
 
@@ -805,7 +824,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         }
 
 
-        private static string Export_Sprite_PutChars_Attribute(Sprite sprite, int n, ExportConfig exportConfig, int firstItem)
+        private static string Export_Sprite_PutChars_Attribute(ZXMapsTile sprite, int n, ExportConfig exportConfig, int firstItem)
         {
             var sb = new StringBuilder();
 
@@ -896,7 +915,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         #region ASM
 
 
-        public static string Export_Sprite_PutChars_ASM(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        public static string Export_Sprite_PutChars_ASM(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             int min = 0;
 
@@ -988,7 +1007,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         }
 
 
-        private static string Export_Sprite_PutChars_Pattern_ASM(Sprite sprite, int n, ExportConfig exportConfig)
+        private static string Export_Sprite_PutChars_Pattern_ASM(ZXMapsTile sprite, int n, ExportConfig exportConfig)
         {
             var sb = new StringBuilder();
 
@@ -1030,7 +1049,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         }
 
 
-        private static string Export_Sprite_PutChars_Attribute_ASM(Sprite sprite, int n, ExportConfig exportConfig)
+        private static string Export_Sprite_PutChars_Attribute_ASM(ZXMapsTile sprite, int n, ExportConfig exportConfig)
         {
             var sb = new StringBuilder();
 
@@ -1087,7 +1106,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         #region TAP and BIN
 
 
-        public static string Export_Sprite_PutChars_BIN(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        public static string Export_Sprite_PutChars_BIN(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             var binData = Export_Sprite_PutChars_GetBinaryData(sprites);
             ServiceLayer.Files_SaveFileData(exportConfig.ExportFilePath, binData);
@@ -1095,7 +1114,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         }
 
 
-        public static string Export_Sprite_PutChars_TAP(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        public static string Export_Sprite_PutChars_TAP(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             var binData = Export_Sprite_PutChars_GetBinaryData(sprites);
             binData = ServiceLayer.Bin2Tap(exportConfig.ZXFileName, exportConfig.ZXAddress, binData);
@@ -1104,7 +1123,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         }
 
 
-        private static byte[] Export_Sprite_PutChars_GetBinaryData(IEnumerable<Sprite> sprites)
+        private static byte[] Export_Sprite_PutChars_GetBinaryData(IEnumerable<ZXMapsTile> sprites)
         {
             var binData = new List<byte>();
 
@@ -1137,7 +1156,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         /// <param name="exportConfig">ExportConfig information</param>
         /// <param name="sprites">Sprites to convert</param>
         /// <returns>string with the conversion commands for the export dialog samble textbox</returns>
-        public static string Export_Sprite_MaskedSprites(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        public static string Export_Sprite_MaskedSprites(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             var res = Export_Sprite_MaskedSprites_Check(exportConfig, sprites);
             if (res.StartsWith("ERROR:"))
@@ -1172,7 +1191,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         /// masking, frame count, and dimensions if it is marked for export.</param>
         /// <returns>A string indicating the result of the validation. Returns "OK" if all sprites are valid for export;
         /// otherwise, returns an error message describing the first encountered issue.</returns>
-        private static string Export_Sprite_MaskedSprites_Check(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        private static string Export_Sprite_MaskedSprites_Check(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             string txt = "";
             foreach (var sprite in sprites)
@@ -1205,7 +1224,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         }
 
 
-        private static byte[] Export_Sprite_MaskedSprites_GenerateData(ExportConfig exportConfig, Sprite sprite)
+        private static byte[] Export_Sprite_MaskedSprites_GenerateData(ExportConfig exportConfig, ZXMapsTile sprite)
         {
             try
             {
@@ -1240,7 +1259,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         #region DIM
 
 
-        public static string Export_Sprite_MaskedSprites_DIM(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        public static string Export_Sprite_MaskedSprites_DIM(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             var sb = new StringBuilder();
             sb.AppendLine("'- Sprite definitions --------------------------------------");
@@ -1326,7 +1345,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
 
         #region ASM
 
-        public static string Export_Sprite_MaskedSprites_ASM(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        public static string Export_Sprite_MaskedSprites_ASM(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             var sb = new StringBuilder();
             sb.AppendLine("'- Sprite definitions --------------------------------------");
@@ -1387,7 +1406,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         #region TAP and BIN
 
 
-        public static string Export_Sprite_MaskedSprites_BIN(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        public static string Export_Sprite_MaskedSprites_BIN(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             var binData = new List<byte>();
             foreach (var sprite in sprites)
@@ -1408,7 +1427,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         }
 
 
-        public static string Export_Sprite_MaskedSprites_TAP(ExportConfig exportConfig, IEnumerable<Sprite> sprites)
+        public static string Export_Sprite_MaskedSprites_TAP(ExportConfig exportConfig, IEnumerable<ZXMapsTile> sprites)
         {
             var binData = new List<byte>();
             foreach (var sprite in sprites)
@@ -1436,5 +1455,794 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
 
 
         #endregion
+
+
+        #region Tiles
+
+        private ZXMapsTile[] CreateTiles(byte[] fileData)
+        {
+            try
+            {
+                var dataS = Encoding.UTF8.GetString(fileData);
+                var tiles = dataS.Deserializar<ZXMapsTile[]>();
+
+                // Check attributes for ZX Spectrum mode
+                foreach (var tile in tiles)
+                {
+                    if (tile != null && tile.GraphicMode == GraphicsModes.ZXSpectrum)
+                    {
+                        foreach (var pattern in tile.Patterns)
+                        {
+                            if (pattern.Attributes == null)
+                            {
+                                int cW = tile.Width / 8;
+                                int cH = tile.Height / 8;
+                                pattern.Attributes = new AttributeColor[cW * cH];
+                                foreach (var attr in pattern.Attributes)
+                                {
+                                    attr.Ink = 1;
+                                    attr.Paper = 0;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                return tiles;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+
+        public bool ExportTiles(ExportConfig exportConfig, IEnumerable<ZXMapsTile> tiles)
+        {
+            // Export depending on the type
+            string exportedData = "";
+            bool createTextFile = false;
+
+            switch (exportConfig.ExportType)
+            {
+                case ExportTypes.PutChars:
+                    exportedData = Export_Tiles_PutChars(exportConfig, tiles);
+                    createTextFile = true;
+                    break;
+                default:
+                    return true;
+            }
+
+            if (!string.IsNullOrEmpty(exportedData) && createTextFile)
+            {
+                var sb = new StringBuilder();
+                sb.AppendLine("'------------------------------------------------------------------------------");
+                sb.AppendLine("'- Build data generated by ZXBasicStudio --------------------------------------");
+                sb.AppendLine("'- Do not modify this file, its contents are deleted at each build ------------");
+                sb.AppendLine("'------------------------------------------------------------------------------");
+                sb.AppendLine("");
+                sb.Append(exportedData);
+                ServiceLayer.Files_SaveFileString(exportConfig.ExportFilePath, sb.ToString());
+            }
+            return true;
+        }
+
+
+
+        #region PutChars
+
+        /// <summary>
+        /// Generate the export data for PutChars Tiles
+        /// </summary>
+        /// <param name="exportConfig">ExportConfig information</param>
+        /// <param name="tiles">Tiles to convert</param>
+        /// <returns>string with the conversion commands for the export dialog samble textbox</returns>
+        public static string Export_Tiles_PutChars(ExportConfig exportConfig, IEnumerable<ZXMapsTile> tiles)
+        {
+            string res = Export_Tile_PutChars_Check(exportConfig, tiles);
+            if (res.StartsWith("ERROR:"))
+            {
+                if (OutputLog != null)
+                {
+                    OutputLog.WriteLine(res);
+                }
+                return res;
+            }
+            switch (exportConfig.ExportDataType)
+            {
+                case ExportDataTypes.DIM:
+                    return Export_Tile_PutChars_DIM(exportConfig, tiles);
+                case ExportDataTypes.ASM:
+                    return Export_Tile_PutChars_ASM(exportConfig, tiles);
+                case ExportDataTypes.BIN:
+                    return Export_Tile_PutChars_BIN(exportConfig, tiles);
+                case ExportDataTypes.TAP:
+                    return Export_Tile_PutChars_TAP(exportConfig, tiles);
+                default:
+                    return "ERROR: Not implemented!";
+            }
+        }
+
+
+        private static string Export_Tile_PutChars_Check(ExportConfig exportConfig, IEnumerable<ZXMapsTile> tiles)
+        {
+            return "OK";
+        }
+
+
+        #region DIM
+
+        public static string Export_Tile_PutChars_DIM(ExportConfig exportConfig, IEnumerable<ZXMapsTile> tiles)
+        {
+            int min = 0;
+            switch (exportConfig.ArrayBase)
+            {
+                case 1:
+                    min = 1;
+                    break;
+                case 2:
+                    {
+                        var settings = ServiceLayer.GetProjectSettings();
+                        if (settings != null)
+                        {
+                            if (settings.ArrayBase == 1)
+                            {
+                                min = 1;
+                            }
+                        }
+
+                    }
+                    break;
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine("'- Tile definitions --------------------------------------");
+
+            var t = tiles.ElementAt(0);
+            if (t == null)
+            {
+                return "";
+            }
+            var max = tiles.Count() - 1; // The last tile is always null
+            var num = max + min;
+            sb.AppendLine(string.Format(
+                        "DIM {0}({1},{2}) AS UByte => {{ _",
+                        exportConfig.LabelName,
+                        num - 1,
+                        ((t.Width / 8) * t.Height) - 1 + min
+                        ));
+
+            for (int n = 0; n < max; n++)
+            {
+                var tile = tiles.ElementAt(n);
+                if (tile == null)
+                {
+                    continue;
+                }
+                // Content
+                sb.AppendLine("\t{ _");
+                var data = Export_Tile_PutChars_Pattern(tile, 0, exportConfig);
+                sb.Append(data);
+                if (n == (max - 1))
+                {
+                    sb.AppendLine("\t} _");
+                }
+                else
+                {
+                    sb.AppendLine("\t}, _");
+                }
+
+            }
+            // Footer
+            sb.AppendLine("}");
+            sb.AppendLine("");
+
+
+            // Attributes
+            if (exportConfig.IncludeAttr)
+            {
+                sb.AppendLine(string.Format(
+                        "DIM {0}_Attr({1},{2}) AS UByte => {{ _",
+                        exportConfig.LabelName,
+                        num - 1,
+                        ((t.Width / 8) * (t.Height / 8)) - 1 + min
+                        ));
+                foreach (var tile in tiles)
+                {
+                    if (tile == null)
+                    {
+                        continue;
+                    }
+                    // Content
+                    var data = Export_Tile_PutChars_Attribute(tile, 0, exportConfig, 0);
+                    sb.Append(data);
+                    // Footer
+                }
+                sb.AppendLine("");
+
+                sb.Append(" _\r\n}");
+                sb.AppendLine("");
+            }
+            return sb.ToString();
+        }
+
+
+        private static string Export_Tile_PutChars_Pattern(ZXMapsTile tile, int n, ExportConfig exportConfig)
+        {
+            var sb = new StringBuilder();
+
+            var pattern = tile.Patterns[n];
+            var data = ServiceLayer.Files_CreateBinDataUpDown(pattern, tile.Width, tile.Height);
+
+            int col = 0;
+            int row = 0;
+            foreach (var d in data)
+            {
+                if (col == 0)
+                {
+                    if (row == 0)
+                    {
+                        row = 1;
+                    }
+                    else
+                    {
+                        sb.AppendLine(", _");
+                    }
+                    sb.Append("\t\t");
+                }
+                if (col > 0)
+                {
+                    sb.Append(",");
+                }
+                var x = string.Format("${0:X2}", d);
+                sb.Append(x);
+
+                col++;
+                if (col >= 8)
+                {
+                    col = 0;
+                }
+            }
+            sb.AppendLine(" _");
+
+            return sb.ToString();
+        }
+
+
+        private static string Export_Tile_PutChars_Attribute(ZXMapsTile tile, int n, ExportConfig exportConfig, int firstItem)
+        {
+            var sb = new StringBuilder();
+
+            var pattern = tile.Patterns[n];
+
+            if (pattern.Attributes == null)
+            {
+                return "";
+            }
+
+            if (tile.Masked)
+            {
+                if (tile.Frames > 2)
+                {
+                    if (n > firstItem)
+                    {
+                        sb.AppendLine(", _");
+                    }
+                    sb.AppendLine("\t{ _");
+                }
+            }
+            else
+                if (tile.Frames > 1)
+                {
+                    if (n > firstItem)
+                    {
+                        sb.AppendLine(", _");
+                    }
+                    sb.AppendLine("\t{ _");
+                }
+
+            int col = 0;
+            int row = 0;
+            int max = (tile.Width / 8) * (tile.Height / 8);
+            int idx = 0;
+            foreach (var d in pattern.Attributes)
+            {
+                if (idx++ >= max)
+                {
+                    break;
+                }
+                if (col == 0)
+                {
+                    if (row == 0)
+                    {
+                        row = 1;
+                    }
+                    else
+                    {
+                        sb.AppendLine(", _");
+                    }
+                    sb.Append("\t");
+                    if (tile.Frames > 1)
+                    {
+                        sb.Append("\t");
+                    }
+                }
+                if (col > 0)
+                {
+                    sb.Append(",");
+                }
+                var x = string.Format("${0:X2}", d.Attribute);
+                sb.Append(x);
+
+                col++;
+                if (col >= 8)
+                {
+                    col = 0;
+                }
+            }
+            sb.AppendLine(" _");
+
+            if (tile.Frames == 1)
+            {
+                sb.Append("}");
+            }
+            else
+            {
+                sb.Append("\t}");
+            }
+
+            return sb.ToString();
+        }
+
+        #endregion
+
+
+        #region ASM
+
+
+        public static string Export_Tile_PutChars_ASM(ExportConfig exportConfig, IEnumerable<ZXMapsTile> tiles)
+        {
+            int min = 0;
+
+            var sb = new StringBuilder();
+            sb.AppendLine("'- Tile definitions --------------------------------------");
+
+            // All tiles
+            foreach (var tile in tiles)
+            {
+                if (tile == null || !tile.Export)
+                {
+                    continue;
+                }
+
+                if (tile.Frames == 0)
+                {
+                    continue;
+                }
+
+                // Header
+                sb.AppendLine(string.Format(
+                    "{0}{1}:",
+                    exportConfig.LabelName,
+                    tile.Name.Replace(" ", "_")));
+                sb.AppendLine("ASM");
+
+                // Data frames
+                for (int n = 0; n < tile.Frames; n++)
+                {
+                    if (tile.Masked && (n % 2) == 1)
+                    {
+                        continue;
+                    }
+                    // Content
+                    var data = Export_Tile_PutChars_Pattern_ASM(tile, n, exportConfig);
+                    sb.Append(data);
+                }
+                sb.AppendLine("END ASM");
+                sb.AppendLine("");
+
+                // Mask frames
+                if (tile.Masked)
+                {
+                    // Header
+                    sb.AppendLine(string.Format(
+                        "{0}{1}_Mask:",
+                        exportConfig.LabelName,
+                        tile.Name.Replace(" ", "_")));
+                    sb.AppendLine("ASM");
+                    for (int n = 0; n < tile.Frames; n++)
+                    {
+                        if ((n % 2) == 0)
+                        {
+                            continue;
+                        }
+                        // Content
+                        var data = Export_Tile_PutChars_Pattern_ASM(tile, n, exportConfig);
+                        sb.Append(data);
+                    }
+                    sb.AppendLine("END ASM");
+                    sb.AppendLine("");
+                }
+
+                // Attributes
+                if (exportConfig.IncludeAttr && tile.GraphicMode == GraphicsModes.ZXSpectrum)
+                {
+                    // Header
+                    sb.AppendLine(string.Format(
+                        "{0}{1}_Attr:",
+                        exportConfig.LabelName,
+                        tile.Name.Replace(" ", "_")));
+                    sb.AppendLine("ASM");
+                    for (int n = 0; n < tile.Frames; n++)
+                    {
+                        if (tile.Masked && (n % 2) == 1)
+                        {
+                            continue;
+                        }
+                        // Content
+                        var data = Export_Tile_PutChars_Attribute_ASM(tile, n, exportConfig);
+                        sb.Append(data);
+                    }
+                    sb.AppendLine("END ASM");
+                    sb.AppendLine("");
+                }
+            }
+
+            return sb.ToString();
+        }
+
+
+        private static string Export_Tile_PutChars_Pattern_ASM(ZXMapsTile tile, int n, ExportConfig exportConfig)
+        {
+            var sb = new StringBuilder();
+
+            var pattern = tile.Patterns[n];
+            var data = ServiceLayer.Files_CreateBinDataUpDown(pattern, tile.Width, tile.Height);
+
+            int col = 0;
+            int row = 0;
+            foreach (var d in data)
+            {
+                if (col == 0)
+                {
+                    if (row == 0)
+                    {
+                        row = 1;
+                    }
+                    else
+                    {
+                        sb.AppendLine("");
+                    }
+                    sb.Append("\tDB ");
+                }
+                if (col > 0)
+                {
+                    sb.Append(",");
+                }
+                var x = string.Format("${0:X2}", d);
+                sb.Append(x);
+
+                col++;
+                if (col >= 8)
+                {
+                    col = 0;
+                }
+            }
+            sb.AppendLine("");
+
+            return sb.ToString();
+        }
+
+
+        private static string Export_Tile_PutChars_Attribute_ASM(ZXMapsTile tile, int n, ExportConfig exportConfig)
+        {
+            var sb = new StringBuilder();
+
+            var pattern = tile.Patterns[n];
+
+            if (pattern.Attributes == null)
+            {
+                return "";
+            }
+
+            int col = 0;
+            int row = 0;
+            int max = (tile.Width / 8) * (tile.Height / 8);
+            int idx = 0;
+            foreach (var d in pattern.Attributes)
+            {
+                if (idx++ >= max)
+                {
+                    break;
+                }
+                if (col == 0)
+                {
+                    if (row == 0)
+                    {
+                        row = 1;
+                    }
+                    else
+                    {
+                        sb.AppendLine("");
+                    }
+                    sb.Append("\tDB ");
+                }
+                if (col > 0)
+                {
+                    sb.Append(",");
+                }
+                var x = string.Format("${0:X2}", d.Attribute);
+                sb.Append(x);
+
+                col++;
+                if (col >= 8)
+                {
+                    col = 0;
+                }
+            }
+            sb.AppendLine("");
+
+            return sb.ToString();
+        }
+
+        #endregion
+
+
+        #region TAP and BIN
+
+
+        public static string Export_Tile_PutChars_BIN(ExportConfig exportConfig, IEnumerable<ZXMapsTile> tiles)
+        {
+            var binData = Export_Tile_PutChars_GetBinaryData(tiles);
+            ServiceLayer.Files_SaveFileData(exportConfig.ExportFilePath, binData);
+            return "";
+        }
+
+
+        public static string Export_Tile_PutChars_TAP(ExportConfig exportConfig, IEnumerable<ZXMapsTile> tiles)
+        {
+            var binData = Export_Tile_PutChars_GetBinaryData(tiles);
+            binData = ServiceLayer.Bin2Tap(exportConfig.ZXFileName, exportConfig.ZXAddress, binData);
+            ServiceLayer.Files_SaveFileData(exportConfig.ExportFilePath, binData);
+            return "";
+        }
+
+
+        private static byte[] Export_Tile_PutChars_GetBinaryData(IEnumerable<ZXMapsTile> tiles)
+        {
+            var binData = new List<byte>();
+
+            foreach (var tile in tiles)
+            {
+                if (tile != null)
+                {
+                    foreach (var pattern in tile.Patterns)
+                    {
+                        var data = ServiceLayer.Files_CreateBinDataUpDown(pattern, tile.Width, tile.Height);
+                        binData.AddRange(data);
+                    }
+                }
+            }
+
+            return binData.ToArray();
+        }
+
+        #endregion
+
+        #endregion
+
+        #endregion
+
+
+        #region Maps
+
+        private ZXMapsMap CreateMap(byte[] fileData)
+        {
+            try
+            {
+                var dataS = Encoding.UTF8.GetString(fileData);
+                var map = dataS.Deserializar<ZXMapsMap>();
+                return map;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+
+        public bool ExportMap(ExportConfig exportConfig, ZXMapsMap map)
+        {
+            // Export depending on the type
+            string exportedData = "";
+            bool createTextFile = false;
+
+            switch (exportConfig.ExportType)
+            {
+                case ExportTypes.Array:
+                    exportedData = Export_Map_Array(exportConfig, map);
+                    createTextFile = true;
+                    break;
+                default:
+                    return true;
+            }
+
+            if (!string.IsNullOrEmpty(exportedData) && createTextFile)
+            {
+                var sb = new StringBuilder();
+                sb.AppendLine("'------------------------------------------------------------------------------");
+                sb.AppendLine("'- Build data generated by ZXBasicStudio --------------------------------------");
+                sb.AppendLine("'- Do not modify this file, its contents are deleted at each build ------------");
+                sb.AppendLine("'------------------------------------------------------------------------------");
+                sb.AppendLine("");
+                sb.Append(exportedData);
+                ServiceLayer.Files_SaveFileString(exportConfig.ExportFilePath, sb.ToString());
+            }
+            return true;
+        }
+
+
+        /// <summary>
+        /// Generate the export data for Map as Array
+        /// </summary>
+        /// <param name="exportConfig">ExportConfig information</param>
+        /// <param name="tiles">Tiles to convert</param>
+        /// <returns>string with the conversion commands for the export dialog samble textbox</returns>
+        public static string Export_Map_Array(ExportConfig exportConfig, ZXMapsMap map)
+        {
+            string res = Export_Map_Check(exportConfig, map);
+            if (res.StartsWith("ERROR:"))
+            {
+                if (OutputLog != null)
+                {
+                    OutputLog.WriteLine(res);
+                }
+                return res;
+            }
+
+            switch (exportConfig.ExportDataType)
+            {
+                case ExportDataTypes.DIM:
+                    return Export_Map_Array_DIM(exportConfig, map);
+                //case ExportDataTypes.ASM:
+                //    return Export_Tile_PutChars_ASM(exportConfig, tiles);
+                //case ExportDataTypes.BIN:
+                //    return Export_Tile_PutChars_BIN(exportConfig, tiles);
+                //case ExportDataTypes.TAP:
+                //    return Export_Tile_PutChars_TAP(exportConfig, tiles);
+                default:
+                    return "ERROR: Not implemented!";
+            }
+        }
+
+
+        private static string Export_Map_Check(ExportConfig exportConfig, ZXMapsMap map)
+        {
+            return "OK";
+        }
+
+
+        private static string Export_Map_Array_DIM(ExportConfig exportConfig, ZXMapsMap map)
+        {
+            int min = 0;
+            switch (exportConfig.ArrayBase)
+            {
+                case 1:
+                    min = 1;
+                    break;
+                case 2:
+                    {
+                        var settings = ServiceLayer.GetProjectSettings();
+                        if (settings != null)
+                        {
+                            if (settings.ArrayBase == 1)
+                            {
+                                min = 1;
+                            }
+                        }
+
+                    }
+                    break;
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine("'- Map definitions --------------------------------------");
+
+
+            sb.AppendLine($"DIM {exportConfig.LabelName}({map.Width - 1 + min},{map.Height - 1 + min}) AS UByte => {{ _");
+
+            for (int x = 0; x < map.Width; x++)
+            {
+                sb.Append("\t{ ");
+                for (int y = 0; y < map.Height; y++)
+                {
+                    var d = $"{map.TileArrays[x, y].TileId.ToString("000")}";
+                    sb.Append(d);
+                    if (y == (map.Height - 1))
+                    {
+                        if (x == (map.Width - 1))
+                        {
+                            sb.AppendLine("} _");
+                        }
+                        else
+                        {
+                            sb.AppendLine("}, _");
+                        }
+                    }
+                    else
+                    {
+                        sb.Append(",");
+                    }
+                }
+            }
+            sb.AppendLine("}");
+            sb.AppendLine("");
+
+            return sb.ToString();
+        }
+
+
+
+        private static string Export_Map_Array_DIM_DEPRECATED(ExportConfig exportConfig, ZXMapsMap map)
+        {
+            int min = 0;
+            switch (exportConfig.ArrayBase)
+            {
+                case 1:
+                    min = 1;
+                    break;
+                case 2:
+                    {
+                        var settings = ServiceLayer.GetProjectSettings();
+                        if (settings != null)
+                        {
+                            if (settings.ArrayBase == 1)
+                            {
+                                min = 1;
+                            }
+                        }
+
+                    }
+                    break;
+            }
+
+            var sb = new StringBuilder();
+            sb.AppendLine("'- Map definitions --------------------------------------");
+
+
+            sb.AppendLine($"DIM {exportConfig.LabelName}({map.Height - 1 + min},{map.Width - 1 + min}) AS UByte => {{ _");
+
+            for (int y = 0; y < map.Height; y++)
+            {
+                sb.Append("\t{ ");
+                for (int x = 0; x < map.Width; x++)
+                {
+                    var d = $"{map.TileArrays[x, y].TileId.ToString("000")}";
+                    sb.Append(d);
+                    if (x == (map.Width - 1))
+                    {
+                        if (y == (map.Height - 1))
+                        {
+                            sb.AppendLine("} _");
+                        }
+                        else
+                        {
+                            sb.AppendLine("}, _");
+                        }
+                    }
+                    else
+                    {
+                        sb.Append(",");
+                    }
+                }
+            }
+            sb.AppendLine("}");
+            sb.AppendLine("");
+
+            return sb.ToString();
+        }
+
+        #endregion
+
     }
 }

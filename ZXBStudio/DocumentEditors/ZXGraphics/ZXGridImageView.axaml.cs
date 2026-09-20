@@ -5,6 +5,7 @@ using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Skia;
+using FFmpeg.AutoGen;
 using SkiaSharp;
 using System;
 using System.Diagnostics;
@@ -14,7 +15,8 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 {
     public partial class ZXGridImageView : UserControl
     {
-        public bool ViewAttributes {
+        public bool ViewAttributes
+        {
             get
             {
                 return _ViewAttributes;
@@ -51,6 +53,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             }
         }
 
+
         public SKColor GridColor
         {
             get => gridColor;
@@ -60,6 +63,18 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
                 InvalidateVisual();
             }
         }
+
+
+        public SKColor Grid8x8Color
+        {
+            get => grid8x8Color;
+            set
+            {
+                grid8x8Color = value;
+                InvalidateVisual();
+            }
+        }
+
 
         public IZXBitmap? BackgroundImage
         {
@@ -79,6 +94,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         }
 
         public bool Show8x8Grid { get; set; } = true;
+        public bool ShowTileGrid { get; set; } = true;
 
         public ZXGridImageView()
         {
@@ -123,33 +139,50 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             using var paint = new SKPaint { Color = gridColor, StrokeWidth = 1, IsAntialias = false };
             using var paintGrid = new SKPaint { Color = grid8x8Color, StrokeWidth = 1, IsAntialias = false };
 
-            //Draw vertical lines
-            for (int x = 0; x < gridImage.PixelSize.Width + 1; x += Zoom + 1)
+            if (Show8x8Grid)
             {
-                if ((x % 8) == 0)
+                //Draw vertical lines
+                for (int x = 0; x < gridImage.PixelSize.Width + 1; x += Zoom + 1)
                 {
-                    canvas.DrawLine(new SKPoint(x, 0), new SKPoint(x, gridImage.PixelSize.Height), paintGrid);
+                    if ((x % 8) == 0)
+                    {
+                        canvas.DrawLine(new SKPoint(x, 0), new SKPoint(x, gridImage.PixelSize.Height), paintGrid);
+                    }
+                    else
+                    {
+                        canvas.DrawLine(new SKPoint(x, 0), new SKPoint(x, gridImage.PixelSize.Height), paint);
+                    }
                 }
-                else
+
+                //Draw horizontal lines
+                for (int y = 0; y < gridImage.PixelSize.Height + 1; y += Zoom + 1)
                 {
-                    canvas.DrawLine(new SKPoint(x, 0), new SKPoint(x, gridImage.PixelSize.Height), paint);
+                    if ((y % 8) == 0)
+                    {
+                        canvas.DrawLine(new SKPoint(0, y), new SKPoint(gridImage.PixelSize.Width, y), paintGrid);
+                    }
+                    else
+                    {
+                        canvas.DrawLine(new SKPoint(0, y), new SKPoint(gridImage.PixelSize.Width, y), paint);
+                    }
                 }
             }
 
-            //Draw horizontal lines
-            for (int y = 0; y < gridImage.PixelSize.Height + 1; y += Zoom + 1)
+            if (ShowTileGrid)
             {
-                if ((y % 8) == 0)
                 {
-                    canvas.DrawLine(new SKPoint(0, y), new SKPoint(gridImage.PixelSize.Width, y), paintGrid);
+                    int limit = gridImage.PixelSize.Width + 1;
+                    canvas.DrawLine(new SKPoint(0, 0), new SKPoint(0, gridImage.PixelSize.Height), paintGrid);
+                    canvas.DrawLine(new SKPoint(limit, 0), new SKPoint(limit, gridImage.PixelSize.Height), paintGrid);
                 }
-                else
                 {
-                    canvas.DrawLine(new SKPoint(0, y), new SKPoint(gridImage.PixelSize.Width, y), paint);
+                    int limit = gridImage.PixelSize.Height + 1;
+                    canvas.DrawLine(new SKPoint(0, 0), new SKPoint(gridImage.PixelSize.Height, 0), paintGrid);
+                    canvas.DrawLine(new SKPoint(0, limit), new SKPoint(gridImage.PixelSize.Height, limit), paintGrid);
                 }
             }
-
         }
+
 
         public override void Render(DrawingContext context)
         {
@@ -163,20 +196,22 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
             context.DrawImage(backgroundImage, new Rect(0, 0, gridImage.Size.Width, gridImage.Size.Height));
 
-            if (zoom > 4)
+            if (zoom > 4 || ShowTileGrid)
+            {
                 context.DrawImage(gridImage, new Rect(0, 0, gridImage.Size.Width, gridImage.Size.Height));
+            }
         }
 
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
-            Debug.WriteLine($"OnPointerPressed: {e.GetPosition(this)}");
+            //Debug.WriteLine($"OnPointerPressed: {e.GetPosition(this)}");
         }
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
             base.OnPointerMoved(e);
-            Debug.WriteLine($"OnPointerMoved: {this.Width}/{this.Height} : {e.GetPosition(this)}");
+            //Debug.WriteLine($"OnPointerMoved: {this.Width}/{this.Height} : {e.GetPosition(this)}");
         }
     }
 }

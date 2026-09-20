@@ -46,6 +46,38 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         }
 
 
+        public bool InitializeTile()
+        {
+            ExportTypesList = new List<ExportTypeDescrioptionItem>();
+            ExportTypesList.Add(new ExportTypeDescrioptionItem()
+            {
+                Description = "Boriel Basic's PutChars embeded library.",
+                ExportType = ExportTypes.PutChars,
+                Image = "/Svg/Seal.svg",
+                Name = "PutChars"
+            });           
+            lstOptions.ItemsSource = ExportTypesList;
+            lstOptions.SelectionChanged += LstOptions_SelectionChanged;
+            return true;
+        }
+
+
+        public bool InitializeMap()
+        {
+            ExportTypesList = new List<ExportTypeDescrioptionItem>();
+            ExportTypesList.Add(new ExportTypeDescrioptionItem()
+            {
+                Description = "Raw array of bytes, one byte for tile",
+                ExportType = ExportTypes.Array,
+                Image = "/Svg/boxes-stacked-solid.svg",
+                Name = "Array"
+            });
+            lstOptions.ItemsSource = ExportTypesList;
+            lstOptions.SelectionChanged += LstOptions_SelectionChanged;
+            return true;
+        }
+
+
         public bool InitializeSprite()
         {
             ExportTypesList = new List<ExportTypeDescrioptionItem>();

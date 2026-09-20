@@ -26,7 +26,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         /// <summary>
         /// Actual Sprite data
         /// </summary>
-        public Sprite SpriteData
+        public ZXMapsTile SpriteData
         {
             get
             {
@@ -110,7 +110,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
         #region Private fields
 
-        private Sprite _SpriteData = null;
+        private ZXMapsTile _SpriteData = null;
         private int _Zoom = 24;
         private Action<SpritePatternEditor, string> CallBackCommand = null;
         private int? lastId = null;
