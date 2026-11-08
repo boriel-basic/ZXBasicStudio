@@ -149,6 +149,9 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                         spr.Patterns = spr.Patterns.Take(spr.Frames).ToList();
                     }
                 }
+
+                AdjustGraphicsMode();
+
                 TileMain.Tiles = sprList;
                 var dataJSon = TileMain.Serializar();
                 if (!ServiceLayer.Files_SaveFileString(FileName, dataJSon))
@@ -277,6 +280,8 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             wpTileList.ItemWidth = (TileMain.Width * 4) + 4;
             wpTileList.ItemHeight = (TileMain.Height * 4) + 4;
 
+            AdjustGraphicsMode();
+
             foreach (var Tile in TileMain.Tiles)
             {
                 // Create pattern list
@@ -351,6 +356,41 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         }
 
 
+        private void AdjustGraphicsMode()
+        {
+            PaletteColor paper = null;
+            PaletteColor ink = null;
+
+            foreach (var tile in TileMain.Tiles)
+            {
+                if (tile == null)
+                {
+                    continue;
+                }
+                
+                tile.GraphicMode = TileMain.GraphicMode;
+                var palette = ServiceLayer.GetPalette(tile.GraphicMode);
+                if (palette.Count() != tile.Palette.Count())
+                {
+                    if (paper == null)
+                    {
+                        paper =palette[ctrlEditor.PrimaryColorIndex];
+                        ink = palette[ctrlEditor.SecondaryColorIndex];
+                    }
+                    tile.Palette = palette;
+                    foreach(var pattern in tile.Patterns)
+                    {                        
+                        foreach (var attr in pattern.Attributes)
+                        {
+                            attr.Paper = ctrlEditor.SecondaryColorIndex;
+                            attr.Ink = ctrlEditor.PrimaryColorIndex;
+                        }
+                    }
+                    TileList_Modified(tile);
+                }
+            }
+        }
+
         #region TileList
 
         private void TileList_Command(TilePatternControl sender, string command)
@@ -367,6 +407,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                     ctrlPreview.TileData = sender.TileData;
                     ctrlPreview.Refresh();
                     TileList_Modified(sender.TileData);
+                    AdjustGraphicsMode();
                     break;
                 case "SELECTED":
                     TileList_Unselect(sender);
@@ -381,6 +422,22 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                     }
                     selectedTileId = sender.TileData?.Id ?? 0;
                     break;
+                case "MODE_Monocrome":
+                    TileMain.GraphicMode = GraphicsModes.Monochrome;
+                    AdjustGraphicsMode();
+                    Refresh();
+                    break;
+                case "MODE_ZXSpectrum":
+                    TileMain.GraphicMode = GraphicsModes.ZXSpectrum;
+                    AdjustGraphicsMode();
+                    Refresh();
+                    break;
+                case "MODE_Next":
+                    TileMain.GraphicMode = GraphicsModes.Next;
+                    AdjustGraphicsMode();
+                    Refresh();
+                    break;
+
             }
         }
 
@@ -485,7 +542,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
         private void TileList_AddTile(ZXMapsTile TileData)
         {
-            if (TileData!=null && TileData.Palette == null)
+            if (TileData != null && TileData.Palette == null)
             {
                 TileData.Palette = ServiceLayer.GetPalette(TileData.GraphicMode);
             }
@@ -736,12 +793,14 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                             switch (sender.TileData.GraphicMode)
                             {
                                 case GraphicsModes.Monochrome:
-                                    ctrlEditor.PrimaryColorIndex = 1;
-                                    ctrlEditor.SecondaryColorIndex = 0;
+                                    ctrlEditor.TileData.GraphicMode = GraphicsModes.Monochrome;
+                                    TileMain.GraphicMode = GraphicsModes.Monochrome;
+                                    AdjustGraphicsMode();
                                     break;
                                 case GraphicsModes.ZXSpectrum:
-                                    ctrlEditor.PrimaryColorIndex = 0;
-                                    ctrlEditor.SecondaryColorIndex = 7;
+                                    ctrlEditor.TileData.GraphicMode = GraphicsModes.ZXSpectrum;
+                                    TileMain.GraphicMode = GraphicsModes.ZXSpectrum;
+                                    AdjustGraphicsMode();
                                     break;
                             }
                             ctrlEditor.TileData = selectedTile;
@@ -1098,7 +1157,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             {
                 case "REFRESH":
                     {
-                        foreach(var tc in TilePatternsList)
+                        foreach (var tc in TilePatternsList)
                         {
                             tc.Refresh();
                         }

@@ -254,11 +254,32 @@ namespace ZXBasicStudio.BuildSystem
                     Process process = new Process();
                     if (Environment.OSVersion.Platform == PlatformID.Win32NT)
                     {
-                        CheckNextCreator();
-                        process.StartInfo.FileName = Path.Combine(Path.GetDirectoryName(ZXOptions.Current.ZxbcPath), "python", "python.exe");
-                        process.StartInfo.Arguments = string.Format("{0} nex.cfg {1}",
-                            Path.Combine(Path.GetDirectoryName(ZXOptions.Current.ZxbcPath), "tools", "nextcreator.py"),
-                            Path.GetFileNameWithoutExtension(settings.MainFile) + ".nex");
+                        //CheckNextCreator();
+                        var ncPath = Path.Combine(Path.GetDirectoryName(ZXOptions.Current.ZxbcPath), "tools", "nextcreator.exe");
+                        bool found = false;
+                        if (File.Exists(ncPath))
+                        {
+                            process.StartInfo.FileName = ncPath;
+                            process.StartInfo.Arguments = $"nex.cfg {Path.GetFileNameWithoutExtension(settings.MainFile)}.nex";
+                            found = true;
+                        }
+                        else
+                        {
+                            ncPath = Path.Combine(Path.GetDirectoryName(ZXOptions.Current.ZxbcPath), "tools", "nextcreator");
+                            if (File.Exists(ncPath))
+                            {
+                                process.StartInfo.FileName = ncPath;
+                                process.StartInfo.Arguments = $"nex.cfg {Path.GetFileNameWithoutExtension(settings.MainFile)}.nex";
+                                found = true;
+                            }
+                        }
+                        if (!found)
+                        {
+                            process.StartInfo.FileName = Path.Combine(Path.GetDirectoryName(ZXOptions.Current.ZxbcPath), "python", "python.exe");
+                            process.StartInfo.Arguments = string.Format("{0} nex.cfg {1}",
+                                Path.Combine(Path.GetDirectoryName(ZXOptions.Current.ZxbcPath), "tools", "nextcreator.py"),
+                                Path.GetFileNameWithoutExtension(settings.MainFile) + ".nex");
+                        }
                         process.StartInfo.WorkingDirectory = project.ProjectPath;
                         process.StartInfo.UseShellExecute = false;
                         process.StartInfo.CreateNoWindow = true;
@@ -266,8 +287,17 @@ namespace ZXBasicStudio.BuildSystem
                     }
                     else
                     {
-                        process.StartInfo.FileName = Path.Combine(Path.GetDirectoryName(ZXOptions.Current.ZxbcPath), "tools", "nextcreator.py");
-                        process.StartInfo.Arguments = "nex.cfg " + Path.GetFileNameWithoutExtension(settings.MainFile) + ".nex";
+                        var ncPath = Path.Combine(Path.GetDirectoryName(ZXOptions.Current.ZxbcPath), "tools", "nextcreator");
+                        if (File.Exists(ncPath))
+                        {
+                            process.StartInfo.FileName = ncPath;
+                            process.StartInfo.Arguments = $"nex.cfg {Path.GetFileNameWithoutExtension(settings.MainFile)}.nex";
+                        }
+                        else
+                        {
+                            process.StartInfo.FileName = Path.Combine(Path.GetDirectoryName(ZXOptions.Current.ZxbcPath), "tools", "nextcreator.py");
+                            process.StartInfo.Arguments = "nex.cfg " + Path.GetFileNameWithoutExtension(settings.MainFile) + ".nex";
+                        }
                         process.StartInfo.WorkingDirectory = project.ProjectPath;
                         process.StartInfo.UseShellExecute = false;
                         process.StartInfo.CreateNoWindow = true;

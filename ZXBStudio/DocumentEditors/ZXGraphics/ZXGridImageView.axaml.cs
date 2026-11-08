@@ -213,5 +213,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
             base.OnPointerMoved(e);
             //Debug.WriteLine($"OnPointerMoved: {this.Width}/{this.Height} : {e.GetPosition(this)}");
         }
+
+
+        public void Refresh()
+        {
+            InvalidateVisual();
+        }
     }
 }

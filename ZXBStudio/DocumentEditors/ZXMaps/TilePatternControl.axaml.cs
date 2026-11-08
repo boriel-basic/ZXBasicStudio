@@ -197,7 +197,8 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                         RawData = new int[tileHeight*tileHeight],
                         Id = 0,
                         Name = "",
-                        Number = ""
+                        Number = "",
+                        Attributes = new AttributeColor[(tileWidth / 8) * (tileHeight / 8)]
                     });
                 }
                 if (TileData.Palette == null || TileData.Palette.Length == 0)
@@ -391,8 +392,20 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                 Id = 0,
                 Name = "",
                 Number = "0",
-                RawData = new int[tileWidth*tileHeight]
+                RawData = new int[tileWidth*tileHeight],
+                Attributes = new AttributeColor[(tileWidth / 8) * (tileHeight / 8)]
             };
+            for(int y=0; y < (tileHeight / 8); y++)
+            {
+                for (int x = 0; x < (tileWidth / 8); x++)
+                {
+                    pat.Attributes[(y * (tileWidth / 8)) + x] = new AttributeColor()
+                    {
+                        Ink = 1,
+                        Paper = 0
+                    };
+                }
+            }
             return pat;
         }
 
