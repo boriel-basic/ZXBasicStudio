@@ -14,7 +14,6 @@ using System.Linq;
 using System.Security.Cryptography;
 using ZXBasicStudio.Classes;
 using ZXBasicStudio.Common;
-using ZXBasicStudio.DocumentEditors.NextDows.neg;
 using ZXBasicStudio.DocumentEditors.ZXGraphics;
 using ZXBasicStudio.DocumentEditors.ZXGraphics.neg;
 using ZXBasicStudio.DocumentEditors.ZXMaps.Log;

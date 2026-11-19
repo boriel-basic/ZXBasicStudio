@@ -107,9 +107,7 @@ namespace ZXBasicStudio.DocumentModel.Classes
         public static IEnumerable<IZXDocumentBuilder> GetPrecompilationDocumentBuilders()
         {
             var builders = _docTypes.Where(d => d.DocumentBuilder != null && (d.DocumentBuildStage?.HasFlag(Enums.ZXBuildStage.PreBuild) ?? false)).Select(d => d.DocumentBuilder);
-
             var sortedBuilders = SortByDependency(builders, builder => builders.Where(b => b != null && builder != null && builder.DependsOn != null && builder.DependsOn.Contains(b.Id)));
-
             return sortedBuilders;
         }
 

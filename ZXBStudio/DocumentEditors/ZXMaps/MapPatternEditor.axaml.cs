@@ -94,6 +94,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             set
             {
                 _map = value;
+                images = null;
                 Refresh(false);
             }
         }
@@ -182,6 +183,25 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
             this._map = map;
             this._tiles = tileData;
             this.CallBackCommand = callBackCommand;
+
+            for(int y=0; y<map.Height; y++)
+            {
+                for (int x = 0; x < map.Width; x++) {
+                    if (map.TileArrays[x, y] == null)
+                    {
+                        map.TileArrays[x, y] = new ZXMapsTileArray()
+                        {
+                            Id = x + (y * _map.Width),
+                            Properties = new List<ZXMapsProperty>(),
+                            TileId = 0,
+                            X = x,
+                            Y = y,
+                            Z = 0
+                        };
+                    }
+                }
+            }
+
             Refresh(false);
             return true;
         }
@@ -210,14 +230,8 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                         i.Show8x8Grid = false;
                         i.ViewAttributes = false;
                         i.ShowTileGrid = true;
-                        i.Grid8x8Color = new SkiaSharp.SKColor(64, 0, 0);                        
-
-                        //i.PointerEntered += I_PointerEntered;
-                        //i.PointerExited += I_PointerExited;
-                        //i.PointerPressed += I_PointerPressed;
-                        //i.PointerReleased += I_PointerReleased;
-                        //i.PointerMoved += I_PointerMoved;
-                        //i.Tag = x + (y * _map.Width);
+                        i.Grid8x8Color = new SkiaSharp.SKColor(64, 0, 0);
+                        i.TAG = $"{x},{y}";
                         images[x, y] = i;
                         cnvEditor.Children.Add(i);
                     }

@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using ZXBasicStudio.Common;
-using ZXBasicStudio.DocumentEditors.NextDows.neg;
 using ZXBasicStudio.DocumentEditors.ZXGraphics;
 using ZXBasicStudio.DocumentEditors.ZXGraphics.neg;
 using ZXBasicStudio.DocumentEditors.ZXMaps.Neg;

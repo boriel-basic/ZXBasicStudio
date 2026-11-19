@@ -96,10 +96,15 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         public bool Show8x8Grid { get; set; } = true;
         public bool ShowTileGrid { get; set; } = true;
 
+        public string TAG { get; set; }
+
+
         public ZXGridImageView()
         {
             InitializeComponent();
         }
+
+        //private static int counter = 0;
 
         private void EnsureGrid()
         {
@@ -110,7 +115,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
 
             int w = (int)(backgroundImage.PixelSize.Width * Zoom + backgroundImage.PixelSize.Width + 1);
             int h = (int)(backgroundImage.PixelSize.Height * Zoom + backgroundImage.PixelSize.Height + 1);
-
+            
             if (gridImage != null)
             {
                 if (gridImage.PixelSize.Width == w && gridImage.PixelSize.Height == h)
@@ -205,13 +210,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics
         protected override void OnPointerPressed(PointerPressedEventArgs e)
         {
             base.OnPointerPressed(e);
-            //Debug.WriteLine($"OnPointerPressed: {e.GetPosition(this)}");
         }
 
         protected override void OnPointerMoved(PointerEventArgs e)
         {
             base.OnPointerMoved(e);
-            //Debug.WriteLine($"OnPointerMoved: {this.Width}/{this.Height} : {e.GetPosition(this)}");
         }
 
 

@@ -8,13 +8,13 @@
 			 Background="#ff202020"
 			 x:Class="ZXBasicStudio.DocumentEditors.ZXMaps.MapPropertiesControl">
 	<Grid Name="grdMain">
-		<TabControl Grid.Row="1" Name="tabControl" TabStripPlacement="Top" TabControl.CornerRadius="0">			
+		<TabControl Grid.Row="1" Name="tabControl" TabStripPlacement="Top" TabControl.CornerRadius="0">
 			<TabItem Header="Map">
 				<ScrollViewer>
 					<Grid ColumnDefinitions="90,*,Auto" Grid.RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto">
 						<TextBlock Grid.Row="0" Classes="dialog" VerticalAlignment="Center" HorizontalAlignment="Right">Map type:</TextBlock>
 						<ComboBox Grid.Row="0" Grid.Column="1"
-							Name="cmbMapType" Classes="dialog" HorizontalAlignment="Stretch" Margin="5,8,5,2">
+								  Name="cmbMapType" Classes="dialog" HorizontalAlignment="Stretch" Margin="5,8,5,2">
 							<!-- TODO: Enable all types of maps
 							<ComboBoxItem>Rooms</ComboBoxItem>
 							<ComboBoxItem>Horizontal scroll</ComboBoxItem>
@@ -46,7 +46,7 @@
 							<NumericUpDown Classes="dialog" Name="txtMapTileHeight" Minimum="8" Increment="8" Maximum="256" Value="16" VerticalAlignment="Center"/>
 						</Border>
 						<TextBlock Grid.Row="4" Grid.Column="2" Classes="dialog" VerticalAlignment="Center">(pixels)</TextBlock>
-						
+
 						<TextBlock Grid.Row="5" Classes="dialog" VerticalAlignment="Center" HorizontalAlignment="Right" IsVisible="False">Mapping type:</TextBlock>
 						<ComboBox Grid.Row="5" Grid.Column="1" Name="cmbMappingType" Classes="dialog" HorizontalAlignment="Stretch" Margin="5,0,5,2" IsVisible="False">
 							<ComboBoxItem>Sequential</ComboBoxItem>
@@ -54,6 +54,9 @@
 							<ComboBoxItem>Blocks</ComboBoxItem>
 						</ComboBox>
 
+						<Grid Grid.Row="5" Grid.Column="1">
+							<Button x:Name="btnApplyChanges" Classes="Button" Margin="0,8,0,8">Aply changes</Button>
+						</Grid>
 					</Grid>
 				</ScrollViewer>
 			</TabItem>

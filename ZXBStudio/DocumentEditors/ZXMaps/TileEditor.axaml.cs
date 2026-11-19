@@ -1141,9 +1141,16 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
         #region MapProperties
 
-        private void MapProperties_Command(MapPropertiesControl control, string arg2)
+        private void MapProperties_Command(MapPropertiesControl control, string comando)
         {
-
+            switch (comando)
+            {
+                case "UPDATE":
+                    Map = ctrlMapProperties.Map;
+                    ctrlMapEditor.Map = Map;
+                    Refresh();
+                    break;
+            }
         }
 
         #endregion

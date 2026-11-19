@@ -63,6 +63,12 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
                     continue;
                 }
 
+                if (!exportConfig.ExportFilePath.Contains(BuildPath))
+                {
+                    var fn = Path.GetFileName(exportConfig.ExportFilePath);
+                    exportConfig.ExportFilePath = Path.Combine(BuildPath, fn);
+                }
+
                 // Build configuration sources
                 var fileNameData = file.Replace(".zbs", "");
                 var fileTypeConfig = ServiceLayer.GetFileType(fileNameData);
@@ -1464,10 +1470,10 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
             try
             {
                 var dataS = Encoding.UTF8.GetString(fileData);
-                var tiles = dataS.Deserializar<ZXMapsTile[]>();
+                var tiles = dataS.Deserializar<ZXMapsTiles>();
 
                 // Check attributes for ZX Spectrum mode
-                foreach (var tile in tiles)
+                foreach (var tile in tiles.Tiles)
                 {
                     if (tile != null && tile.GraphicMode == GraphicsModes.ZXSpectrum)
                     {
@@ -1488,7 +1494,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
                     }
                 }
 
-                return tiles;
+                return tiles.Tiles.ToArray();
             }
             catch
             {
@@ -1750,6 +1756,11 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
             int row = 0;
             int max = (tile.Width / 8) * (tile.Height / 8);
             int idx = 0;
+
+            // Transponer atributos
+            var transposedAttributes = new List<AttributeColor>();
+
+
             foreach (var d in pattern.Attributes)
             {
                 if (idx++ >= max)

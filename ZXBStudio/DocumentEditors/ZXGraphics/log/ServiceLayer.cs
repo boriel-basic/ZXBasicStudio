@@ -19,6 +19,7 @@ using ZXBasicStudio.DocumentEditors.ZXGraphics.neg;
 using ZXBasicStudio.DocumentModel.Classes;
 using ZXBasicStudio.IntegratedDocumentTypes.CodeDocuments.Basic;
 using ZXBasicStudio.IntegratedDocumentTypes.ZXGraphics;
+using ZXBasicStudio.IntegratedDocumentTypes.ZXMaps;
 
 namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
 {
@@ -81,7 +82,12 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
                 case SpriteDocument:
                     ftc.FileType = FileTypes.Sprite;
                     break;
-
+                case ZXTilemapDocument:
+                    ftc.FileType = FileTypes.Tile;
+                    break;
+                case ZXMapsDocument:
+                    ftc.FileType = FileTypes.Map;
+                    break;
             }
             return ftc;
         }
@@ -439,6 +445,12 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
                     return lst.ToArray();
                 case FileTypes.Sprite:
                     dataLayer.Files_GetAllFileNames(path, ".spr.zbs", ref lst);
+                    return lst.ToArray();
+                case FileTypes.Tile:
+                    dataLayer.Files_GetAllFileNames(path, ".zxtil.zbs", ref lst);
+                    return lst.ToArray();
+                case FileTypes.Map:
+                    dataLayer.Files_GetAllFileNames(path, ".zxmap.zbs", ref lst);
                     return lst.ToArray();
             }
             return null;
