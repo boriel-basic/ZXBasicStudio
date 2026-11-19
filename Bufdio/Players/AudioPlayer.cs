@@ -478,7 +478,8 @@ public class AudioPlayer : IAudioPlayer
                 continue;
             }
 
-            var samples = MemoryMarshal.Cast<byte, float>(frame.Data);
+            float[] samplesArray = MemoryMarshal.Cast<byte, float>(frame.Data).ToArray();
+            Span<float> samples = samplesArray.AsSpan();
             ProcessSampleProcessors(samples);
 
             SetAndRaiseStateChanged(PlaybackState.Playing);

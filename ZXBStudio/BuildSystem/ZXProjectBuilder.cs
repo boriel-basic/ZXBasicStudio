@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -250,80 +250,68 @@ namespace ZXBasicStudio.BuildSystem
                         File.Delete(nexDataFile);
                     }
 
-                    outputLogWritter.WriteLine("Building .nex file...");
-                    Process process = new Process();
-                    if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+                    // Build .nex file
                     {
-                        //CheckNextCreator();
-                        var ncPath = Path.Combine(Path.GetDirectoryName(ZXOptions.Current.ZxbcPath), "tools", "nextcreator.exe");
-                        bool found = false;
-                        if (File.Exists(ncPath))
+                        outputLogWritter.WriteLine("Building .nex file...");
+
+                        var nextCreatorPath = Path.Combine(Path.GetDirectoryName(ZXOptions.Current.ZxbcPath), "tools", "nextcreator");
+                        bool usePython = false;
+                        if (File.Exists(nextCreatorPath + ".exe"))
                         {
-                            process.StartInfo.FileName = ncPath;
-                            process.StartInfo.Arguments = $"nex.cfg {Path.GetFileNameWithoutExtension(settings.MainFile)}.nex";
-                            found = true;
+                            nextCreatorPath += ".exe";
+                        }
+                        else if (File.Exists(nextCreatorPath))
+                        {
+                            // Linux
                         }
                         else
                         {
-                            ncPath = Path.Combine(Path.GetDirectoryName(ZXOptions.Current.ZxbcPath), "tools", "nextcreator");
-                            if (File.Exists(ncPath))
-                            {
-                                process.StartInfo.FileName = ncPath;
-                                process.StartInfo.Arguments = $"nex.cfg {Path.GetFileNameWithoutExtension(settings.MainFile)}.nex";
-                                found = true;
-                            }
+                            nextCreatorPath += ".py";
+                            usePython = true;
                         }
-                        if (!found)
+
+                        //CheckNextCreator();
+                        Process process = new Process();
+                        if (usePython)
                         {
                             process.StartInfo.FileName = Path.Combine(Path.GetDirectoryName(ZXOptions.Current.ZxbcPath), "python", "python.exe");
                             process.StartInfo.Arguments = string.Format("{0} nex.cfg {1}",
-                                Path.Combine(Path.GetDirectoryName(ZXOptions.Current.ZxbcPath), "tools", "nextcreator.py"),
+                                nextCreatorPath,
+                                Path.GetFileNameWithoutExtension(settings.MainFile) + ".nex");
+                        }
+                        else
+                        {
+                            process.StartInfo.FileName = nextCreatorPath;
+                            process.StartInfo.Arguments = string.Format("nex.cfg {0}",
                                 Path.GetFileNameWithoutExtension(settings.MainFile) + ".nex");
                         }
                         process.StartInfo.WorkingDirectory = project.ProjectPath;
                         process.StartInfo.UseShellExecute = false;
                         process.StartInfo.CreateNoWindow = true;
                         process.StartInfo.RedirectStandardOutput = true;
-                    }
-                    else
-                    {
-                        var ncPath = Path.Combine(Path.GetDirectoryName(ZXOptions.Current.ZxbcPath), "tools", "nextcreator");
-                        if (File.Exists(ncPath))
-                        {
-                            process.StartInfo.FileName = ncPath;
-                            process.StartInfo.Arguments = $"nex.cfg {Path.GetFileNameWithoutExtension(settings.MainFile)}.nex";
-                        }
-                        else
-                        {
-                            process.StartInfo.FileName = Path.Combine(Path.GetDirectoryName(ZXOptions.Current.ZxbcPath), "tools", "nextcreator.py");
-                            process.StartInfo.Arguments = "nex.cfg " + Path.GetFileNameWithoutExtension(settings.MainFile) + ".nex";
-                        }
-                        process.StartInfo.WorkingDirectory = project.ProjectPath;
-                        process.StartInfo.UseShellExecute = false;
-                        process.StartInfo.CreateNoWindow = true;
-                        process.StartInfo.RedirectStandardOutput = true;
-                    }
-                    outputLogWritter.WriteLine(string.Format("{0} {1}",
-                        process.StartInfo.FileName,
-                        process.StartInfo.Arguments));
-                    process.Start();
-                    process.WaitForExit();
 
-                    if (!File.Exists(nexFile))
-                    {
-                        outputLogWritter.WriteLine("Error building .nex file");
-                        outputLogWritter.WriteLine(process.StartInfo.WorkingDirectory);
+                        outputLogWritter.WriteLine(string.Format("{0} {1}",
+                            process.StartInfo.FileName,
+                            process.StartInfo.Arguments));
+                        process.Start();
+                        process.WaitForExit();
 
-                        using (StreamReader reader = process.StandardOutput)
+                        if (!File.Exists(nexFile))
                         {
-                            string output = reader.ReadToEnd();
-                            outputLogWritter.WriteLine(output);
-                        }
-                        return false;
-                    }
+                            outputLogWritter.WriteLine("Error building .nex file");
+                            outputLogWritter.WriteLine(process.StartInfo.WorkingDirectory);
 
-                    // Copy .nex file to data folder
-                    File.Copy(nexFile, nexDataFile);
+                            using (StreamReader reader = process.StandardOutput)
+                            {
+                                string output = reader.ReadToEnd();
+                                outputLogWritter.WriteLine(output);
+                            }
+                            return false;
+                        }
+
+                        // Copy .nex file to data folder
+                        File.Copy(nexFile, nexDataFile);
+                    }
                 }
                 return true;
             }
