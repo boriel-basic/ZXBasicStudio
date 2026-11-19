@@ -19,7 +19,7 @@
     <TextBlock Grid.Row="6" VerticalAlignment="Center" TextAlignment="Center" HorizontalAlignment="Center" FontSize="18" TextWrapping="Wrap">El Dr. Gusman, Boriel, Duefectu, AdolFITO, Hash6Iron, SirRickster and Yoruguaman</TextBlock>
     <TextBlock Grid.Row="7" VerticalAlignment="Center" TextAlignment="Center" HorizontalAlignment="Center" FontSize="16" TextWrapping="Wrap">Many thanks to Boriel for the ZX Basic compiler and his support to this project.</TextBlock>
     <TextBlock Grid.Row="9" VerticalAlignment="Center" TextAlignment="Center" HorizontalAlignment="Center" FontSize="12" TextWrapping="Wrap">(C) 2023, El Dr. Gusman</TextBlock>
-    <TextBlock Grid.Row="10" VerticalAlignment="Center" TextAlignment="Center" HorizontalAlignment="Center" FontSize="12" TextWrapping="Wrap">(C) 2025, Boriel &amp; DuefectuCorp</TextBlock>
+    <TextBlock Grid.Row="10" VerticalAlignment="Center" TextAlignment="Center" HorizontalAlignment="Center" FontSize="12" TextWrapping="Wrap">(C) 2026, Boriel &amp; DuefectuCorp</TextBlock>
     <Button Name="btnClose" Grid.Row="12">Close</Button>
   </Grid>
 </Window>

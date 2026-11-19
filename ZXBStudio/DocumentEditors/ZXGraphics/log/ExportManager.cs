@@ -63,6 +63,12 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
                     continue;
                 }
 
+                if (!exportConfig.ExportFilePath.Contains(BuildPath))
+                {
+                    var fn = Path.GetFileName(exportConfig.ExportFilePath);
+                    exportConfig.ExportFilePath = Path.Combine(BuildPath, fn);
+                }
+
                 // Build configuration sources
                 var fileNameData = file.Replace(".zbs", "");
                 var fileTypeConfig = ServiceLayer.GetFileType(fileNameData);
@@ -1464,10 +1470,10 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
             try
             {
                 var dataS = Encoding.UTF8.GetString(fileData);
-                var tiles = dataS.Deserializar<ZXMapsTile[]>();
+                var tiles = dataS.Deserializar<ZXMapsTiles>();
 
                 // Check attributes for ZX Spectrum mode
-                foreach (var tile in tiles)
+                foreach (var tile in tiles.Tiles)
                 {
                     if (tile != null && tile.GraphicMode == GraphicsModes.ZXSpectrum)
                     {
@@ -1488,7 +1494,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
                     }
                 }
 
-                return tiles;
+                return tiles.Tiles.ToArray();
             }
             catch
             {
@@ -1647,20 +1653,21 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
                         num - 1,
                         ((t.Width / 8) * (t.Height / 8)) - 1 + min
                         ));
-                foreach (var tile in tiles)
+                for (int n = 0; n < tiles.Count(); n++)
                 {
+                    var tile = tiles.ElementAt(n);
                     if (tile == null)
                     {
                         continue;
                     }
                     // Content
-                    var data = Export_Tile_PutChars_Attribute(tile, 0, exportConfig, 0);
+                    var data = Export_Tile_PutChars_Attribute(tile, 0, exportConfig, 0, (tiles.Count() - 2) == n);
                     sb.Append(data);
                     // Footer
                 }
-                sb.AppendLine("");
+                //sb.AppendLine("");
 
-                sb.Append(" _\r\n}");
+                sb.AppendLine("}");
                 sb.AppendLine("");
             }
             return sb.ToString();
@@ -1709,7 +1716,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
         }
 
 
-        private static string Export_Tile_PutChars_Attribute(ZXMapsTile tile, int n, ExportConfig exportConfig, int firstItem)
+        private static string Export_Tile_PutChars_Attribute(ZXMapsTile tile, int n, ExportConfig exportConfig, int firstItem, bool lastTile)
         {
             var sb = new StringBuilder();
 
@@ -1732,6 +1739,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
                 }
             }
             else
+            {
                 if (tile.Frames > 1)
                 {
                     if (n > firstItem)
@@ -1740,11 +1748,19 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
                     }
                     sb.AppendLine("\t{ _");
                 }
+            }
+
+            //sb.Append("\t{ ");
 
             int col = 0;
             int row = 0;
             int max = (tile.Width / 8) * (tile.Height / 8);
             int idx = 0;
+
+            // Transponer atributos
+            var transposedAttributes = new List<AttributeColor>();
+
+
             foreach (var d in pattern.Attributes)
             {
                 if (idx++ >= max)
@@ -1761,7 +1777,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
                     {
                         sb.AppendLine(", _");
                     }
-                    sb.Append("\t");
+                    sb.Append("\t{ ");
                     if (tile.Frames > 1)
                     {
                         sb.Append("\t");
@@ -1780,17 +1796,15 @@ namespace ZXBasicStudio.DocumentEditors.ZXGraphics.log
                     col = 0;
                 }
             }
-            sb.AppendLine(" _");
 
-            if (tile.Frames == 1)
+            if (lastTile)
             {
-                sb.Append("}");
+                sb.AppendLine(" } _");
             }
             else
             {
-                sb.Append("\t}");
+                sb.AppendLine(" }, _");
             }
-
             return sb.ToString();
         }
 

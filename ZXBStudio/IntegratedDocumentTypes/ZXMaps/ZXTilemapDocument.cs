@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using ZXBasicStudio.Classes;
 using ZXBasicStudio.DocumentEditors.ZXGraphics;
 using ZXBasicStudio.DocumentEditors.ZXGraphics.log;
+using ZXBasicStudio.DocumentEditors.ZXMaps;
 using ZXBasicStudio.DocumentModel.Enums;
 using ZXBasicStudio.DocumentModel.Interfaces;
 
@@ -39,36 +40,36 @@ namespace ZXBasicStudio.IntegratedDocumentTypes.ZXGraphics
 
         static readonly ZXKeybCommand[] _editCommands = new ZXKeybCommand[]
         {
-            SpriteEditor.keyboardCommands["Save"],
-            SpriteEditor.keyboardCommands["Cut"],
-            SpriteEditor.keyboardCommands["Copy"],
-            SpriteEditor.keyboardCommands["Paste"],
-            SpriteEditor.keyboardCommands["Clear"],
-            SpriteEditor.keyboardCommands["Undo"],
-            SpriteEditor.keyboardCommands["Redo"],
-            SpriteEditor.keyboardCommands["Rotate Right"],
-            SpriteEditor.keyboardCommands["Rotate Left"],
-            SpriteEditor.keyboardCommands["Horizontal Mirror"],
-            SpriteEditor.keyboardCommands["Vertical Mirror"],
-            SpriteEditor.keyboardCommands["Shift Up"],
-            SpriteEditor.keyboardCommands["Shift Right"],
-            SpriteEditor.keyboardCommands["Shift Down"],
-            SpriteEditor.keyboardCommands["Shift Left"],
-            SpriteEditor.keyboardCommands["Move Up"],
-            SpriteEditor.keyboardCommands["Move Right"],
-            SpriteEditor.keyboardCommands["Move Down"],
-            SpriteEditor.keyboardCommands["Move Left"],
-            SpriteEditor.keyboardCommands["Invert"],
-            SpriteEditor.keyboardCommands["Mask"],
-            SpriteEditor.keyboardCommands["Export"],
-            SpriteEditor.keyboardCommands["Zoom In"],
-            SpriteEditor.keyboardCommands["Zoom Out"],
+            TileEditor.keyboardCommands["Save"],
+            TileEditor.keyboardCommands["Cut"],
+            TileEditor.keyboardCommands["Copy"],
+            TileEditor.keyboardCommands["Paste"],
+            TileEditor.keyboardCommands["Clear"],
+            TileEditor.keyboardCommands["Undo"],
+            TileEditor.keyboardCommands["Redo"],
+            TileEditor.keyboardCommands["Rotate Right"],
+            TileEditor.keyboardCommands["Rotate Left"],
+            TileEditor.keyboardCommands["Horizontal Mirror"],
+            TileEditor.keyboardCommands["Vertical Mirror"],
+            TileEditor.keyboardCommands["Shift Up"],
+            TileEditor.keyboardCommands["Shift Right"],
+            TileEditor.keyboardCommands["Shift Down"],
+            TileEditor.keyboardCommands["Shift Left"],
+            TileEditor.keyboardCommands["Move Up"],
+            TileEditor.keyboardCommands["Move Right"],
+            TileEditor.keyboardCommands["Move Down"],
+            TileEditor.keyboardCommands["Move Left"],
+            TileEditor.keyboardCommands["Invert"],
+            TileEditor.keyboardCommands["Mask"],
+            TileEditor.keyboardCommands["Export"],
+            TileEditor.keyboardCommands["Zoom In"],
+            TileEditor.keyboardCommands["Zoom Out"],
         };
 
 
         public ZXTilemapDocument()
         {
-            _exportManager.Initialize(DocumentEditors.ZXGraphics.neg.FileTypes.Sprite);
+            _exportManager.Initialize(DocumentEditors.ZXGraphics.neg.FileTypes.Tile);
         }
 
 

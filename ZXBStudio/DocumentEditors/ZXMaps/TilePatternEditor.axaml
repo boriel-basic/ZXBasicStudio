@@ -106,7 +106,7 @@
 				<svg:Svg Path="/Svg/ImageImport.svg"></svg:Svg>
 			</Button>
 
-			<Button Classes="toolbar" Name="btnExport" ToolTip.Tip="Export pattern">
+			<Button Classes="toolbar" Name="btnExport" ToolTip.Tip="Export">
 				<svg:Svg Path="/Svg/buildexport.svg"></svg:Svg>
 			</Button>
 		</WrapPanel>

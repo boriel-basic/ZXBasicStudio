@@ -11,7 +11,7 @@
 			<TextBlock Name="lblNumber" Foreground="Blue" Margin="2,0"
 				HorizontalAlignment="Left" VerticalAlignment="Top" 
 				IsVisible="False" FontWeight="Bold"/>
-			<Button Classes="toolbar" Name="btnNew" ToolTip.Tip="Add Tile" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsVisible="False">
+			<Button Name="btnNew" ToolTip.Tip="Add Tile" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsVisible="False">
 				<svg:Svg Path="/Svg/add.svg"></svg:Svg>
 			</Button>
 		</Grid>

@@ -1324,6 +1324,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
                     }
                     break;
             }
+            Refresh(false);
         }
 
 
@@ -1332,6 +1333,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         {
             SecondaryColorIndex = indexColor;
             UpdateColorPanel();
+            Refresh();
         }
 
 
@@ -1339,6 +1341,7 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
         {
             PrimaryColorIndex = indexColor;
             UpdateColorPanel();
+            Refresh();
         }
 
         #endregion
@@ -1350,6 +1353,8 @@ namespace ZXBasicStudio.DocumentEditors.ZXMaps
 
         private void Refresh()
         {
+            grdEditor.Refresh();
+
             // TODO: Multiple frames per tile?
             /*
             txtFrame.Text = actualFrame.ToString();
